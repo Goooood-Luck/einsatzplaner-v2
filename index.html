@@ -3883,28 +3883,12 @@ async function zugaengeLaden(){
   }
 }
 
-/* ---- Start ---- */
+/* ---- Start ----- */
 (async function start(){
-      if (!window.supabase) {
-        await new Promise(resolve => {
-            const check = setInterval(() => {
-                if (window.supabase) {
-                    clearInterval(check);
-                    resolve();
-                }
-            }, 50);
-            setTimeout(() => { clearInterval(check); resolve(); }, 3000);
-        });
-    }
-    if (!window.supabase) {
-        zeigeLogin("Die Serververbindung konnte nicht geladen werden. Besteht Internetverbindung?");
-        return;
-    }
-
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const { data } = await sb.auth.getSession();
-  if(data && data.session) await nachAnmeldung(data.session.user);
-  else zeigeLogin("");
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { data } = await sb.auth.getSession();
+    if(data && data.session) await nachAnmeldung(data.session.user);
+    else zeigeLogin("");
 })();
 setInterval(()=>{ if(view==="now") renderNow(); }, 60000);
 render();
