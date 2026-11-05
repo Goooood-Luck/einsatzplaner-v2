@@ -1,0 +1,3899 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Einsatzplaner">
+<meta name="theme-color" content="#10141A">
+<title>Einsatzplaner – Elektro Meisterbetrieb</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0F16;
+  --panel:rgba(255,255,255,.065);
+  --panel-2:rgba(255,255,255,.045);
+  --line:rgba(255,255,255,.13);
+  --line-soft:rgba(255,255,255,.07);
+  --ink:#EEF3FA;
+  --ink-dim:rgba(238,243,250,.66);
+  --ink-faint:rgba(238,243,250,.4);
+  --focus:#7FD4FF;
+  --radius:13px;
+  --pille:999px;
+  --slot-h:62px;
+  --glas:blur(24px) saturate(1.55);
+  --schatten:0 18px 54px rgba(0,0,0,.42);
+  --kante-oben:inset 0 1px 0 rgba(255,255,255,.1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:
+    radial-gradient(1100px 620px at 12% -8%, rgba(127,212,255,.20), transparent 62%),
+    radial-gradient(900px 560px at 88% 4%, rgba(167,123,243,.17), transparent 60%),
+    radial-gradient(800px 520px at 55% 108%, rgba(89,194,106,.13), transparent 62%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--ink);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+  font-size:13px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+button{font-family:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:13px}
+
+/* ---------- Kopfzeile ---------- */
+header{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:11px 14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.03));
+  backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);
+  border-bottom:1px solid var(--line-soft);
+  flex:0 0 auto;
+}
+.brand{display:flex;align-items:baseline;gap:9px;min-width:0;flex:0 1 auto;overflow:hidden}
+.brand b{
+  font-family:"Barlow Condensed",sans-serif;
+  font-weight:700;font-size:22px;letter-spacing:.02em;
+}
+.brand span{color:var(--ink-faint);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:1700px){.brand span{display:none}}
+
+.views{display:flex;gap:2px;padding:3px;background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--pille)}
+.views button{
+  background:none;border:0;padding:5px 13px;border-radius:var(--pille);
+  font-family:"Barlow Condensed",sans-serif;font-size:15px;letter-spacing:.03em;
+  color:var(--ink-dim);
+}
+.views button[aria-pressed="true"]{background:rgba(255,255,255,.93);color:#0B0F16;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+
+.navdate{display:flex;align-items:center;gap:8px}
+.navdate .label{
+  font-family:"Barlow Condensed",sans-serif;font-size:17px;
+  min-width:160px;text-align:center;letter-spacing:.02em;white-space:nowrap;
+}
+.ghost{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--pille);padding:7px 12px;color:var(--ink-dim);white-space:nowrap;font-size:12.5px;
+}
+.ghost:hover{border-color:var(--focus);color:var(--ink)}
+.ghost.heute{border-color:rgba(127,212,255,.4);color:var(--focus);background:rgba(127,212,255,.12)}
+.ghost.heute:hover{background:rgba(127,212,255,.2);border-color:var(--focus)}
+.spacer{flex:1}
+.sync{color:var(--ink-faint);font-size:11px;white-space:nowrap;margin-right:2px}
+
+/* ---------- Layout ---------- */
+main{flex:1;display:flex;min-height:0}
+#stage{flex:1;min-width:0;overflow:auto;position:relative;margin:14px 0 14px 14px;border-radius:20px;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+  backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);
+  border:1px solid var(--line-soft);box-shadow:var(--schatten),var(--kante-oben);}
+
+aside{
+  flex:0 0 280px;margin:14px 14px 14px 0;border-radius:20px;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.028));
+  backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);
+  border:1px solid var(--line-soft);box-shadow:var(--schatten),var(--kante-oben);
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;
+}
+aside h2{
+  font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:17px;
+  margin:0;padding:13px 16px 10px;border-bottom:1px solid var(--line-soft);
+  display:flex;align-items:center;gap:8px;
+}
+aside h2 .count{color:var(--ink-faint);font-size:12px;font-family:Inter,sans-serif}
+.pool{overflow:auto;padding:9px;display:flex;flex-direction:column;gap:7px;flex:1}
+.jobcard{
+  background:var(--panel-2);border:1px solid var(--line-soft);border-left:3px solid rgba(255,255,255,.22);
+  border-radius:15px;padding:11px 13px;cursor:grab;
+}
+.jobcard:active{cursor:grabbing}
+.jobcard b{display:block;font-size:12.5px;font-weight:600;margin-bottom:2px}
+.jobcard small{color:var(--ink-dim);font-size:11.5px;line-height:1.35;display:block}
+.jobcard .row{display:flex;gap:6px;margin-top:7px}
+.jobcard .row button{
+  flex:1;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:var(--pille);
+  padding:5px 0;font-size:11px;color:var(--ink-dim);
+}
+.jobcard .row button:hover{color:var(--ink);border-color:var(--focus)}
+.pool-empty{color:var(--ink-faint);padding:16px 6px;text-align:center;line-height:1.5}
+.aside-foot{padding:11px;border-top:1px solid var(--line-soft);display:flex;gap:7px}
+.aside-foot button{flex:1;border-radius:var(--pille);border:1px solid var(--line);background:var(--panel);padding:10px 0;font-size:12px;color:var(--ink-dim)}
+.aside-foot button.primary{background:var(--focus);color:#07121A;border-color:transparent;font-weight:650;box-shadow:0 6px 20px rgba(127,212,255,.28)}
+
+/* ---------- Planungsraster ---------- */
+table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:660px;table-layout:fixed}
+table.board th,table.board td{border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);padding:0}
+table.board thead th{
+  position:sticky;top:0;z-index:5;background:rgba(16,21,29,.86);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  font-family:"Barlow Condensed",sans-serif;font-weight:500;font-size:14px;
+  color:var(--ink-dim);padding:7px 6px;letter-spacing:.03em;border-bottom:1px solid var(--line);
+}
+table.board thead th.today{color:var(--focus);background:rgba(127,212,255,.12)}
+th.teamcol,td.teamcol{
+  position:sticky;left:0;z-index:4;background:rgba(16,21,29,.86);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  width:150px;min-width:150px;border-right:1px solid var(--line);
+}
+table.board thead th.teamcol{z-index:7;background:rgba(16,21,29,.92)}
+.teamcell{padding:8px 11px;display:flex;gap:9px;align-items:center;cursor:grab;position:relative}
+.teamcell:active{cursor:grabbing}
+.teamcell .tn{flex:1;min-width:0}
+.teamcell.dragging{opacity:.4}
+.teamcell.dropteam{background:#1B2735;box-shadow:inset 0 0 0 2px var(--focus)}
+.order{display:flex;flex-direction:column;gap:2px;opacity:0;flex:0 0 auto}
+.teamcell:hover .order{opacity:1}
+.order button{
+  background:var(--panel-2);border:1px solid var(--line);border-radius:3px;
+  color:var(--ink-dim);font-size:8px;line-height:1;padding:3px 5px;
+}
+.order button:hover:not(:disabled){color:var(--ink);border-color:var(--focus)}
+.order button:disabled{opacity:.25;cursor:default}
+.swatch{width:4px;border-radius:999px;align-self:stretch;min-height:30px}
+.teamcell b{font-size:13px;display:block}
+.teamcell small{color:var(--ink-faint);font-size:11px;line-height:1.3;display:block;margin-top:2px}
+
+td.trackcell{padding:0;position:relative}
+.track{position:relative;display:grid;height:var(--slot-h);align-items:center}
+.daybg{
+  position:absolute;top:0;bottom:0;z-index:0;pointer-events:none;
+  border-right:1px solid rgba(255,255,255,.045);
+}
+.daybg.today{background:rgba(127,212,255,.07)}
+.daybg.monatsstart{border-left:2px solid rgba(255,255,255,.22)}
+table.board thead th.monatsstart{border-left:2px solid rgba(255,255,255,.22)}
+
+/* Ein Einsatz = ein durchgehendes Feld */
+.bar{
+  grid-row:1;position:relative;z-index:2;
+  align-self:stretch;margin:6px 3px;border-radius:var(--pille);
+  display:flex;flex-direction:column;justify-content:center;gap:1px;
+  padding:0 15px;color:#0B0F16;font-size:13px;cursor:pointer;
+  white-space:nowrap;overflow:hidden;
+  box-shadow:0 7px 20px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.38);
+}
+.bar .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.bar .adr{font-weight:500;font-size:11px;opacity:.75;overflow:hidden;text-overflow:ellipsis}
+.bar.cl{margin-left:-2px;padding-left:12px;border-top-left-radius:0;border-bottom-left-radius:0}
+.bar.cr{margin-right:-3px;border-top-right-radius:0;border-bottom-right-radius:0}
+.bar.dragover{box-shadow:0 0 0 2px var(--focus)}
+.bar.fix{cursor:pointer}
+.bar .lock{
+  position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  font-size:9px;line-height:1;opacity:.6;filter:grayscale(1) brightness(.2);pointer-events:none;
+}
+.bar.fix{padding-right:26px}
+.fixnote.offen{background:#14241B;border-color:#2C4A36;color:#8FDCA4}
+.fixnote{
+  margin:0 0 15px;padding:10px 12px;border-radius:var(--radius);
+  background:#2A2314;border:1px solid #4A3C22;color:#FFC978;
+  font-size:11.5px;line-height:1.55;
+}
+.field input:disabled,.field select:disabled,.field textarea:disabled{opacity:.5;cursor:not-allowed}
+.quick button:disabled,.btn:disabled{opacity:.4;cursor:not-allowed}
+.quick button:disabled:hover,.btn:disabled:hover{border-color:var(--line)}
+.bar.dragging{opacity:.4}
+aside.dropzone{background:#1B2735;box-shadow:inset 0 0 0 2px var(--focus)}
+aside.dropzone .pool::before{
+  content:"Hier loslassen – Auftrag wandert zurück in die Liste";
+  display:block;border:1px dashed var(--focus);border-radius:var(--radius);
+  padding:11px 9px;color:var(--focus);font-size:11.5px;line-height:1.4;text-align:center;
+}
+
+/* Freie Fläche */
+.gap{grid-row:1;position:relative;z-index:1;align-self:stretch;margin:6px 3px;
+  border-radius:15px;background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.035);cursor:pointer}
+.gap::after{
+  content:attr(data-slot);position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink-faint);font-size:10px;opacity:0;pointer-events:none;
+}
+.gap:hover{background:rgba(127,212,255,.1);border-color:var(--focus);border-style:solid}
+.gap:hover::after{opacity:1}
+.gap.dragover{background:rgba(127,212,255,.18);border:2px solid var(--focus)}
+
+/* Monat */
+table.month{min-width:2050px;table-layout:fixed}
+table.month .track{height:36px}
+table.month .bar{font-size:11px;padding:0 11px;margin:5px 3px;border-radius:var(--pille)}
+table.month .gap{margin:5px 3px;border-radius:11px}
+table.month .bar .adr{display:none}
+table.month thead th{font-size:12px;padding:5px 2px}
+
+/* ---------- Jetzt-Ansicht ---------- */
+.now-wrap{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px}
+.nowcard{
+  background:var(--panel);border:1px solid var(--line-soft);border-radius:20px;
+  border-top:4px solid var(--ink-faint);padding:15px 17px;
+  backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);box-shadow:var(--kante-oben);
+}
+.nowcard .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.nowcard h3{margin:0;font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:600;letter-spacing:.02em}
+.nowcard .crew{color:var(--ink-faint);font-size:11.5px}
+.nowcard .job{font-size:14px;font-weight:600;margin:11px 0 3px}
+.nowcard .adr{color:var(--ink-dim);font-size:12px;line-height:1.4}
+.progress{height:7px;border-radius:4px;background:#232C38;margin:13px 0 7px;overflow:hidden}
+.progress i{display:block;height:100%;border-radius:4px}
+.times{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-dim)}
+.times b{color:var(--ink);font-weight:600}
+.nowcard .free{color:var(--ink-faint);font-style:italic;margin:13px 0 4px;font-size:13px}
+.nowcard .acts{display:flex;gap:7px;margin-top:12px}
+.nowcard .acts button{flex:1;background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--pille);padding:8px 0;font-size:11.5px;color:var(--ink-dim)}
+.nowcard .acts button:hover{color:var(--ink);border-color:var(--focus)}
+
+/* ---------- Karte ---------- */
+#mapview{position:absolute;inset:0;display:flex;flex-direction:column}
+#mapbar{
+  display:flex;align-items:center;gap:12px;padding:8px 14px;
+  background:var(--panel);border-bottom:1px solid var(--line);flex:0 0 auto;flex-wrap:wrap;
+}
+#mapbar .legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.leg{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-dim)}
+.leg i{width:10px;height:10px;border-radius:3px;display:block}
+#map{flex:1;background:#0C1015}
+.pin{
+  display:flex;align-items:center;gap:5px;padding:3px 7px 3px 4px;border-radius:13px;
+  font:600 11px Inter,sans-serif;color:#0C1117;white-space:nowrap;
+  box-shadow:0 2px 7px rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.85);
+}
+.pin.dim{opacity:.5}
+.pin .dot{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.45);flex:0 0 auto}
+.leaflet-popup-content-wrapper{background:var(--panel);color:var(--ink);border-radius:6px}
+.leaflet-popup-tip{background:var(--panel)}
+.leaflet-popup-content{margin:10px 13px;font-size:12.5px;line-height:1.5}
+.leaflet-popup-content b{font-size:13.5px}
+
+/* ---------- Dialoge ---------- */
+dialog{
+  border:1px solid var(--line);color:var(--ink);
+  background:linear-gradient(180deg,rgba(28,34,45,.9),rgba(16,21,29,.93));
+  backdrop-filter:blur(34px) saturate(1.7);-webkit-backdrop-filter:blur(34px) saturate(1.7);
+  border-radius:24px;padding:0;width:min(520px,92vw);
+  box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14);
+}
+dialog::backdrop{background:rgba(5,8,12,.6);backdrop-filter:blur(3px)}
+dialog h3{
+  margin:0;padding:16px 20px 14px;border-bottom:1px solid var(--line-soft);
+  font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:600;letter-spacing:.02em;
+}
+.dlg-body{padding:16px 18px;max-height:72vh;overflow:auto}
+.dlg-foot{padding:13px 20px 17px;border-top:1px solid var(--line-soft);display:flex;gap:8px;justify-content:flex-end}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:11.5px;color:var(--ink-dim);margin-bottom:5px}
+.field input,.field select,.field textarea{
+  width:100%;background:rgba(0,0,0,.26);border:1px solid var(--line-soft);border-radius:13px;
+  padding:11px 14px;color:var(--ink);
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--focus);outline-offset:-1px;border-color:var(--focus)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:var(--pille);padding:10px 17px;font-size:12.5px;color:var(--ink-dim);line-height:1.3}
+.btn.primary{background:var(--focus);border-color:transparent;color:#07121A;font-weight:650;box-shadow:0 6px 18px rgba(127,212,255,.26)}
+.btn.danger{color:#FF9A9A;border-color:rgba(255,154,154,.3);background:rgba(255,154,154,.09)}
+.btn.warn{color:#FFC978;border-color:rgba(255,201,120,.32);background:rgba(255,201,120,.1)}
+.btn.warn:hover{border-color:#FFC978}
+.btn:hover{border-color:var(--focus)}
+.rowlist{display:flex;flex-direction:column;gap:8px}
+.rowitem{display:flex;gap:9px;align-items:center;background:var(--panel-2);border:1px solid var(--line-soft);border-radius:15px;padding:10px 12px}
+.rowitem input[type=text]{flex:1;background:rgba(0,0,0,.26);border:1px solid var(--line-soft);border-radius:10px;padding:8px 11px;color:var(--ink)}
+.rowitem input[type=color]{width:34px;height:32px;padding:0;border:1px solid var(--line);border-radius:10px;background:none}
+.rowitem .x{background:none;border:0;color:var(--ink-faint);font-size:17px;padding:0 4px}
+.rowitem .x:hover{color:#FF8B8B}
+.hint{color:var(--ink-faint);font-size:11.5px;line-height:1.5;margin-top:-4px}
+.geo-ok{color:#6FD48A}.geo-no{color:#FFB65C}
+.pair{display:flex;gap:8px}
+.pair input{flex:1;min-width:0}
+.pair select{flex:0 0 150px}
+.quick{display:flex;gap:7px}
+.quick button{
+  flex:1;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:var(--radius);padding:8px 0;font-size:12px;color:var(--ink-dim);
+}
+.quick button:hover{border-color:var(--focus);color:var(--ink)}
+.quick button.on{background:var(--focus);border-color:var(--focus);color:#0A1119;font-weight:600}
+.searchbox{position:relative;flex:1 1 160px;min-width:120px;max-width:230px}
+.searchbox input{
+  width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--pille);
+  padding:8px 14px;color:var(--ink);font-size:12.5px;
+}
+.searchbox input:focus{outline:2px solid var(--focus);outline-offset:-1px;border-color:var(--focus)}
+.searchbox input::placeholder{color:var(--ink-faint)}
+
+/* Anhänge im Auftragsdialog */
+.cnt{color:var(--ink-faint);font-size:11px}
+.drop{border:1px dashed var(--line);border-radius:var(--radius);padding:10px;background:#0F141B}
+.drop.over{border-color:var(--focus);background:#1B2735}
+.dropnote{color:var(--ink-faint);font-size:11.5px;text-align:center;padding:4px 0 2px}
+.linky{background:none;border:0;color:var(--focus);text-decoration:underline;font-size:11.5px;padding:0}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.files:empty{display:none}
+.att{position:relative;border-radius:5px;overflow:hidden;background:var(--panel-2);border:1px solid var(--line);aspect-ratio:1}
+.att img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.att .doc{
+  width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;color:var(--ink-dim);font-size:9.5px;text-align:center;padding:5px;cursor:pointer;
+}
+.att .doc b{font-size:17px;font-weight:400}
+.att .doc span{overflow:hidden;text-overflow:ellipsis;width:100%;white-space:nowrap}
+.att .del{
+  position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:50%;
+  background:rgba(8,12,17,.78);border:0;color:#FFB0B0;font-size:12px;line-height:1;
+  display:flex;align-items:center;justify-content:center;opacity:0;
+}
+.att:hover .del{opacity:1}
+.att .del:hover{background:#7A2B33;color:#fff}
+#vwImg{max-width:min(880px,88vw);max-height:62vh;display:block}
+
+/* Suchergebnisse */
+.srch{padding:16px;max-width:980px}
+.srch h2{font-family:"Barlow Condensed",sans-serif;font-size:21px;font-weight:600;margin:0 0 3px;letter-spacing:.02em}
+.srch .sub{color:var(--ink-faint);font-size:12px;margin-bottom:16px}
+.hit{background:var(--panel);border:1px solid var(--line-soft);border-radius:20px;padding:15px 18px;margin-bottom:11px;backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);box-shadow:var(--kante-oben)}
+.hit .top{display:flex;justify-content:space-between;gap:14px;align-items:baseline;flex-wrap:wrap}
+.hit b{font-size:15px}
+.hit .adr{color:var(--ink-dim);font-size:12.5px;margin-top:2px}
+.hit .meta{color:var(--ink-faint);font-size:11.5px;margin-top:2px}
+.runs{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.run{
+  display:flex;align-items:center;gap:6px;border-radius:13px;padding:3px 10px 3px 4px;
+  font-size:11.5px;font-weight:600;color:#0C1117;cursor:pointer;border:0;
+}
+.run .d{background:rgba(0,0,0,.2);border-radius:10px;padding:1px 6px;font-weight:500}
+.hit .files{margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(74px,1fr))}
+.hit .acts{display:flex;gap:7px;margin-top:13px}
+.hit .acts button{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--pille);padding:7px 14px;font-size:11.5px;color:var(--ink-dim)}
+.hit .acts button:hover{color:var(--ink);border-color:var(--focus)}
+.srch .none{color:var(--ink-faint);padding:28px 4px;line-height:1.6}
+/* Auftrag scannen */
+#dlgScan{width:min(1020px,96vw)}
+.scan{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:18px;align-items:start}
+.scan-img{
+  position:relative;border:1px dashed var(--line);border-radius:var(--radius);
+  background:#0F141B;min-height:420px;display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.scan-img.over{border-color:var(--focus);background:#1B2735}
+.scan-img img{max-width:100%;max-height:68vh;display:block;cursor:zoom-in}
+.scan-drop{display:flex;flex-direction:column;align-items:center;gap:6px;padding:28px;text-align:center}
+.scan-drop b{font-size:13.5px}
+.scan-drop span{color:var(--ink-dim);font-size:12px}
+.scan-drop small{color:var(--ink-faint);font-size:11px;margin-top:4px;line-height:1.5}
+.scan-neu{
+  position:absolute;top:8px;right:8px;background:rgba(10,14,19,.8);border:1px solid var(--line);
+  border-radius:4px;color:var(--ink-dim);font-size:11px;padding:5px 9px;
+}
+.scan-neu:hover{color:var(--ink);border-color:var(--focus)}
+.scan-form{min-width:0}
+.tabs{display:flex;gap:0;margin-bottom:11px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;width:fit-content}
+.tabs button{
+  background:var(--panel-2);border:0;border-right:1px solid var(--line);
+  padding:7px 15px;font-size:12px;color:var(--ink-dim);
+}
+.tabs button:last-child{border-right:0}
+.tabs button[aria-pressed="true"]{background:var(--focus);color:#0A1119;font-weight:600}
+[hidden]{display:none !important}
+.scan-text{display:flex;flex-direction:column;gap:10px}
+.scan-text textarea{
+  width:100%;min-height:380px;background:#0F141B;border:1px solid var(--line);
+  border-radius:var(--radius);padding:13px 15px;color:var(--ink);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.75;resize:vertical;
+}
+.scan-text textarea:focus{outline:2px solid var(--focus);outline-offset:-1px;border-color:var(--focus)}
+.scan-text-foot{display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+.setup{
+  background:#1E2A18;border:1px solid #3C5A2C;border-radius:var(--radius);
+  padding:13px 14px;margin-bottom:14px;
+}
+.setup b{display:block;font-size:13px;color:#A8DC8F;margin-bottom:5px}
+.setup p{margin:0 0 11px;color:var(--ink-dim);font-size:11.5px;line-height:1.55}
+.setup .btn{width:100%}
+.anleitung{
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px 14px;margin:0 0 14px;
+}
+.anleitung ol{margin:0;padding-left:19px;display:flex;flex-direction:column;gap:7px}
+.anleitung li{color:var(--ink-dim);font-size:11.5px;line-height:1.55}
+.anleitung a{color:var(--focus)}
+.pruefzeile{display:flex;gap:9px;align-items:center;margin-top:9px}
+@media (max-width:860px){.scan{grid-template-columns:1fr}.scan-img{min-height:240px}}
+
+/* Kontextmenü */
+.kontext{
+  position:fixed;z-index:60;min-width:232px;
+  background:linear-gradient(180deg,rgba(30,36,47,.94),rgba(18,23,31,.95));
+  backdrop-filter:blur(28px) saturate(1.6);-webkit-backdrop-filter:blur(28px) saturate(1.6);
+  border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 20px 50px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12);padding:6px;
+}
+.kontext .kopf{
+  padding:8px 10px 7px;border-bottom:1px solid var(--line);margin-bottom:5px;
+}
+.kontext .kopf b{display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kontext .kopf small{color:var(--ink-faint);font-size:11px}
+.kontext button{
+  display:flex;align-items:center;gap:9px;width:100%;background:none;border:0;
+  padding:9px 12px;border-radius:12px;font-size:12.5px;color:var(--ink-dim);text-align:left;
+}
+.kontext button:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+.kontext button .pkt{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+
+/* Abgerechnete Einsätze */
+.bar.abger{background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.07)) !important;color:var(--ink-dim);box-shadow:none;border:1px solid var(--line-soft)}
+.bar.abger .nm{font-weight:500}
+.bar.abger .adr{opacity:.65}
+.swatch.abger{background:#6B7585 !important}
+
+/* Kunden */
+.kdlist{display:flex;flex-direction:column;gap:8px}
+.kdrow{
+  background:var(--panel-2);border:1px solid var(--line-soft);border-radius:16px;
+  padding:12px 15px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:center;
+}
+.kdrow:hover{border-color:var(--focus)}
+.kdrow b{font-size:13px;display:block}
+.kdrow small{color:var(--ink-dim);font-size:11.5px;display:block;margin-top:2px;line-height:1.4}
+.kdrow .n{color:var(--ink-faint);font-size:11px;white-space:nowrap}
+.kdlist .pool-empty{padding:22px 6px}
+.kdbox{
+  background:var(--panel-2);border:1px solid var(--line-soft);border-radius:16px;
+  padding:13px 15px;margin-bottom:14px;
+}
+.kdbox .who{font-size:13.5px;font-weight:600}
+.kdbox .det{color:var(--ink-dim);font-size:12px;line-height:1.5;margin-top:3px}
+.kdbox .acts{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.kdbox .acts a,.kdbox .acts button{
+  background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:var(--pille);
+  padding:7px 14px;font-size:12px;color:var(--ink-dim);text-decoration:none;display:inline-block;
+}
+.kdbox .acts a:hover,.kdbox .acts button:hover{color:var(--ink);border-color:var(--focus)}
+.kdbox .acts a.wa{color:#79E39A;border-color:rgba(121,227,154,.3);background:rgba(121,227,154,.1)}
+.kdbox .acts a.wa:hover{border-color:#6FD48A}
+/* ================= iPhone ================= */
+.tabbar{display:none}
+.nurPhone{display:none}
+
+@media (max-width:760px){
+  header{flex-wrap:wrap;gap:8px;padding:9px 12px;padding-top:max(9px,env(safe-area-inset-top))}
+  .brand b{font-size:18px}
+  .brand span{display:none}
+  .views,#zoomIn,#zoomOut,#btnKunden,#btnTeams,#btnSettings,#btnData,#btnKonto{display:none}
+  #syncState{display:none}
+  .nurPhone{display:block}
+  .spacer{display:none}
+  .searchbox{display:none}
+  .searchbox.aktiv{display:block;order:4;width:100%;max-width:none;flex:1 1 100%}
+  .searchbox.aktiv input{font-size:16px;padding:11px 13px}
+  .navdate{order:3;width:100%;justify-content:space-between;gap:6px}
+  .navdate .label{min-width:0;flex:1;font-size:15px;text-align:center}
+  .ghost{padding:8px 12px}
+
+  aside{display:none}
+  main{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+  #stage{-webkit-overflow-scrolling:touch}
+
+  .tabbar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;
+    background:var(--panel);border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .tabbar button{
+    flex:1;background:none;border:0;padding:9px 0 10px;
+    color:var(--ink-faint);font-size:10.5px;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+  }
+  .tabbar button b{font-size:17px;font-weight:400;line-height:1}
+  .tabbar button[aria-pressed="true"]{color:var(--focus)}
+
+  dialog{width:100vw;max-width:100vw;border-radius:15px 15px 0 0;margin:auto auto 0}
+  .dlg-body{max-height:66vh;padding:15px}
+  .dlg-foot{flex-wrap:wrap;gap:8px;padding:11px 15px max(13px,env(safe-area-inset-bottom))}
+  .dlg-foot .btn{flex:1 1 44%;padding:13px 10px;text-align:center}
+  .field input,.field select,.field textarea{font-size:16px;padding:12px 13px}
+  .pair{flex-direction:column}
+  .pair select,.pair .btn{flex:1 1 auto}
+  .quick button{padding:13px 0;font-size:13px}
+  .now-wrap{grid-template-columns:1fr;padding:12px;gap:11px}
+  .scan{grid-template-columns:1fr}
+  .scan-img{min-height:200px}
+  .scan-text textarea{min-height:200px}
+  .srch{padding:12px}
+  .files{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+  .att .del{opacity:1;width:24px;height:24px}
+  .kontext{min-width:min(300px,92vw)}
+  .kontext button{padding:12px 11px;font-size:13.5px}
+}
+
+/* Tagesansicht fürs Telefon */
+.pday{padding:11px 12px 18px;display:flex;flex-direction:column;gap:10px}
+.pcard{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ink-faint);border-radius:10px;overflow:hidden}
+.phd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:11px 13px 9px}
+.phd b{font-family:"Barlow Condensed",sans-serif;font-size:18px;font-weight:600;letter-spacing:.02em}
+.phd span{color:var(--ink-faint);font-size:11.5px;text-align:right}
+.phalves{display:flex;gap:1px;background:var(--line);border-top:1px solid var(--line)}
+.phalf{
+  flex:1;min-width:0;background:var(--panel-2);border:0;padding:11px 12px;
+  text-align:left;display:flex;flex-direction:column;gap:3px;min-height:78px;justify-content:center;
+}
+.phalf .tag{font-size:10px;color:var(--ink-faint);letter-spacing:.05em}
+.phalf .jb{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.phalf .ad{font-size:11.5px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.phalf.busy{color:#0C1117}
+.phalf.busy.abger{background:#6B7585 !important}
+.phalf.busy .tag{color:rgba(0,0,0,.5)}
+.phalf.free .jb{color:var(--ink-faint);font-weight:500}
+.phalf .schloss{position:absolute;top:6px;right:7px;font-size:9px;opacity:.55;filter:grayscale(1) brightness(.2)}
+.phalf{position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.bar{-webkit-touch-callout:none}
+
+/* Auftragsliste fürs Telefon */
+.pjobs{padding:12px 12px 18px;display:flex;flex-direction:column;gap:9px}
+.pjobs .jobcard{cursor:default}
+.pbtns{display:flex;gap:8px}
+.pbtns button{
+  flex:1;background:var(--focus);color:#0A1119;border:0;border-radius:9px;
+  padding:14px;font-size:13.5px;font-weight:600;
+}
+.pbtns button.zweit{background:var(--panel-2);color:var(--ink-dim);border:1px solid var(--line)}
+
+/* Menüblatt */
+.menuliste{display:flex;flex-direction:column;gap:7px}
+.menuliste button{
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 15px;font-size:14px;color:var(--ink);text-align:left;
+}
+.menuliste button:hover{border-color:var(--focus)}
+/* ---------- Anmeldung ---------- */
+.login{
+  position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:
+    radial-gradient(1100px 620px at 12% -8%, rgba(127,212,255,.22), transparent 62%),
+    radial-gradient(900px 560px at 88% 4%, rgba(167,123,243,.18), transparent 60%),
+    var(--bg);
+}
+.login.weg{display:none}
+.loginbox{
+  width:min(380px,100%);border-radius:26px;padding:28px 28px 26px;
+  background:linear-gradient(180deg,rgba(28,34,45,.9),rgba(16,21,29,.93));
+  backdrop-filter:blur(34px) saturate(1.7);-webkit-backdrop-filter:blur(34px) saturate(1.7);
+  border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14);
+}
+.loginbox h1{font-family:"Barlow Condensed",sans-serif;font-size:30px;font-weight:700;margin:0;letter-spacing:.015em}
+.loginbox .sub{color:var(--ink-faint);font-size:12.5px;margin:4px 0 22px}
+.loginbox label{display:block;color:var(--ink-faint);font-size:11.5px;margin:0 0 6px}
+.loginbox input{
+  width:100%;background:rgba(0,0,0,.3);border:1px solid var(--line-soft);border-radius:13px;
+  padding:12px 15px;color:var(--ink);font-size:16px;margin-bottom:15px;
+}
+.loginbox input:focus{outline:2px solid var(--focus);outline-offset:-1px;border-color:var(--focus)}
+.loginbox .btn{width:100%;padding:13px 0;font-size:14px;margin-top:5px}
+.lgmsg{min-height:17px;margin:0 0 4px;font-size:11.5px;line-height:1.5;color:#FFB0B0}
+.lgmsg.ok{color:#8FDCA4}
+
+.sync.ok{color:#8FDCA4}
+.sync.warn{color:#FFC978}
+
+/* ---------- Kundenansicht ---------- */
+.kundenwelt{padding:18px;max-width:860px;margin:0 auto}
+.kundenwelt h2{font-family:"Barlow Condensed",sans-serif;font-size:23px;font-weight:600;margin:0 0 3px;letter-spacing:.02em}
+.kundenwelt .sub{color:var(--ink-faint);font-size:12.5px;margin-bottom:18px}
+.kkarte{
+  background:var(--panel);border:1px solid var(--line-soft);border-radius:20px;padding:16px 18px;margin-bottom:11px;
+  backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);box-shadow:var(--kante-oben);
+  border-left:4px solid var(--ink-faint);
+}
+.kkarte.geplant{border-left-color:#6FD48A}
+.kkarte.offen{border-left-color:#FFC978}
+.kkarte .kopf{display:flex;justify-content:space-between;gap:14px;align-items:baseline;flex-wrap:wrap}
+.kkarte b{font-size:15px}
+.kkarte .adr{color:var(--ink-dim);font-size:12.5px;margin-top:3px}
+.kkarte .meta{color:var(--ink-faint);font-size:11.5px;margin-top:3px}
+.kstatus{border-radius:var(--pille);padding:4px 12px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.kstatus.wartet{background:rgba(255,201,120,.14);color:#FFC978;border:1px solid rgba(255,201,120,.3)}
+.kstatus.fest{background:rgba(111,212,138,.14);color:#8FDCA4;border:1px solid rgba(111,212,138,.3)}
+.ktermin{
+  margin-top:13px;padding:12px 14px;border-radius:15px;background:var(--panel-2);border:1px solid var(--line-soft);
+}
+.ktermin .wann{font-size:13.5px;font-weight:600}
+.ktermin .wer{color:var(--ink-dim);font-size:12px;margin-top:3px}
+.kneu{
+  width:100%;background:var(--focus);color:#07121A;border:0;border-radius:var(--pille);
+  padding:15px;font-size:14px;font-weight:650;margin-bottom:18px;box-shadow:0 7px 22px rgba(127,212,255,.3);
+}
+.keinger{
+  background:rgba(255,201,120,.08);border:1px solid rgba(255,201,120,.26);
+  border-radius:15px;padding:10px 13px;margin-bottom:9px;
+}
+.keinger b{font-size:12.5px;display:block}
+.keinger small{display:block;color:var(--ink-faint);font-size:11px;line-height:1.4;margin-top:2px}
+.keinger .wer{color:#FFC978;margin-top:3px}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){.slot.empty:hover{transition:background .1s}}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <form class="loginbox" id="loginForm">
+    <h1>Einsatzplaner</h1>
+    <p class="sub" id="loginSub">Bitte anmelden</p>
+    <label for="lgUser">Benutzername</label>
+    <input type="text" id="lgUser" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+    <label for="lgPass">Passwort</label>
+    <input type="password" id="lgPass" autocomplete="current-password" required>
+    <p class="lgmsg" id="lgMsg"></p>
+    <button class="btn primary" type="submit" id="lgGo">Anmelden</button>
+  </form>
+</div>
+
+<header>
+  <div class="brand"><b>Einsatzplaner</b><span id="companyName">Elektro Meisterbetrieb</span></div>
+
+  <div class="views" role="group" aria-label="Ansicht">
+    <button data-view="now">Jetzt</button>
+    <button data-view="week">Woche</button>
+    <button data-view="month">Monat</button>
+    <button data-view="map">Karte</button>
+  </div>
+
+  <div class="navdate">
+    <button class="ghost" id="prev" aria-label="Zurück">◀</button>
+    <div class="label" id="periodLabel"></div>
+    <button class="ghost" id="next" aria-label="Vor">▶</button>
+    <button class="ghost heute" id="today" title="Zum heutigen Tag springen">Heute</button>
+  </div>
+
+  <div class="spacer"></div>
+  <span id="syncState" class="sync">Verbinden …</span>
+  <div class="searchbox">
+    <input type="search" id="qSearch" placeholder="Objekt oder Straße suchen …" autocomplete="off">
+  </div>
+  <button class="ghost" id="zoomOut" title="Spalten schmaler">–</button>
+  <button class="ghost" id="zoomIn" title="Spalten breiter">+</button>
+  <button class="ghost nurPhone" id="btnMenu" aria-label="Menü">☰</button>
+  <button class="ghost" id="btnKonto">Konto</button>
+  <button class="ghost" id="btnKunden">Kunden</button>
+  <button class="ghost" id="btnTeams">Teams</button>
+  <button class="ghost" id="btnSettings">Einstellungen</button>
+  <button class="ghost" id="btnData">Sichern</button>
+</header>
+
+<div id="kontext" class="kontext" hidden></div>
+
+<main>
+  <div id="stage"></div>
+  <aside>
+    <h2>Auftragspool <span class="count" id="poolCount"></span></h2>
+    <div class="pool" id="pool"></div>
+    <div class="aside-foot">
+      <button class="primary" id="btnNewJob">Auftrag anlegen</button>
+      <button id="btnScan" title="Ausgefülltes Auftragsformular abfotografiert? Hier hochladen.">Scannen</button>
+      <button id="btnAllJobs">Alle</button>
+    </div>
+  </aside>
+</main>
+
+<nav class="tabbar" aria-label="Ansicht">
+  <button data-pv="now"><b>◉</b>Jetzt</button>
+  <button data-pv="day"><b>▦</b>Tag</button>
+  <button data-pv="jobs"><b>☰</b>Aufträge</button>
+  <button data-pv="search"><b>⌕</b>Suche</button>
+  <button data-pv="map"><b>◈</b>Karte</button>
+</nav>
+
+<dialog id="dlgMenu">
+  <h3>Menü</h3>
+  <div class="dlg-body">
+    <div class="menuliste">
+      <button type="button" data-m="kunden">Kunden</button>
+      <button type="button" data-m="teams">Teams</button>
+      <button type="button" data-m="scan">Auftrag übernehmen</button>
+      <button type="button" data-m="konto">Konto</button>
+      <button type="button" data-m="einst">Einstellungen</button>
+      <button type="button" data-m="sichern">Sichern</button>
+      <button type="button" data-m="woche">Wochenansicht</button>
+      <button type="button" data-m="monat">Monatsansicht</button>
+    </div>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close>Schließen</button></div>
+</dialog>
+
+<!-- Einsatz zuweisen -->
+<dialog id="dlgAssign">
+  <h3 id="assignTitle">Einsatz eintragen</h3>
+  <div class="dlg-body">
+    <p class="fixnote" id="assignFix" hidden></p>
+    <div id="assignKunde" class="kdbox" hidden></div>
+    <div class="field" id="assignBilledRow" hidden>
+      <label><input type="checkbox" id="asBilled" style="width:auto;margin-right:8px">Abgerechnet – im Kalender grau statt farbig</label>
+    </div>
+    <div class="field">
+      <label for="asTeam">Team</label>
+      <select id="asTeam"></select>
+    </div>
+    <div class="field">
+      <label for="asJobName">Auftrag / Objekt</label>
+      <input type="text" id="asJobName" list="jobNames" autocomplete="off" placeholder="z.B. Zählerschrank tauschen">
+      <datalist id="jobNames"></datalist>
+    </div>
+    <div class="field">
+      <label for="asJobAdr">Adresse</label>
+      <input type="text" id="asJobAdr" autocomplete="off" placeholder="Straße Hausnummer, PLZ Ort">
+      <p class="hint" style="margin-top:6px" id="asJobHint">Einfach tippen. Bekannte Aufträge werden beim Schreiben vorgeschlagen, neue werden automatisch in den Auftragspool übernommen.</p>
+    </div>
+
+    <div class="field">
+      <label>Fotos und Dateien zu diesem Objekt <span id="asFileCount" class="cnt"></span></label>
+      <div class="drop" id="asDrop">
+        <div class="files" id="asFiles"></div>
+        <div class="dropnote" id="asDropNote">Dateien hierher ziehen, oder <button type="button" class="linky" id="asPick">auswählen</button></div>
+        <input type="file" id="asFileInput" multiple accept="image/*,application/pdf,.heic,.doc,.docx,.xls,.xlsx,.txt" hidden>
+        <input type="file" id="asCamInput" accept="image/*" capture="environment" hidden>
+      </div>
+    </div>
+    <div class="field">
+      <label for="asFrom">Von</label>
+      <div class="pair">
+        <input type="date" id="asFrom">
+        <select id="asFromSlot">
+          <option value="AM">ab morgens</option>
+          <option value="PM">ab mittags</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="asTo">Bis</label>
+      <div class="pair">
+        <input type="date" id="asTo">
+        <select id="asToSlot">
+          <option value="PM">bis Feierabend</option>
+          <option value="AM">nur bis mittags</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Schnellwahl für einen einzelnen Tag</label>
+      <div class="quick">
+        <button type="button" data-q="BOTH">Ganzer Tag</button>
+        <button type="button" data-q="AM">Erste Hälfte</button>
+        <button type="button" data-q="PM">Zweite Hälfte</button>
+      </div>
+    </div>
+    <p class="hint" id="assignHint"></p>
+
+  </div>
+  <div class="dlg-foot">
+    <button class="btn warn" id="asDelete" style="margin-right:auto">Aus Kalender nehmen</button>
+    <button class="btn warn" id="asUnlock" hidden>Datum trotzdem ändern</button>
+    <button class="btn" id="asMap">Auf Karte zeigen</button>
+    <button class="btn" data-close>Abbrechen</button>
+    <button class="btn primary" id="asSave">Eintragen</button>
+  </div>
+</dialog>
+
+<!-- Auftrag -->
+<dialog id="dlgJob">
+  <h3 id="jobTitle">Auftrag anlegen</h3>
+  <div class="dlg-body">
+    <div class="field"><label for="jbName">Bezeichnung</label><input type="text" id="jbName" placeholder="z.B. Neubau Zählerschrank"></div>
+    <div class="field"><label for="jbAdr">Adresse</label><input type="text" id="jbAdr" placeholder="Straße Hausnummer, PLZ Ort"></div>
+    <div class="two">
+      <div class="field"><label for="jbLat">Breitengrad</label><input type="text" id="jbLat" placeholder="51.4700"></div>
+      <div class="field"><label for="jbLng">Längengrad</label><input type="text" id="jbLng" placeholder="6.8520"></div>
+    </div>
+    <p class="hint" id="geoHint">Koordinaten werden für die Karte gebraucht. „Adresse suchen“ holt sie automatisch (braucht Internet).</p>
+    <div class="field" style="margin-top:12px">
+      <label for="jbCustomer">Kunde</label>
+      <div class="pair">
+        <select id="jbCustomer"></select>
+        <button type="button" class="btn" id="jbNewCustomer" style="flex:0 0 auto">Neu anlegen</button>
+      </div>
+      <p class="hint" id="jbCustomerInfo" style="margin-top:6px"></p>
+    </div>
+    <div class="field"><label for="jbContact">Ansprechpartner vor Ort / Telefon</label><input type="text" id="jbContact" placeholder="z.B. Hausmeister, 0170 …"></div>
+    <div class="two">
+      <div class="field"><label for="jbWish">Gewünschter Beginn</label><input type="date" id="jbWish"></div>
+      <div class="field"><label for="jbValue">Auftragswert</label><input type="text" id="jbValue" placeholder="z.B. 2.400 €"></div>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="jbBilled" style="width:auto;margin-right:8px">Abgerechnet – im Kalender grau statt farbig</label>
+    </div>
+    <div class="field"><label for="jbNote">Notiz</label><textarea id="jbNote" rows="3"></textarea></div>
+
+    <div class="field" style="margin-bottom:0">
+      <label>Fotos und Dateien <span id="jbFileCount" class="cnt"></span></label>
+      <div class="drop" id="jbDrop">
+        <div class="files" id="jbFiles"></div>
+        <div class="dropnote">
+          <button type="button" class="linky nurPhone" id="jbCam">Foto aufnehmen</button>
+          <span class="nurPhone"> · </span>Dateien hierher ziehen, oder <button type="button" class="linky" id="jbPick">auswählen</button>
+        </div>
+        <input type="file" id="jbFileInput" multiple accept="image/*,application/pdf,.heic,.doc,.docx,.xls,.xlsx,.txt" hidden>
+        <input type="file" id="jbCamInput" accept="image/*" capture="environment" hidden>
+      </div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn danger" id="jbDelete" style="margin-right:auto">Auftrag löschen</button>
+    <button class="btn" id="jbGeo">Adresse suchen</button>
+    <button class="btn" data-close>Abbrechen</button>
+    <button class="btn primary" id="jbSave">Speichern</button>
+  </div>
+</dialog>
+
+<!-- Bild ansehen -->
+<dialog id="dlgView">
+  <h3 id="vwTitle">Foto</h3>
+  <div class="dlg-body" style="padding:0;background:#0A0E13;display:flex;align-items:center;justify-content:center;min-height:300px">
+    <img id="vwImg" alt="">
+  </div>
+  <div class="dlg-foot">
+    <span id="vwMeta" style="margin-right:auto;color:var(--ink-faint);font-size:11.5px;align-self:center"></span>
+    <button class="btn" id="vwDown">Herunterladen</button>
+    <button class="btn" data-close>Schließen</button>
+  </div>
+</dialog>
+
+<!-- Auftrag scannen -->
+<dialog id="dlgScan">
+  <h3>Auftrag aus Formular übernehmen</h3>
+  <div class="dlg-body">
+    <div class="scan">
+      <div>
+        <div class="tabs" role="group" aria-label="Quelle">
+          <button type="button" data-q="foto" aria-pressed="true">Foto vom Formular</button>
+          <button type="button" data-q="text" aria-pressed="false">Text einfügen</button>
+        </div>
+
+        <div class="scan-text" id="scanTextBox" hidden>
+          <textarea id="scanText" placeholder="Kunde: Muster Bau GmbH&#10;Ansprechpartner: Herr Schneider, 0170 9876543&#10;Adresse: Industriering 20, 46240 Bottrop&#10;Datum: 09.11.2026&#10;Betrag: 2.400 €&#10;Auftrag: Unterverteilung erneuern, 12 Stromkreise"></textarea>
+          <div class="scan-text-foot">
+            <button type="button" class="btn" id="scanVorlage">Vorlage kopieren</button>
+            <span class="hint" id="scanTextOut" style="margin:0"></span>
+          </div>
+        </div>
+
+      <div class="scan-img" id="scanImgBox">
+        <div class="scan-drop" id="scanDrop">
+          <b>Foto des ausgefüllten Formulars</b>
+          <span><button type="button" class="linky" id="scanCam">Formular abfotografieren</button> · <button type="button" class="linky" id="scanPick">Datei wählen</button></span>
+          <small>JPG, PNG oder HEIC vom Handy. Auch ein Screenshot aus WhatsApp.</small>
+        </div>
+        <input type="file" id="scanInput" accept="image/*,.heic,application/pdf" hidden>
+      </div>
+      </div>
+
+      <div class="scan-form">
+        <div class="setup" id="scanSetup" hidden>
+          <b>Automatisches Ausfüllen ist noch nicht eingeschaltet</b>
+          <p>Einmal einrichten, danach liest das Programm das Formular selbst aus und du prüfst nur noch.</p>
+          <button type="button" class="btn primary" id="scanSetupGo">Jetzt einrichten</button>
+        </div>
+        <button class="btn primary" id="scanRead" style="width:100%;margin-bottom:13px" disabled>Felder automatisch auslesen</button>
+        <p class="hint" id="scanStatus" style="margin:-7px 0 13px"></p>
+
+        <div class="field">
+          <label for="scKunde">Auftraggeber</label>
+          <div class="pair">
+            <select id="scKunde"></select>
+            <button type="button" class="btn" id="scKundeNeu" style="flex:0 0 auto">Neu</button>
+          </div>
+          <input type="text" id="scKundeText" placeholder="oder Firmenname aus dem Formular" style="margin-top:7px">
+        </div>
+        <div class="field"><label for="scContact">Ansprechpartner / Telefon</label><input type="text" id="scContact"></div>
+        <div class="field"><label for="scAdr">Objektadresse</label><input type="text" id="scAdr" placeholder="Straße Hausnummer, PLZ Ort"></div>
+        <div class="two">
+          <div class="field"><label for="scDate">Gewünschter Beginn</label><input type="date" id="scDate"></div>
+          <div class="field"><label for="scValue">Auftragswert</label><input type="text" id="scValue" placeholder="z.B. 2.400 €"></div>
+        </div>
+        <div class="field"><label for="scWork">Auszuführende Arbeiten</label><textarea id="scWork" rows="3"></textarea></div>
+        <div class="field" style="margin-bottom:0">
+          <label for="scName">Bezeichnung im Kalender</label>
+          <input type="text" id="scName" placeholder="wird aus den Arbeiten vorgeschlagen">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <span class="hint" id="scanHint" style="margin-right:auto;align-self:center"></span>
+    <button class="btn" data-close>Abbrechen</button>
+    <button class="btn primary" id="scanSave">Auftrag anlegen</button>
+  </div>
+</dialog>
+
+<!-- Konto -->
+<dialog id="dlgKonto">
+  <h3>Konto</h3>
+  <div class="dlg-body">
+    <p class="hint" style="margin-top:0" id="koWer"></p>
+
+    <h4 style="margin:18px 0 10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600">Passwort ändern</h4>
+    <div class="field"><label for="koNeu">Neues Passwort</label><input type="password" id="koNeu" autocomplete="new-password" placeholder="mindestens 8 Zeichen"></div>
+    <div class="field"><label for="koNeu2">Noch einmal</label><input type="password" id="koNeu2" autocomplete="new-password"></div>
+    <div class="pruefzeile"><button type="button" class="btn" id="koSave">Passwort ändern</button><span class="hint" id="koMsg" style="margin:0"></span></div>
+
+    <div id="koAdmin" hidden>
+      <h4 style="margin:22px 0 10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600">Zugänge</h4>
+      <p class="hint" style="margin:0 0 11px">Neue Zugänge legst du in der Supabase-Oberfläche an, unter <b>Authentication → Users</b>. Danach hier die Rolle zuweisen.</p>
+      <div class="kdlist" id="koListe"></div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn danger" id="koLogout" style="margin-right:auto">Abmelden</button>
+    <button class="btn" data-close>Schließen</button>
+  </div>
+</dialog>
+
+<!-- Auftrag einreichen (Kundenansicht) -->
+<dialog id="dlgEinreichen">
+  <h3>Neuen Auftrag einreichen</h3>
+  <div class="dlg-body">
+    <div class="field"><label for="erName">Was soll gemacht werden</label><input type="text" id="erName" placeholder="z.B. Zählerschrank tauschen"></div>
+    <div class="field"><label for="erAdr">Objektadresse</label><input type="text" id="erAdr" placeholder="Straße Hausnummer, PLZ Ort"></div>
+    <div class="two">
+      <div class="field"><label for="erWunsch">Gewünschter Beginn</label><input type="date" id="erWunsch"></div>
+      <div class="field"><label for="erTel">Ansprechpartner vor Ort</label><input type="text" id="erTel" placeholder="Name, Telefon"></div>
+    </div>
+    <div class="field" style="margin-bottom:0"><label for="erNote">Weitere Angaben</label><textarea id="erNote" rows="4"></textarea></div>
+    <p class="hint" id="erMsg"></p>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" data-close>Abbrechen</button>
+    <button class="btn primary" id="erSave">Auftrag einreichen</button>
+  </div>
+</dialog>
+
+<!-- Kundenliste -->
+<dialog id="dlgCustomers">
+  <h3>Kunden</h3>
+  <div class="dlg-body">
+    <p class="hint" style="margin-top:0">Firmen, für die ihr arbeitet. Einmal angelegt, lassen sie sich bei jedem Auftrag auswählen.</p>
+    <div class="kdlist" id="kdList"></div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" data-close>Schließen</button>
+    <button class="btn primary" id="kdAdd">Neuen Kunden anlegen</button>
+  </div>
+</dialog>
+
+<!-- Ein Kunde -->
+<dialog id="dlgCustomer">
+  <h3 id="kdTitle">Kunde anlegen</h3>
+  <div class="dlg-body">
+    <div class="field"><label for="kdCompany">Firmenname</label><input type="text" id="kdCompany" placeholder="z.B. Muster Bau GmbH"></div>
+    <div class="field"><label for="kdContact">Ansprechpartner</label><input type="text" id="kdContact" placeholder="Vor- und Nachname"></div>
+    <div class="field"><label for="kdAddress">Adresse</label><input type="text" id="kdAddress" placeholder="Straße Hausnummer, PLZ Ort"></div>
+    <div class="two">
+      <div class="field"><label for="kdPhone">Telefon</label><input type="tel" id="kdPhone" placeholder="0208 1234567"></div>
+      <div class="field"><label for="kdMobile">Mobil / WhatsApp</label><input type="tel" id="kdMobile" placeholder="0170 1234567"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="kdMail">E-Mail</label><input type="email" id="kdMail"></div>
+      <div class="field"><label for="kdTax">Steuernummer / USt-IdNr.</label><input type="text" id="kdTax"></div>
+    </div>
+    <div class="field" style="margin-bottom:0"><label for="kdNote">Notiz</label><textarea id="kdNote" rows="3"></textarea></div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn danger" id="kdDelete" style="margin-right:auto">Kunde löschen</button>
+    <button class="btn" data-close>Abbrechen</button>
+    <button class="btn primary" id="kdSave">Speichern</button>
+  </div>
+</dialog>
+
+<!-- Teams -->
+<dialog id="dlgTeams">
+  <h3>Teams und Besetzung</h3>
+  <div class="dlg-body">
+    <p class="hint" style="margin:0 0 13px">Ein Team kann aus einer oder mehreren Personen bestehen. Namen mit Komma trennen.</p>
+    <div class="rowlist" id="teamList"></div>
+    <button class="btn" id="btnAddTeam" style="margin-top:13px">Team hinzufügen</button>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" data-close>Schließen</button>
+    <button class="btn primary" id="teamsSave">Speichern</button>
+  </div>
+</dialog>
+
+<!-- Einstellungen -->
+<dialog id="dlgSettings">
+  <h3>Einstellungen</h3>
+  <div class="dlg-body">
+    <div class="field"><label for="stCompany">Betrieb</label><input type="text" id="stCompany"></div>
+    <div class="two">
+      <div class="field"><label for="stAmS">Vormittag von</label><input type="time" id="stAmS"></div>
+      <div class="field"><label for="stAmE">Vormittag bis</label><input type="time" id="stAmE"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="stPmS">Nachmittag von</label><input type="time" id="stPmS"></div>
+      <div class="field"><label for="stPmE">Nachmittag bis</label><input type="time" id="stPmE"></div>
+    </div>
+    <p class="hint">Diese Zeiten bestimmen, was in der Jetzt-Ansicht als „seit“ und „noch“ gerechnet wird.</p>
+    <hr style="border:0;border-top:1px solid var(--line);margin:20px 0 16px">
+    <h4 style="margin:0 0 11px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:.02em">Formulare automatisch auslesen</h4>
+    <div class="anleitung">
+      <ol>
+        <li><a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> öffnen und anmelden.</li>
+        <li>Unter <b>Billing</b> einmalig Guthaben aufladen – 5 € reichen für mehrere tausend Formulare.</li>
+        <li>Unter <b>API Keys</b> auf <b>Create Key</b>, den Schlüssel kopieren.</li>
+        <li>Hier unten einfügen und speichern. Fertig.</li>
+      </ol>
+    </div>
+    <div class="field">
+      <label for="stApiKey">Schlüssel</label>
+      <input type="password" id="stApiKey" placeholder="sk-ant-…" autocomplete="off">
+      <div class="pruefzeile">
+        <button type="button" class="btn" id="stTest">Schlüssel prüfen</button>
+        <span class="hint" id="stTestOut" style="margin:0"></span>
+      </div>
+      <p class="hint" style="margin-top:9px">Ohne Schlüssel funktioniert das Scannen weiterhin – die Felder werden dann von Hand eingetippt, während das Foto danebensteht.</p>
+      <p class="hint" style="margin-top:7px;color:var(--ink-faint)">Der Schlüssel liegt nur in diesem Browser, nicht in der Programmdatei. Wenn du die Datei weitergibst, geht er nicht mit. Pro Formular fallen Bruchteile eines Cents an.</p>
+    </div>
+    <div class="field">
+      <label for="stModel">Verwendetes Modell</label>
+      <input type="text" id="stModel" placeholder="claude-sonnet-5-5">
+      <p class="hint" style="margin-top:7px">Nur ändern, wenn es einen Grund gibt. „claude-sonnet-5-5“ liest Handschrift am zuverlässigsten.</p>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" data-close>Abbrechen</button>
+    <button class="btn primary" id="stSave">Speichern</button>
+  </div>
+</dialog>
+
+<!-- Daten -->
+<dialog id="dlgData">
+  <h3>Sichern und Laden</h3>
+  <div class="dlg-body">
+    <p class="hint" style="margin-top:0">Alle Daten liegen nur auf diesem Mac im Browser. Für Backups oder den Wechsel auf einen anderen Rechner die Planung als Datei exportieren.</p>
+    <div style="display:flex;gap:9px;margin:16px 0">
+      <button class="btn primary" id="dtExport">Planung exportieren</button>
+      <button class="btn" id="dtZip">Fotoordner herunterladen</button>
+      <button class="btn" id="dtExportAll">Mit Fotos sichern</button>
+      <button class="btn" id="dtImportBtn">Sicherung laden</button>
+      <input type="file" id="dtImport" accept="application/json" hidden>
+    </div>
+    <p class="hint" id="storeState"></p>
+    <button class="btn danger" id="dtReset" style="margin-top:16px">Alles zurücksetzen</button>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close>Schließen</button></div>
+</dialog>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+"use strict";
+
+/* =========================================================
+   Daten
+   ========================================================= */
+const PALETTE = ["#F2B01E","#2FA8E0","#E04F5F","#59C26A","#A77BF3","#FF8A3D","#35D0C3","#E86BB0","#9FD356","#6E8BFF"];
+const STORE_KEY = "einsatzplaner.v1";
+
+/* =========================================================
+   Dateispeicher für Fotos und Dokumente
+   ========================================================= */
+const Files = (() => {
+  return {
+    async add(jobId,file){
+      if(!sb) throw new Error("Keine Verbindung zum Server.");
+      const nr=naechsteNummer();
+      const storedName=dateinameBauen(nr,jobId,file);
+      const { error } = await sb.storage.from(BUCKET).upload(storedName,file,{upsert:false});
+      if(error) throw error;
+      const rec={id:uid()+uid(),jobId,nr,name:file.name||"Datei",storedName,
+                 type:file.type||"",size:file.size||0,added:new Date().toISOString()};
+      if(!state.fileRegistry) state.fileRegistry=[];
+      state.fileRegistry.push(rec);
+      save();
+      return rec;
+    },
+    async forJob(jobId){
+      return (state.fileRegistry||[]).filter(f=>f.jobId===jobId)
+        .sort((a,b)=>String(a.added).localeCompare(String(b.added)));
+    },
+    async all(){ return state.fileRegistry||[]; },
+    async put(rec){
+      if(!state.fileRegistry) state.fileRegistry=[];
+      const i=state.fileRegistry.findIndex(f=>f.id===rec.id);
+      if(i>=0) state.fileRegistry[i]=rec; else state.fileRegistry.push(rec);
+      save();
+    },
+    async remove(id){
+      const f=(state.fileRegistry||[]).find(x=>x.id===id);
+      if(f && sb){ try{ await sb.storage.from(BUCKET).remove([f.storedName]); }catch(e){} }
+      state.fileRegistry=(state.fileRegistry||[]).filter(x=>x.id!==id);
+      vergessenURL(id);
+      save();
+    },
+    async removeJob(jobId){
+      for(const f of await this.forJob(jobId)) await this.remove(f.id);
+    },
+    async counts(){
+      const m={}; (state.fileRegistry||[]).forEach(f=>m[f.jobId]=(m[f.jobId]||0)+1); return m;
+    }
+  };
+})();
+
+/* Zeitlich begrenzte Links für die nicht-öffentlichen Dateien */
+const urlCache=new Map();
+function vergessenURL(id){ urlCache.delete(id); }
+async function dateiURL(f){
+  const t=urlCache.get(f.id);
+  if(t && t.bis>Date.now()+60000) return t.url;
+  if(!sb) return null;
+  const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(f.storedName, 3600);
+  if(error||!data) return null;
+  urlCache.set(f.id,{url:data.signedUrl,bis:Date.now()+3600*1000});
+  return data.signedUrl;
+}
+
+/* Jede abgelegte Datei bekommt eine eigene laufende Nummer,
+   damit sich Namen vom Handy (IMG_0001.jpg) nie überschreiben. */
+function naechsteNummer(){
+  const n=(state.settings.fileCounter||0)+1;
+  state.settings.fileCounter=n;
+  save();
+  return n;
+}
+function slug(txt){
+  return String(txt||"").toLowerCase()
+    .replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,44) || "objekt";
+}
+function endungVon(file){
+  const n=String(file.name||"");
+  const m=n.match(/\.([a-z0-9]{1,5})$/i);
+  if(m) return m[1].toLowerCase();
+  const t=(file.type||"").split("/")[1]||"";
+  return (t==="jpeg"?"jpg":t) || "dat";
+}
+function dateinameBauen(nr,jobId,file){
+  const job=jobById(jobId);
+  const d=new Date().toISOString().slice(0,10);
+  return `${String(nr).padStart(4,"0")}_${d}_${slug(job?job.name:"")}.${endungVon(file)}`;
+}
+const anzeigeName = f => f.storedName || f.name;
+
+let fileCounts={};
+/* Ein Objekt mit Fotos gilt als belegt: der Einsatz ist dokumentiert und wird festgehalten. */
+const istFixiert = jobId => (fileCounts[jobId]||0) > 0;
+function fixHinweis(jobId){
+  const n=fileCounts[jobId]||0;
+  return `Dieser Einsatz ist durch ${n} Foto${n===1?"":"s"} bzw. Datei${n===1?"":"en"} belegt und deshalb festgehalten. `+
+         `Datum und Team lassen sich nicht versehentlich verschieben. Muss das Datum doch korrigiert werden, `+
+         `unten auf „Datum trotzdem ändern“ gehen.`;
+}
+async function refreshCounts(){ fileCounts=await Files.counts(); }
+
+/* Dateien aus früheren Fassungen bekommen nachträglich Nummern */
+async function nummernNachtragen(){
+  try{
+    const alle=await Files.all();
+    const ohne=alle.filter(f=>!f.storedName).sort((a,b)=>String(a.added).localeCompare(String(b.added)));
+    if(!ohne.length) return;
+    for(const f of ohne){
+      const nr=naechsteNummer();
+      const job=jobById(f.jobId);
+      const d=String(f.added||"").slice(0,10)||todayISO();
+      f.nr=nr;
+      f.storedName=`${String(nr).padStart(4,"0")}_${d}_${slug(job?job.name:"")}.${endungVon(f)}`;
+      await Files.put(f);
+    }
+    save();
+  }catch(e){}
+}
+const istBild = t => /^image\//.test(t||"");
+function groesse(b){
+  if(b>=1048576) return (b/1048576).toFixed(1).replace(".",",")+" MB";
+  if(b>=1024) return Math.round(b/1024)+" KB";
+  return b+" B";
+}
+const uid = () => Math.random().toString(36).slice(2,10);
+
+function demoState(){
+  const t = (name,color,members)=>({id:uid(),name,color,members});
+  const j = (name,address,lat,lng,contact="")=>({id:uid(),name,address,lat,lng,contact,note:""});
+  const teams = [
+    t("Team 1","#F2B01E",["Anton","Igor"]),
+    t("Team 2","#2FA8E0",["Murat","Kevin"]),
+    t("Team 3","#E04F5F",["Sergej","Daniel"]),
+    t("Team 4","#59C26A",["Tobias","Pawel"]),
+    t("Team 5","#A77BF3",["Ahmet"]),
+    t("Team 6","#FF8A3D",["Viktor"])
+  ];
+  const jobs = [
+    j("Zählerschrank + Unterverteilung","Julius-Rietz-Straße 6, 40231 Düsseldorf",51.2170,6.8010,"Andreas"),
+    j("Elektroinstallation Büroetage","Neuburgstraße 4, 40223 Düsseldorf",51.2280,6.7800,"Raum Pro Team"),
+    j("Erneuerung Steigleitung","Moltkestraße 57, 46045 Oberhausen",51.4700,6.8520),
+    j("DGUV V3 Prüfung Mehrfamilienhaus","Friedrich-Karl-Straße 91, 46045 Oberhausen",51.4950,6.8600),
+    j("Baustelle Montabaur","Bahnhofstraße, 56410 Montabaur",50.4370,7.8270,"Juri Feovanov"),
+    j("Kabelverlegung Flur + Bad","Oberhausen",51.4690,6.8550,"Raum Pro 369 GmbH")
+  ];
+  const A=[], d=new Date(); d.setHours(0,0,0,0);
+  const mon = new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7));
+  const add=(ti,ji,off,slots)=>{const dt=new Date(mon);dt.setDate(mon.getDate()+off);
+    slots.forEach(s=>A.push({id:uid(),teamId:teams[ti].id,jobId:jobs[ji].id,date:iso(dt),slot:s}));};
+  [0,1,2,3].forEach(o=>add(0,0,o,["AM","PM"]));
+  [0,1,2].forEach(o=>add(1,1,o,["AM","PM"]));
+  add(2,2,0,["AM"]); add(2,3,0,["PM"]); [1,2].forEach(o=>add(2,2,o,["AM","PM"]));
+  [0,1,2,3,4].forEach(o=>add(3,4,o,["AM","PM"]));
+  add(4,3,0,["AM","PM"]); add(4,5,1,["AM"]);
+  return {teams,jobs,assignments:A,settings:{company:"Elektro Meisterbetrieb",amStart:"07:00",amEnd:"12:00",pmStart:"12:30",pmEnd:"16:30",model:"claude-sonnet-5-5"}};
+}
+
+/* =========================================================
+   Serververbindung, Anmeldung, Speichern
+   ========================================================= */
+const SUPABASE_URL = "https://ehoygnjlyqwhpsevtgtf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_AItKYP4npF-bG6O8FZyI3Q_F4rZ0iAD";
+const BUCKET = "einsatz-files";
+const MAIL_DOMAIN = "einsatzplaner.local";     // aus „admin“ wird admin@einsatzplaner.local
+
+let sb = null;
+let state = demoState();
+let version = 0;                 // Stand, den dieses Fenster zuletzt gesehen hat
+let rolle = null;                // "admin" | "buero" | "monteur" | "kunde"
+let meinKunde = null;            // bei Rolle "kunde": zugehörige Kunden-ID
+let meinName = "";
+let storageOK = true;
+let speicherLaeuft = false, nochmalSpeichern = false;
+
+const istKunde = () => rolle==="kunde";
+const darfPlanen = () => rolle==="admin" || rolle==="buero";
+
+function setSync(txt,art){
+  const el=document.getElementById("syncState");
+  if(!el) return;
+  el.textContent=txt;
+  el.className="sync"+(art?" "+art:"");
+}
+const zeitJetzt = () => new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+
+function zustandPruefen(d){
+  if(!d || !Array.isArray(d.teams)) return null;
+  if(!d.settings) d.settings=demoState().settings;
+  if(!Array.isArray(d.jobs)) d.jobs=[];
+  if(!Array.isArray(d.assignments)) d.assignments=[];
+  if(!Array.isArray(d.customers)) d.customers=[];
+  if(!Array.isArray(d.fileRegistry)) d.fileRegistry=[];
+  if(!d.settings.model) d.settings.model="claude-sonnet-5-5";
+  return d;
+}
+
+/* ---- Speichern: schreibt nur, wenn niemand anders dazwischengekommen ist ---- */
+let saveTimer=null;
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){ storageOK=false; }
+  if(istKunde()) return;                       // Kunden schreiben nie in die Planung
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(hochladen,350);
+}
+
+async function hochladen(){
+  if(!sb || istKunde()) return;
+  if(speicherLaeuft){ nochmalSpeichern=true; return; }
+  speicherLaeuft=true;
+  try{
+    setSync("Speichern …");
+    const { data, error } = await sb
+      .from("schedule_data")
+      .update({ content: JSON.stringify(state), version: version+1,
+                updated_at: new Date().toISOString(), updated_by: meinName })
+      .eq("id",1).eq("version",version)          // nur wenn der Stand noch passt
+      .select("version");
+    if(error) throw error;
+    if(!data || !data.length){                   // jemand anders war schneller
+      await konfliktLoesen();
+    }else{
+      version=data[0].version;
+      setSync("Gespeichert "+zeitJetzt(),"ok");
+      termineZurueckmelden();
+    }
+  }catch(e){
+    setSync("Speichern fehlgeschlagen","warn");
+    console.error(e);
+  }
+  speicherLaeuft=false;
+  if(nochmalSpeichern){ nochmalSpeichern=false; hochladen(); }
+}
+
+/* Jemand anders hat zwischendurch gespeichert: fremden Stand holen, eigene
+   Änderung nicht blind darüberschreiben, sondern den Benutzer entscheiden lassen. */
+async function konfliktLoesen(){
+  const meins=JSON.stringify(state);
+  const frisch=await serverStandHolen();
+  if(!frisch) { setSync("Verbindung gestört","warn"); return; }
+  const weiter=confirm(
+    "Jemand anderes hat die Planung inzwischen geändert"+
+    (frisch.updated_by?` (${frisch.updated_by})`:"")+".\n\n"+
+    "OK  = deine Änderung übernehmen und die andere überschreiben\n"+
+    "Abbrechen = fremden Stand laden, deine letzte Änderung verwerfen");
+  if(weiter){
+    state=JSON.parse(meins);
+    version=frisch.version;
+    await hochladen();
+  }else{
+    state=frisch.data; version=frisch.version;
+    await refreshCounts(); render();
+    setSync("Fremder Stand geladen "+zeitJetzt(),"ok");
+  }
+}
+
+async function serverStandHolen(){
+  try{
+    const { data, error } = await sb.from("schedule_data")
+      .select("content,version,updated_by").eq("id",1).single();
+    if(error||!data) return null;
+    const d=zustandPruefen(JSON.parse(data.content||"{}"));
+    return d ? {data:d, version:data.version||0, updated_by:data.updated_by||""} : null;
+  }catch(e){ return null; }
+}
+
+/* ---- Live: Änderungen der anderen erscheinen ohne Neuladen ---- */
+function liveVerbinden(){
+  if(!sb) return;
+  sb.channel("plan")
+    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"schedule_data"},async payload=>{
+      const neu=payload.new||{};
+      if((neu.version||0)<=version) return;        // das war der eigene Schreibvorgang
+      if(speicherLaeuft || saveTimer){ return; }   // eigene Änderung ist unterwegs
+      const d=zustandPruefen(JSON.parse(neu.content||"{}"));
+      if(!d) return;
+      state=d; version=neu.version||0;
+      await refreshCounts(); render();
+      setSync("Aktualisiert von "+(neu.updated_by||"jemand anderem")+" "+zeitJetzt(),"ok");
+    })
+    .subscribe();
+}
+
+/* =========================================================
+   Datum
+   ========================================================= */
+const DAYS=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
+const DSHORT=["Mo","Di","Mi","Do","Fr","Sa","So"];
+const MONTHS=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function parse(s){const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c);}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function mondayOf(d){const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x;}
+const todayISO = ()=>iso(new Date());
+
+let zoomWeek=null;          // null = Breite an das Fenster anpassen
+let monthVisible=12;        // sichtbare Tage in der Monatsansicht
+let pendingScrollToday=true;
+let view = (typeof window!=="undefined" && window.innerWidth<760) ? "day" : "month";
+let anchor=new Date(); anchor.setHours(0,0,0,0);
+let mapFocusJob=null, mapDay=todayISO();
+
+/* =========================================================
+   Zugriffshelfer
+   ========================================================= */
+const teamById=id=>state.teams.find(t=>t.id===id);
+function wunschText(ds){
+  if(!ds) return "";
+  const d=parse(ds);
+  return `${DSHORT[(d.getDay()+6)%7]} ${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}`;
+}
+const kundeById=id=>state.customers.find(k=>k.id===id);
+
+/* Telefonnummer für WhatsApp: nur Ziffern, deutsche Vorwahl ergänzen */
+function waNummer(raw){
+  if(!raw) return "";
+  let n=String(raw).replace(/[^\d+]/g,"");
+  if(n.startsWith("+")) n=n.slice(1);
+  else if(n.startsWith("00")) n=n.slice(2);
+  else if(n.startsWith("0")) n="49"+n.slice(1);
+  return n.length>=8 ? n : "";
+}
+const telLink = raw => raw ? "tel:"+String(raw).replace(/[^\d+]/g,"") : "";
+const jobById=id=>state.jobs.find(j=>j.id===id);
+const assignAt=(teamId,date,slot)=>state.assignments.find(a=>a.teamId===teamId&&a.date===date&&a.slot===slot);
+const assignsOn=date=>state.assignments.filter(a=>a.date===date);
+function plannedJobIds(){return new Set(state.assignments.map(a=>a.jobId));}
+function slotTimes(){const s=state.settings;return{AM:[s.amStart,s.amEnd],PM:[s.pmStart,s.pmEnd]};}
+function atTime(dateStr,hm){const d=parse(dateStr);const[h,m]=hm.split(":").map(Number);d.setHours(h,m,0,0);return d;}
+function currentSlot(now=new Date()){
+  const t=slotTimes(), d=iso(now);
+  if(now<atTime(d,t.AM[0])) return null;
+  if(now<=atTime(d,t.AM[1])) return "AM";
+  if(now<atTime(d,t.PM[0])) return "PM";
+  if(now<=atTime(d,t.PM[1])) return "PM";
+  return null;
+}
+
+/* Nachbar-Halbtag: dir -1 = davor, +1 = danach */
+function neighborSlot(dateStr,slot,dir){
+  if(dir<0) return slot==="PM" ? [dateStr,"AM"] : [iso(addDays(parse(dateStr),-1)),"PM"];
+  return slot==="AM" ? [dateStr,"PM"] : [iso(addDays(parse(dateStr),1)),"AM"];
+}
+/* Zusammenhängender Einsatzblock (gleiches Team + gleicher Auftrag) */
+function runFor(teamId,jobId,dateStr,slot){
+  const order=["AM","PM"];
+  const step=(d,s,dir)=>{
+    let i=order.indexOf(s)+dir, day=d;
+    if(i<0){i=1;day=iso(addDays(parse(d),-1));}
+    if(i>1){i=0;day=iso(addDays(parse(d),1));}
+    return [day,order[i]];
+  };
+  let first=[dateStr,slot], last=[dateStr,slot], count=1;
+  for(;;){const p=step(first[0],first[1],-1),a=assignAt(teamId,p[0],p[1]);
+    if(a&&a.jobId===jobId){first=p;count++;}else break;}
+  for(;;){const p=step(last[0],last[1],1),a=assignAt(teamId,p[0],p[1]);
+    if(a&&a.jobId===jobId){last=p;count++;}else break;}
+  return {first,last,count};
+}
+function fmtDur(ms){
+  if(ms<0) ms=0;
+  const h=Math.floor(ms/3600000), m=Math.round(ms%3600000/60000);
+  if(h===0) return m+" Min";
+  return h+" Std "+(m?m+" Min":"");
+}
+
+/* =========================================================
+   Rendern
+   ========================================================= */
+const stage=document.getElementById("stage");
+
+const isPhone = () => window.innerWidth < 760;
+
+function render(){
+  if(isPhone() && (view==="week"||view==="month")) view="day";
+  if(!isPhone() && (view==="day"||view==="jobs")) view="month";
+  document.querySelectorAll(".views button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.view===view));
+  document.querySelectorAll(".tabbar button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.pv===view));
+  document.getElementById("companyName").textContent=state.settings.company;
+  renderPeriodLabel();
+  if(istKunde()){ renderKundenWelt(); return; }
+  if(view==="search") renderSearch();
+  else if(view==="day") renderPhoneDay();
+  else if(view==="jobs") renderPhoneJobs();
+  else if(view==="now") renderNow();
+  else if(view==="week") renderWeek();
+  else if(view==="month") renderMonth();
+  else renderMap();
+  renderPool();
+}
+
+function renderPeriodLabel(){
+  const l=document.getElementById("periodLabel");
+  if(view==="week"){
+    const m=mondayOf(anchor), e=addDays(m,6);
+    const kw=((d)=>{const x=new Date(d);x.setDate(x.getDate()+4-((x.getDay()+6)%7+1));
+      const j=new Date(x.getFullYear(),0,1);
+      return Math.ceil(((x-j)/86400000+1)/7);})(m);
+    l.textContent = m.getMonth()===e.getMonth()
+      ? `KW ${kw} · ${m.getDate()}.–${e.getDate()}. ${MONTHS[e.getMonth()]} ${e.getFullYear()}`
+      : `KW ${kw} · ${m.getDate()}. ${MONTHS[m.getMonth()]} – ${e.getDate()}. ${MONTHS[e.getMonth()]} ${e.getFullYear()}`;
+  }else if(view==="month"){
+    const a=new Date(anchor.getFullYear(),anchor.getMonth(),1);
+    const b=new Date(anchor.getFullYear(),anchor.getMonth()+1,1);
+    l.textContent = a.getFullYear()===b.getFullYear()
+      ? `${MONTHS[a.getMonth()]} – ${MONTHS[b.getMonth()]} ${b.getFullYear()}`
+      : `${MONTHS[a.getMonth()]} ${a.getFullYear()} – ${MONTHS[b.getMonth()]} ${b.getFullYear()}`;
+  }else if(view==="day"){
+    const d=new Date(anchor);
+    const heute = iso(d)===todayISO() ? " · heute" : "";
+    l.textContent=`${DSHORT[(d.getDay()+6)%7]}, ${d.getDate()}.${d.getMonth()+1}.${heute}`;
+  }else if(view==="jobs"){
+    l.textContent="Aufträge";
+  }else if(view==="search"){
+    l.textContent="Suche";
+  }else if(view==="map"){
+    const d=parse(mapDay);
+    l.textContent=`${DSHORT[(d.getDay()+6)%7]}, ${d.getDate()}. ${MONTHS[d.getMonth()]}`;
+  }else{
+    const n=new Date();
+    l.textContent=`${DAYS[(n.getDay()+6)%7]}, ${n.getDate()}. ${MONTHS[n.getMonth()]}`;
+  }
+}
+
+/* ---- Tagesansicht fürs Telefon ---- */
+function renderPhoneDay(){
+  const ds=iso(anchor);
+  const wrap=document.createElement("div"); wrap.className="pday";
+
+  state.teams.forEach(team=>{
+    const card=document.createElement("div"); card.className="pcard";
+    card.style.borderLeftColor=team.color;
+    card.innerHTML=`<div class="phd"><b>${esc(team.name)}</b><span>${esc(team.members.join(", ")||"–")}</span></div>`;
+    const halves=document.createElement("div"); halves.className="phalves";
+
+    [["AM","Vormittag"],["PM","Nachmittag"]].forEach(([slot,txt])=>{
+      const a=assignAt(team.id,ds,slot);
+      const b=document.createElement("button");
+      const job=a?(jobById(a.jobId)||{name:"?",address:""}):null;
+      b.className="phalf "+(a?"busy":"free")+(job&&job.billed?" abger":"");
+      if(a){
+        b.style.background=job.billed?"#6B7585":team.color;
+        b.innerHTML=`<span class="tag">${txt}</span>
+          <span class="jb">${esc(job.name)}</span>
+          <span class="ad">${esc(job.address||"")}</span>
+          ${istFixiert(a.jobId)?`<span class="schloss">🔒</span>`:""}`;
+      }else{
+        b.innerHTML=`<span class="tag">${txt}</span><span class="jb">frei – eintragen</span>`;
+      }
+      b.onclick=()=>openAssign(team.id,ds,slot);
+      if(a){
+        b.oncontextmenu=e=>{ e.preventDefault(); zeigeKontext(e.clientX,e.clientY,a.jobId,team.id,ds,slot); };
+        langDruck(b,(x,y)=>zeigeKontext(x,y,a.jobId,team.id,ds,slot));
+      }
+      halves.appendChild(b);
+    });
+    card.appendChild(halves);
+    wrap.appendChild(card);
+  });
+
+  if(!state.teams.length){
+    const d=document.createElement("div"); d.className="pool-empty";
+    d.textContent="Noch keine Teams angelegt."; wrap.appendChild(d);
+  }else{
+    const h=document.createElement("div");
+    h.style.cssText="color:var(--ink-faint);font-size:11px;text-align:center;padding:4px 10px 0;line-height:1.5";
+    h.textContent="Langes Tippen auf einen Einsatz öffnet das Menü – dort lässt er sich als abgerechnet markieren.";
+    wrap.appendChild(h);
+  }
+  stage.replaceChildren(wrap);
+}
+
+/* ---- Auftragsliste fürs Telefon ---- */
+function renderPhoneJobs(){
+  const wrap=document.createElement("div"); wrap.className="pjobs";
+  const btns=document.createElement("div"); btns.className="pbtns";
+  const b1=document.createElement("button"); b1.textContent="Auftrag anlegen"; b1.onclick=()=>openJob(null);
+  const b2=document.createElement("button"); b2.className="zweit"; b2.textContent="Übernehmen"; b2.onclick=openScan;
+  btns.append(b1,b2); wrap.appendChild(btns);
+
+  const planned=plannedJobIds();
+  const list=[...state.jobs].sort((a,b)=>
+    (planned.has(a.id)?1:0)-(planned.has(b.id)?1:0) ||
+    (a.wishDate||"zzz").localeCompare(b.wishDate||"zzz"));
+  if(!list.length){
+    const d=document.createElement("div"); d.className="pool-empty";
+    d.textContent="Noch keine Aufträge angelegt."; wrap.appendChild(d);
+  }
+  list.forEach(j=>{
+    const k=kundeById(j.customerId);
+    const c=document.createElement("div"); c.className="jobcard";
+    c.style.borderLeftColor=j.billed?"#6B7585":(planned.has(j.id)?"#3D4A5C":"var(--ink-faint)");
+    c.innerHTML=`<b>${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
+      ${k?`<small style="margin-top:3px;color:var(--ink-dim)">${esc(k.company)}</small>`:""}
+      ${j.wishDate?`<small style="margin-top:3px;color:#FFC978">Wunschbeginn ${esc(wunschText(j.wishDate))}</small>`:""}
+      <small style="margin-top:3px;color:var(--ink-faint)">${planned.has(j.id)?"eingeplant":"noch offen"}${j.billed?" · abgerechnet":""}${fileCounts[j.id]?` · ${fileCounts[j.id]} Anhang`:""}</small>
+      <div class="row"><button data-e="${j.id}">Öffnen</button><button data-m="${j.id}">Karte</button></div>`;
+    wrap.appendChild(c);
+  });
+  stage.replaceChildren(wrap);
+  wrap.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>openJob(b.dataset.e));
+  wrap.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>showOnMap(b.dataset.m,iso(anchor)));
+}
+
+/* ---- Suche ---- */
+let suchText="", vorherigeAnsicht="month";
+
+/* Alle Einsätze eines Auftrags als zusammenhängende Blöcke */
+function einsaetzeZu(jobId){
+  const list=state.assignments.filter(a=>a.jobId===jobId)
+    .sort((a,b)=>a.date.localeCompare(b.date)||(a.slot==="AM"?0:1)-(b.slot==="AM"?0:1));
+  const blocks=[], gesehen=new Set();
+  list.forEach(a=>{
+    const key=a.teamId+a.date+a.slot;
+    if(gesehen.has(key)) return;
+    const r=runFor(a.teamId,jobId,a.date,a.slot);
+    const span=slotSpan(r.first[0],r.first[1],r.last[0],r.last[1]);
+    span.forEach(u=>gesehen.add(a.teamId+u.date+u.slot));
+    blocks.push({teamId:a.teamId,first:r.first,last:r.last,halbtage:r.count});
+  });
+  return blocks.sort((x,y)=>x.first[0].localeCompare(y.first[0]));
+}
+function zeitraumText(b){
+  const a=parse(b.first[0]), e=parse(b.last[0]);
+  const f=d=>`${DSHORT[(d.getDay()+6)%7]} ${d.getDate()}.${d.getMonth()+1}.`;
+  if(b.first[0]===b.last[0]){
+    if(b.halbtage===2) return f(a);
+    return f(a)+(b.first[1]==="AM"?" vormittags":" nachmittags");
+  }
+  return f(a)+(b.first[1]==="PM"?" mittags":"")+" – "+f(e)+(b.last[1]==="AM"?" mittags":"");
+}
+
+async function renderSearch(){
+  const q=suchText.trim().toLowerCase();
+  const wrap=document.createElement("div"); wrap.className="srch";
+
+  if(q.length<2){
+    wrap.innerHTML=`<h2>Objekte durchsuchen</h2>
+      <div class="none">Straße, Ort oder Auftragsbezeichnung eingeben – mindestens zwei Zeichen.<br>
+      Gesucht wird in Bezeichnung, Adresse, Notiz und Kundendaten. Die Suche findet auch alte Aufträge, ohne dass du im Kalender zurückblättern musst, und zeigt die zugehörigen Fotos.</div>`;
+    stage.replaceChildren(wrap); return;
+  }
+
+  const woerter=q.split(/\s+/).filter(Boolean);
+  const treffer=state.jobs.filter(j=>{
+    const k=kundeById(j.customerId);
+    const heu=((j.name||"")+" "+(j.address||"")+" "+(j.contact||"")+" "+(j.note||"")+" "+
+               (k?(k.company+" "+(k.contact||"")+" "+(k.address||"")):"")).toLowerCase();
+    return woerter.every(w=>heu.includes(w));
+  });
+
+  wrap.innerHTML=`<h2>Suche nach „${esc(suchText.trim())}“</h2>
+    <div class="sub">${treffer.length===0?"kein Treffer":treffer.length===1?"1 Objekt gefunden":treffer.length+" Objekte gefunden"}</div>`;
+
+  if(!treffer.length){
+    const d=document.createElement("div"); d.className="none";
+    d.textContent="Nichts gefunden. Versuche einen kürzeren Suchbegriff, zum Beispiel nur den Straßennamen.";
+    wrap.appendChild(d); stage.replaceChildren(wrap); return;
+  }
+
+  // Treffer mit jüngstem Einsatz zuerst
+  const mitZeit=treffer.map(j=>{
+    const bl=einsaetzeZu(j.id);
+    return {job:j, blocks:bl, letzte: bl.length?bl[bl.length-1].last[0]:""};
+  }).sort((a,b)=>b.letzte.localeCompare(a.letzte));
+
+  freiURLs();
+  for(const {job,blocks} of mitZeit){
+    const card=document.createElement("div"); card.className="hit";
+    const tage=blocks.reduce((n,b)=>n+b.halbtage,0)/2;
+    card.innerHTML=`<div class="top"><div>
+        <b>${esc(job.name)}</b>
+        <div class="adr">${esc(job.address||"keine Adresse hinterlegt")}</div>
+        ${(()=>{const k=kundeById(job.customerId);
+          return k?`<div class="meta">Kunde: ${esc(k.company)}${k.contact?" · "+esc(k.contact):""}</div>`:"";})()}
+        ${job.contact?`<div class="meta">vor Ort: ${esc(job.contact)}</div>`:""}
+      </div>
+      <div class="meta">${blocks.length?`${tage} ${tage===1?"Tag":"Tage"} eingeplant`:"noch nicht eingeplant"}
+        ${job.wishDate?`<br>Wunschbeginn ${esc(wunschText(job.wishDate))}`:""}
+        ${job.value?`<br>${esc(job.value)}`:""}
+        ${job.billed?`<br><span style="color:#8C96A5">abgerechnet</span>`:""}</div></div>`;
+
+    if(blocks.length){
+      const row=document.createElement("div"); row.className="runs";
+      blocks.forEach(b=>{
+        const team=teamById(b.teamId);
+        const btn=document.createElement("button"); btn.className="run";
+        btn.style.background=job.billed?"#6B7585":(team?team.color:"#5C6878");
+        btn.innerHTML=`<span class="d">${esc(zeitraumText(b))}</span>${esc(team?team.name:"Team entfernt")}`;
+        btn.title="Im Kalender anzeigen";
+        btn.onclick=()=>{
+          anchor=parse(b.first[0]); pendingScrollToday=false;
+          view="month"; suchText=""; document.getElementById("qSearch").value="";
+          render();
+          requestAnimationFrame(()=>{
+            const n=new Date(anchor.getFullYear(),anchor.getMonth()+1,0).getDate();
+            const tbl=stage.querySelector("table");
+            if(tbl){ const dw=(tbl.offsetWidth-150)/n; stage.scrollLeft=Math.max(0,(parse(b.first[0]).getDate()-2)*dw); }
+          });
+        };
+        row.appendChild(btn);
+      });
+      card.appendChild(row);
+    }
+
+    const dateien=await Files.forJob(job.id);
+    if(dateien.length){
+      const fb=document.createElement("div"); fb.className="files";
+      dateien.forEach(f=>fb.appendChild(kachel(f,true)));
+      card.appendChild(fb);
+    }
+
+    const acts=document.createElement("div"); acts.className="acts";
+    const b1=document.createElement("button");
+    b1.textContent=dateien.length?`Bearbeiten · ${dateien.length} ${dateien.length===1?"Anhang":"Anhänge"}`:"Bearbeiten und Fotos hinzufügen";
+    b1.onclick=()=>openJob(job.id);
+    acts.appendChild(b1);
+    if(job.lat!=null){
+      const b2=document.createElement("button"); b2.textContent="Auf Karte zeigen";
+      b2.onclick=()=>showOnMap(job.id, blocks.length?blocks[blocks.length-1].first[0]:todayISO());
+      acts.appendChild(b2);
+    }
+    card.appendChild(acts);
+    wrap.appendChild(card);
+  }
+  stage.replaceChildren(wrap);
+}
+
+/* ---- Jetzt ---- */
+function renderNow(){
+  const now=new Date(), d=todayISO(), slot=currentSlot(now), t=slotTimes();
+  const wrap=document.createElement("div"); wrap.className="now-wrap";
+
+  state.teams.forEach(team=>{
+    const a = slot ? assignAt(team.id,d,slot) : null;
+    const card=document.createElement("div"); card.className="nowcard";
+    card.style.borderTopColor=team.color;
+    const crew=team.members.join(", ")||"keine Besetzung";
+    let html=`<div class="hd"><h3>${esc(team.name)}</h3><span class="crew">${esc(crew)}</span></div>`;
+
+    if(a){
+      const job=jobById(a.jobId)||{name:"Unbekannt",address:""};
+      const r=runFor(team.id,a.jobId,d,slot);
+      const start=atTime(r.first[0], r.first[1]==="AM"?t.AM[0]:t.PM[0]);
+      const end=atTime(r.last[0], r.last[1]==="AM"?t.AM[1]:t.PM[1]);
+      const slotStart=atTime(d, slot==="AM"?t.AM[0]:t.PM[0]);
+      const slotEnd=atTime(d, slot==="AM"?t.AM[1]:t.PM[1]);
+      const pct=Math.max(0,Math.min(100,(now-start)/(end-start)*100));
+      const mehrTage=r.first[0]!==d;
+      const bisHeute=r.last[0]===d;
+      html+=`<div class="job">${esc(job.name)}</div>
+        <div class="adr">${esc(job.address)}</div>
+        <div class="progress"><i style="width:${pct.toFixed(1)}%;background:${team.color}"></i></div>
+        <div class="times">
+          <span>vor Ort seit <b>${fmtDur(now-start)}</b>${mehrTage?` (seit ${DSHORT[(parse(r.first[0]).getDay()+6)%7]})`:""}</span>
+          <span>noch <b>${fmtDur(end-now)}</b>${bisHeute?"":` (bis ${DSHORT[(parse(r.last[0]).getDay()+6)%7]})`}</span>
+        </div>
+        <div class="times" style="margin-top:4px;color:var(--ink-faint)">
+          <span>${slot==="AM"?"Vormittag":"Nachmittag"} ${esc(slot==="AM"?t.AM[0]:t.PM[0])}–${esc(slot==="AM"?t.AM[1]:t.PM[1])}</span>
+          <span>${r.count} Halbtage gesamt</span>
+        </div>
+        <div class="acts">
+          <button data-map="${job.id}">Auf Karte zeigen</button>
+          <button data-edit="${team.id}|${d}|${slot}">Ändern</button>
+        </div>`;
+    }else{
+      html+=`<div class="free">${slot?"Kein Einsatz eingetragen":"Außerhalb der Arbeitszeit"}</div>
+        <div class="acts"><button data-new="${team.id}|${d}|${slot||"AM"}">Einsatz eintragen</button></div>`;
+    }
+    card.innerHTML=html; wrap.appendChild(card);
+  });
+
+  stage.replaceChildren(wrap);
+  wrap.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>showOnMap(b.dataset.map,d));
+  wrap.querySelectorAll("[data-edit],[data-new]").forEach(b=>b.onclick=()=>{
+    const [tid,dd,ss]=(b.dataset.edit||b.dataset.new).split("|"); openAssign(tid,dd,ss);
+  });
+}
+
+/* ---- Woche / Monat ---- */
+function buildBoard(dates,isMonth){
+  const n=dates.length;
+  const tbl=document.createElement("table");
+  tbl.className="board"+(isMonth?" month":"");
+  const th=document.createElement("thead"), tr=document.createElement("tr");
+  tr.innerHTML=`<th class="teamcol">Team</th>`;
+  dates.forEach(d=>{
+    const h=document.createElement("th");
+    h.textContent=isMonth?`${DSHORT[(d.getDay()+6)%7]} ${d.getDate()}.${d.getMonth()+1}.`:`${DAYS[(d.getDay()+6)%7]} ${d.getDate()}.${d.getMonth()+1}.`;
+    let kl=[];
+    if(iso(d)===todayISO()) kl.push("today");
+    if(d.getDate()===1) kl.push("monatsstart");
+    h.className=kl.join(" ");
+    tr.appendChild(h);
+  });
+  th.appendChild(tr); tbl.appendChild(th);
+
+  const tb=document.createElement("tbody");
+  state.teams.forEach((team,ti)=>{
+    const row=document.createElement("tr");
+    row.appendChild(buildTeamCell(team,ti,state.teams.length));
+
+    const td=document.createElement("td"); td.colSpan=n; td.className="trackcell";
+    const track=document.createElement("div"); track.className="track";
+    track.style.gridTemplateColumns=`repeat(${n*2},1fr)`;
+
+    // Hintergrund: Tagesraster, Wochenende, heute
+    dates.forEach((d,i)=>{
+      const bg=document.createElement("div");
+      bg.className="daybg"+(iso(d)===todayISO()?" today":"")
+        +(d.getDate()===1&&i>0?" monatsstart":"");
+      bg.style.left=(i*100/n)+"%"; bg.style.width=(100/n)+"%";
+      track.appendChild(bg);
+    });
+
+    // Halbtage der Reihe nach, gleiche Aufträge zu einem Feld zusammenfassen
+    const units=[];
+    dates.forEach(d=>{const ds=iso(d);["AM","PM"].forEach(s=>units.push({ds,s,a:assignAt(team.id,ds,s)}));});
+
+    let i=0;
+    while(i<units.length){
+      const u=units[i];
+      if(u.a){
+        let j=i+1;
+        while(j<units.length && units[j].a && units[j].a.jobId===u.a.jobId) j++;
+        track.appendChild(makeBar(team,u.a.jobId,units[i],units[j-1],j-i,isMonth));
+        i=j;
+      }else{
+        let span=1, full=false;
+        if(u.s==="AM" && units[i+1] && units[i+1].ds===u.ds && !units[i+1].a){span=2;full=true;}
+        track.appendChild(makeGap(team,u.ds,u.s,span,full));
+        i+=span;
+      }
+    }
+    td.appendChild(track); row.appendChild(td); tb.appendChild(row);
+  });
+  tbl.appendChild(tb);
+  if(isMonth){
+    const avail=Math.max(620, stage.clientWidth);
+    tbl.style.minWidth = Math.round(150 + (avail-150)/monthVisible*n) + "px";
+  }else{
+    tbl.style.minWidth = zoomWeek ? Math.round(1120*zoomWeek)+"px" : "";
+  }
+  return tbl;
+}
+
+/* Teamzeile links: benennen, verschieben */
+function buildTeamCell(team,idx,total){
+  const tc=document.createElement("td"); tc.className="teamcol";
+  const inner=document.createElement("div"); inner.className="teamcell"; inner.draggable=true;
+  inner.title="Zum Umsortieren nach oben oder unten ziehen";
+  inner.innerHTML=`<span class="swatch" style="background:${team.color}"></span>
+    <span class="tn"><b>${esc(team.name)}</b><small>${esc(team.members.join(", ")||"–")}</small></span>
+    <span class="order">
+      <button class="up" title="nach oben"${idx===0?" disabled":""}>▲</button>
+      <button class="dn" title="nach unten"${idx===total-1?" disabled":""}>▼</button>
+    </span>`;
+  inner.querySelector(".up").onclick=e=>{e.stopPropagation();moveTeam(idx,-1);};
+  inner.querySelector(".dn").onclick=e=>{e.stopPropagation();moveTeam(idx,1);};
+  inner.ondragstart=e=>{
+    e.dataTransfer.setData("application/x-team",team.id);
+    e.dataTransfer.effectAllowed="move";
+    setTimeout(()=>inner.classList.add("dragging"),0);
+  };
+  inner.ondragend=()=>inner.classList.remove("dragging");
+  inner.ondragover=e=>{
+    if([...e.dataTransfer.types].includes("application/x-team")){e.preventDefault();inner.classList.add("dropteam");}
+  };
+  inner.ondragleave=()=>inner.classList.remove("dropteam");
+  inner.ondrop=e=>{
+    inner.classList.remove("dropteam");
+    const id=e.dataTransfer.getData("application/x-team"); if(!id) return;
+    e.preventDefault(); placeTeam(id,idx);
+  };
+  tc.appendChild(inner); return tc;
+}
+function moveTeam(idx,dir){
+  const j=idx+dir; if(j<0||j>=state.teams.length) return;
+  const [t]=state.teams.splice(idx,1); state.teams.splice(j,0,t); save(); render();
+}
+function placeTeam(id,targetIdx){
+  const from=state.teams.findIndex(t=>t.id===id);
+  if(from<0||from===targetIdx) return;
+  const [t]=state.teams.splice(from,1);
+  state.teams.splice(targetIdx,0,t); save(); render();
+}
+
+/* Ein zusammenhängendes Einsatzfeld */
+function makeBar(team,jobId,firstU,lastU,span,isMonth){
+  const job=jobById(jobId)||{name:"?",address:""};
+  const l=neighborSlot(firstU.ds,firstU.s,-1), r=neighborSlot(lastU.ds,lastU.s,+1);
+  const la=assignAt(team.id,l[0],l[1]), ra=assignAt(team.id,r[0],r[1]);
+  const cl=!!la&&la.jobId===jobId, cr=!!ra&&ra.jobId===jobId;
+
+  const fix=istFixiert(jobId);
+  const abger=!!job.billed;
+  const b=document.createElement("div");
+  b.className="bar"+(cl?" cl":"")+(cr?" cr":"")+(fix?" fix":"")+(abger?" abger":"");
+  b.style.gridColumn="span "+span;
+  b.style.background=team.color;
+  const halb = span===1 ? (firstU.s==="AM"?" · erste Tageshälfte":" · zweite Tageshälfte") : "";
+  const schloss = (fix && !cl) ? `<span class="lock" aria-hidden="true">🔒</span>` : "";
+  b.innerHTML = isMonth
+    ? `${schloss}<span class="nm">${esc(short(job.name, span<=1?6:span*7))}</span>`
+    : `${schloss}<span class="nm">${esc(job.name)}</span>`+(span>=2?`<span class="adr">${esc(job.address)}</span>`:"");
+  b.title=`${job.name}\n${job.address}\n${team.name}${halb}\n${span/2 % 1 ? (span/2).toFixed(1) : span/2} Tage`
+    +(abger?"\n\nAbgerechnet.":"")
+    +(fix?`\n\nFestgehalten: ${fileCounts[jobId]} Anhang/Anhänge vorhanden.`:"");
+  b.onclick=()=>openRun(team.id,jobId,firstU.ds,firstU.s);
+  b.oncontextmenu=e=>{ e.preventDefault(); zeigeKontext(e.clientX,e.clientY,jobId,team.id,firstU.ds,firstU.s); };
+  langDruck(b,(x,y)=>zeigeKontext(x,y,jobId,team.id,firstU.ds,firstU.s));
+  b.draggable=!fix;
+  b.ondragstart=e=>{
+    if(fix){ e.preventDefault(); return; }
+    const r=runFor(team.id,jobId,firstU.ds,firstU.s);
+    e.dataTransfer.setData("text/plain",jobId);
+    e.dataTransfer.setData("application/json",
+      JSON.stringify({kind:"run",teamId:team.id,jobId,first:r.first,last:r.last,count:r.count}));
+    e.dataTransfer.effectAllowed="move";
+    setTimeout(()=>b.classList.add("dragging"),0);
+  };
+  b.ondragend=()=>b.classList.remove("dragging");
+  b.ondragover=e=>{ if(fix) return; e.preventDefault(); b.classList.add("dragover"); };
+  b.ondragleave=()=>b.classList.remove("dragover");
+  b.ondrop=e=>{
+    if(fix) return;
+    e.preventDefault(); b.classList.remove("dragover");
+    const jid=e.dataTransfer.getData("text/plain"); if(!jid) return;
+    replaceRun(team.id,jobId,firstU.ds,firstU.s,jid);
+  };
+  return b;
+}
+
+/* Freie Fläche */
+function makeGap(team,ds,slot,span,full){
+  const c=document.createElement("div");
+  c.className="gap";
+  c.style.gridColumn="span "+span;
+  c.dataset.slot = full?"frei":(slot==="AM"?"vormittags frei":"nachmittags frei");
+  c.onclick=()=>openNew(team.id,ds,slot,full);
+  c.ondragover=e=>{e.preventDefault();c.classList.add("dragover");};
+  c.ondragleave=()=>c.classList.remove("dragover");
+  c.ondrop=e=>{
+    e.preventDefault(); c.classList.remove("dragover");
+    const raw=e.dataTransfer.getData("application/json");
+    if(raw){
+      try{ const r=JSON.parse(raw); if(r.kind==="run"){
+        if(istFixiert(r.jobId)){ alert(fixHinweis(r.jobId)); return; }
+        moveRun(r,team.id,ds,slot); return;
+      } }catch(_){}
+    }
+    const jid=e.dataTransfer.getData("text/plain"); if(!jid) return;
+    dropAssign(team.id,ds,full?"BOTH":slot,jid);
+  };
+  return c;
+}
+
+function renderWeek(){
+  const m=mondayOf(anchor);
+  const n=7;
+  stage.replaceChildren(buildBoard(Array.from({length:n},(_,i)=>addDays(m,i)),false));
+}
+/* Die Monatsansicht läuft über das Monatsende hinaus weiter,
+   damit am 30. eines Monats nicht die Übersicht endet. */
+function monatsTage(){
+  const y=anchor.getFullYear(), mo=anchor.getMonth();
+  const start=new Date(y,mo,1);
+  const ende=new Date(y,mo+2,0);              // bis Ende des Folgemonats
+  const tage=[];
+  for(let d=new Date(start); d<=ende; d=addDays(d,1)) tage.push(new Date(d));
+  return tage;
+}
+
+function renderMonth(){
+  const tage=monatsTage();
+  const tbl=buildBoard(tage,true);
+  stage.replaceChildren(tbl);
+  if(pendingScrollToday){
+    pendingScrollToday=false;
+    requestAnimationFrame(()=>{
+      const dayW=(tbl.offsetWidth-150)/tage.length;
+      const vorlauf=Math.max(3,Math.round(monthVisible/4));   // heute ins erste Viertel
+      const heute=todayISO();
+      let i=tage.findIndex(d=>iso(d)===heute);
+      if(i<0) i=0;                                           // anderer Monat: an den Anfang
+      stage.scrollLeft=Math.max(0,(i-vorlauf)*dayW);
+    });
+  }
+}
+const short=(s,n)=>!s?"":(s.length>n?s.slice(0,n-1)+"…":s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---- Auftragspool ---- */
+function renderPool(){
+  const pool=document.getElementById("pool");
+  const planned=plannedJobIds();
+  const list = poolShowAll ? state.jobs : state.jobs.filter(j=>!planned.has(j.id));
+  document.getElementById("poolCount").textContent = poolShowAll ? `alle ${state.jobs.length}` : `${list.length} ungeplant`;
+  document.getElementById("btnAllJobs").textContent = poolShowAll ? "Nur offene" : "Alle";
+  pool.replaceChildren();
+
+  // Von Kunden eingereicht, noch nicht übernommen
+  const offen=eingereichte.filter(e=>e.status==="neu");
+  if(offen.length && darfPlanen()){
+    const h=document.createElement("div");
+    h.style.cssText="color:#FFC978;font-size:11px;letter-spacing:.04em;padding:2px 2px 4px";
+    h.textContent=`VON KUNDEN EINGEREICHT · ${offen.length}`;
+    pool.appendChild(h);
+    offen.forEach(e=>{
+      const k=kundeById(e.customer_id);
+      const c=document.createElement("div"); c.className="keinger";
+      c.innerHTML=`<b>${esc(e.titel||"Auftrag")}</b>
+        <small>${esc(e.adresse||"")}</small>
+        ${k?`<small class="wer">${esc(k.company)}</small>`:""}
+        ${e.wunschdatum?`<small class="wer">Wunschbeginn ${esc(wunschText(e.wunschdatum))}</small>`:""}`;
+      const b=document.createElement("button");
+      b.style.cssText="width:100%;margin-top:9px;background:rgba(255,201,120,.16);border:1px solid rgba(255,201,120,.34);border-radius:999px;padding:7px 0;font-size:11.5px;color:#FFC978";
+      b.textContent="In den Auftragspool übernehmen";
+      b.onclick=()=>einreichungUebernehmen(e);
+      c.appendChild(b);
+      pool.appendChild(c);
+    });
+    const tr=document.createElement("div");
+    tr.style.cssText="height:1px;background:var(--line-soft);margin:4px 0 2px";
+    pool.appendChild(tr);
+  }
+
+  if(!list.length){
+    const p=document.createElement("div"); p.className="pool-empty";
+    p.textContent = poolShowAll ? "Noch keine Aufträge angelegt." : "Alles verplant. Gute Woche.";
+    pool.appendChild(p); return;
+  }
+  list.forEach(j=>{
+    const c=document.createElement("div"); c.className="jobcard"; c.draggable=true;
+    if(planned.has(j.id)) c.style.borderLeftColor="#3D4A5C";
+    c.innerHTML=`<b>${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
+      ${(()=>{const k=kundeById(j.customerId);
+        return k?`<small style="margin-top:3px;color:var(--ink-dim)">${esc(k.company)}</small>`:"";})()}
+      ${j.wishDate?`<small style="margin-top:3px;color:#FFC978">Wunschbeginn ${esc(wunschText(j.wishDate))}</small>`:""}
+      ${j.billed?`<small style="margin-top:3px;color:#8C96A5">abgerechnet</small>`:""}
+      ${j.contact?`<small style="margin-top:3px;color:var(--ink-faint)">${esc(j.contact)}</small>`:""}
+      ${(j.address&&j.lat==null)?`<small style="margin-top:3px;color:#FFB65C">noch kein Pin – über „Bearbeiten“ Adresse suchen</small>`:""}
+      ${fileCounts[j.id]?`<small style="margin-top:3px;color:var(--ink-dim)">${fileCounts[j.id]} Foto${fileCounts[j.id]===1?"":"s"} / Datei${fileCounts[j.id]===1?"":"en"}</small>`:""}
+      <div class="row"><button data-e="${j.id}">Bearbeiten</button><button data-m="${j.id}">Karte</button></div>`;
+    c.ondragstart=e=>e.dataTransfer.setData("text/plain",j.id);
+    pool.appendChild(c);
+  });
+  pool.querySelectorAll("[data-e]").forEach(b=>b.onclick=e=>{e.stopPropagation();openJob(b.dataset.e);});
+  pool.querySelectorAll("[data-m]").forEach(b=>b.onclick=e=>{e.stopPropagation();showOnMap(b.dataset.m,todayISO());});
+}
+let poolShowAll=false;
+
+/* =========================================================
+   Karte
+   ========================================================= */
+let map=null, layer=null;
+function renderMap(){
+  const wrap=document.createElement("div"); wrap.id="mapview";
+  wrap.innerHTML=`<div id="mapbar">
+      <label style="font-size:11.5px;color:var(--ink-dim)">Tag
+        <input type="date" id="mapDate" value="${mapDay}" style="margin-left:7px;background:#0F141B;border:1px solid var(--line);border-radius:4px;padding:5px 8px;color:var(--ink)">
+      </label>
+      <label style="font-size:11.5px;color:var(--ink-dim)"><input type="checkbox" id="mapAll" style="margin-right:6px">Alle Objekte anzeigen, auch ungeplante</label>
+      <div class="legend" id="mapLegend"></div>
+    </div><div id="map"></div>`;
+  stage.replaceChildren(wrap);
+  document.getElementById("mapDate").onchange=e=>{mapDay=e.target.value;mapFocusJob=null;render();};
+  document.getElementById("mapAll").onchange=()=>drawMarkers(document.getElementById("mapAll").checked);
+
+  if(typeof L==="undefined"){
+    document.getElementById("map").innerHTML=
+      `<div style="padding:34px;color:var(--ink-dim);line-height:1.6">Die Kartenbibliothek konnte nicht geladen werden.<br>
+       Beim ersten Start braucht die Karte einmal Internet. Planung und Kalender funktionieren auch ohne.</div>`;
+    return;
+  }
+  map=L.map("map",{zoomControl:true,attributionControl:true}).setView([51.45,6.9],9);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+  layer=L.layerGroup().addTo(map);
+  drawMarkers(false);
+  setTimeout(()=>map.invalidateSize(),60);
+}
+
+function drawMarkers(showAll){
+  if(!map) return;
+  layer.clearLayers();
+  const legend=document.getElementById("mapLegend"); legend.replaceChildren();
+  const byJob=new Map();
+  assignsOn(mapDay).forEach(a=>{
+    const job=jobById(a.jobId), team=teamById(a.teamId); if(!job||!team) return;
+    if(!byJob.has(job.id)) byJob.set(job.id,{job,entries:[]});
+    byJob.get(job.id).entries.push({team,slot:a.slot});
+  });
+
+  const seen=new Set(), bounds=[];
+  byJob.forEach(({job,entries})=>{
+    if(job.lat==null||job.lng==null) return;
+    const team=entries[0].team;
+    entries.forEach(e=>{ if(!seen.has(e.team.id)){seen.add(e.team.id);
+      const el=document.createElement("span"); el.className="leg";
+      el.innerHTML=`<i style="background:${e.team.color}"></i>${esc(e.team.name)}`; legend.appendChild(el);} });
+    const names=[...new Set(entries.map(e=>e.team.name))].join(" + ");
+    const dim = mapFocusJob && mapFocusJob!==job.id;
+    const icon=L.divIcon({html:`<div class="pin${dim?" dim":""}" style="background:${team.color}"><span class="dot"></span>${esc(names)}</div>`,className:"",iconSize:null,iconAnchor:[10,12]});
+    const slots=entries.map(e=>`${e.team.name}: ${e.slot==="AM"?"Vormittag":"Nachmittag"}`).join("<br>");
+    L.marker([job.lat,job.lng],{icon,zIndexOffset:dim?0:500}).addTo(layer)
+      .bindPopup(`<b>${esc(job.name)}</b><br>${esc(job.address)}<br><span style="color:#8B98AA">${slots}</span>`);
+    bounds.push([job.lat,job.lng]);
+  });
+
+  if(showAll){
+    state.jobs.forEach(job=>{
+      if(job.lat==null||job.lng==null||byJob.has(job.id)) return;
+      const icon=L.divIcon({html:`<div class="pin" style="background:#5C6878;color:#E8EDF4"><span class="dot"></span>${esc(short(job.name,18))}</div>`,className:"",iconAnchor:[10,12]});
+      L.marker([job.lat,job.lng],{icon}).addTo(layer).bindPopup(`<b>${esc(job.name)}</b><br>${esc(job.address)}<br><span style="color:#8B98AA">nicht eingeplant</span>`);
+      bounds.push([job.lat,job.lng]);
+    });
+  }
+
+  if(mapFocusJob){
+    const f=jobById(mapFocusJob);
+    if(f&&f.lat!=null) map.setView([f.lat,f.lng],13);
+    else if(bounds.length) map.fitBounds(bounds,{padding:[55,55]});
+  }else if(bounds.length){
+    map.fitBounds(bounds,{padding:[55,55],maxZoom:12});
+  }
+  if(!legend.children.length){
+    const el=document.createElement("span"); el.className="leg";
+    el.textContent="An diesem Tag ist kein Team eingeteilt."; legend.appendChild(el);
+  }
+}
+function showOnMap(jobId,day){
+  mapFocusJob=jobId; mapDay=day||mapDay; view="map";
+  if(dlgAssign.open) dlgAssign.close();
+  render();
+}
+
+/* =========================================================
+   Dialoge
+   ========================================================= */
+const dlgAssign=document.getElementById("dlgAssign");
+const dlgJob=document.getElementById("dlgJob");
+const dlgTeams=document.getElementById("dlgTeams");
+const dlgSettings=document.getElementById("dlgSettings");
+const dlgData=document.getElementById("dlgData");
+const dlgCustomers=document.getElementById("dlgCustomers");
+const dlgCustomer=document.getElementById("dlgCustomer");
+const dlgScan=document.getElementById("dlgScan");
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest("dialog").close());
+
+let editing=null;
+
+/* Gemeinsamer Dialog-Aufbau */
+function fillAssignDialog(teamId,jobId,from,fromSlot,to,toSlot,titleTxt,hintTxt,canDelete,delTxt){
+  const ts=document.getElementById("asTeam"); ts.replaceChildren();
+  state.teams.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=`${t.name} – ${t.members.join(", ")||"–"}`;ts.appendChild(o);});
+  ts.value=teamId;
+  const dl=document.getElementById("jobNames"); dl.replaceChildren();
+  state.jobs.forEach(j=>{const o=document.createElement("option");o.value=j.name;o.label=j.address||"";dl.appendChild(o);});
+  const cur=jobId?jobById(jobId):null;
+  document.getElementById("asJobName").value=cur?cur.name:"";
+  document.getElementById("asJobAdr").value=cur?(cur.address||""):"";
+  document.getElementById("asJobHint").className="hint";
+  document.getElementById("asJobHint").textContent="Einfach tippen. Bekannte Aufträge werden beim Schreiben vorgeschlagen, neue werden automatisch in den Auftragspool übernommen.";
+  document.getElementById("asFrom").value=from;
+  document.getElementById("asTo").value=to;
+  document.getElementById("asFromSlot").value=fromSlot;
+  document.getElementById("asToSlot").value=toSlot;
+  markQuick();
+  document.getElementById("asDelete").style.display=canDelete?"":"none";
+  document.getElementById("asDelete").textContent=delTxt||"Einsatz löschen";
+  document.getElementById("asMap").style.display="";
+  document.getElementById("assignTitle").textContent=titleTxt;
+  document.getElementById("assignHint").textContent=hintTxt;
+  entsperrt=false;
+  const bRow=document.getElementById("assignBilledRow");
+  bRow.hidden=!jobId;
+  if(jobId){
+    const jj=jobById(jobId);
+    document.getElementById("asBilled").checked=!!(jj&&jj.billed);
+    document.getElementById("asBilled").onchange=e=>abrechnungSetzen(jobId,e.target.checked);
+  }
+  zeigeKundeImEinsatz(jobId);
+  sperreSetzen(editing && editing.mode==="run" ? editing.jobId : null);
+  dlgAssign.showModal();
+  zeigeAssignAnhaenge();
+}
+
+/* Kundenblock im Einsatzdialog: anrufen, schreiben, bearbeiten */
+function zeigeKundeImEinsatz(jobId){
+  const box=document.getElementById("assignKunde");
+  const job=jobId?jobById(jobId):null;
+  const k=job?kundeById(job.customerId):null;
+  if(!k){ box.hidden=true; box.replaceChildren(); return; }
+  box.hidden=false;
+  const wa=waNummer(k.mobile||k.phone);
+  const tel=k.mobile||k.phone;
+  box.innerHTML=`<div class="who">${esc(k.company)}</div>
+    <div class="det">${esc([k.contact,k.address].filter(Boolean).join(" · ")||"")}</div>
+    ${tel?`<div class="det">${esc([k.phone,k.mobile].filter(Boolean).join(" · "))}</div>`:""}
+    <div class="acts">
+      ${wa?`<a class="wa" href="https://wa.me/${wa}" target="_blank" rel="noopener">WhatsApp öffnen</a>`:""}
+      ${tel?`<a href="${esc(telLink(tel))}">Anrufen</a>`:""}
+      ${k.mail?`<a href="mailto:${esc(k.mail)}">E-Mail</a>`:""}
+      <button type="button" id="asKundeEdit">Kundendaten</button>
+    </div>
+    ${wa?"":`<div class="det" style="margin-top:9px;color:var(--ink-faint)">Für WhatsApp fehlt eine Mobilnummer beim Kunden.</div>`}`;
+  const b=document.getElementById("asKundeEdit");
+  if(b) b.onclick=()=>openKunde(k.id,()=>zeigeKundeImEinsatz(jobId));
+}
+
+/* Einsatz festhalten, sobald Anhänge vorhanden sind */
+let entsperrt=false;
+function sperreSetzen(jobId){
+  const fix = !!jobId && istFixiert(jobId) && !entsperrt;
+  const felder=["asFrom","asTo","asFromSlot","asToSlot","asTeam","asJobName","asJobAdr"];
+  felder.forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=fix; });
+  document.querySelectorAll(".quick button").forEach(b=>b.disabled=fix);
+  document.getElementById("asSave").disabled=fix;
+  document.getElementById("asDelete").disabled=fix;
+  const note=document.getElementById("assignFix");
+  const gesperrtesObjekt = !!jobId && istFixiert(jobId);
+  document.getElementById("asUnlock").hidden = !gesperrtesObjekt || entsperrt;
+
+  if(fix){
+    note.hidden=false; note.className="fixnote";
+    note.textContent=fixHinweis(jobId);
+    document.getElementById("assignTitle").textContent="Einsatz – festgehalten";
+  }else if(gesperrtesObjekt && entsperrt){
+    note.hidden=false; note.className="fixnote offen";
+    note.textContent="Sperre für diese Bearbeitung aufgehoben. Datum, Team und Objekt lassen sich jetzt ändern. "
+      +"Die Fotos bleiben am Objekt, und nach dem Schließen gilt die Sperre wieder.";
+  }else{
+    note.hidden=true;
+  }
+}
+
+document.getElementById("asUnlock").onclick=()=>{
+  const jobId = editing && editing.mode==="run" ? editing.jobId : null;
+  if(!jobId) return;
+  if(!confirm("Dieser Einsatz ist durch Fotos belegt.\n\nSperre für diese eine Bearbeitung aufheben, "
+    +"damit du das Datum korrigieren kannst?\n\nDie Fotos bleiben erhalten. Nach dem Schließen des Fensters "
+    +"ist der Einsatz wieder festgehalten.")) return;
+  entsperrt=true;
+  sperreSetzen(jobId);
+  document.getElementById("asFrom").focus();
+};
+
+/* Beim Schließen gilt die Sperre wieder */
+document.getElementById("dlgAssign").addEventListener("close",()=>{ entsperrt=false; });
+
+/* Anhänge im Einsatzdialog: richten sich nach dem eingetippten Auftrag */
+let assignJobId=null;
+async function zeigeAssignAnhaenge(){
+  const box=document.getElementById("asFiles");
+  const note=document.getElementById("asDropNote");
+  const cnt=document.getElementById("asFileCount");
+  if(!box) return;
+  freiURLs(); box.replaceChildren();
+  const name=document.getElementById("asJobName").value.trim().toLowerCase();
+  const treffer=name?state.jobs.find(j=>j.name.toLowerCase()===name):null;
+  assignJobId=treffer?treffer.id:null;
+
+  if(!assignJobId){
+    cnt.textContent="";
+    note.innerHTML='Neues Objekt – sobald der Einsatz eingetragen ist, kannst du hier Fotos ablegen.';
+    return;
+  }
+  note.innerHTML = isPhone()
+    ? '<button type="button" class="linky" id="asCam">Foto aufnehmen</button> · <button type="button" class="linky" id="asPick">aus der Mediathek</button>'
+    : 'Dateien hierher ziehen, oder <button type="button" class="linky" id="asPick">auswählen</button>';
+  document.getElementById("asPick").onclick=()=>document.getElementById("asFileInput").click();
+  const cam=document.getElementById("asCam");
+  if(cam) cam.onclick=()=>document.getElementById("asCamInput").click();
+  const list=await Files.forJob(assignJobId);
+  cnt.textContent=list.length?`· ${list.length}`:"";
+  list.forEach(f=>box.appendChild(kachelAssign(f)));
+}
+
+function kachelAssign(f){
+  const d=document.createElement("div"); d.className="att";
+  if(istBild(f.type)){
+    const img=document.createElement("img"); img.alt=f.name; img.loading="lazy";
+    img.style.background="rgba(255,255,255,.05)";
+    dateiURL(f).then(u=>{ if(u) img.src=u; });
+    img.onclick=()=>zeigeBild(f);
+    d.appendChild(img);
+  }else{
+    const b=document.createElement("div"); b.className="doc";
+    b.innerHTML=`<b>▤</b><span>${esc(anzeigeName(f))}</span>`;
+    b.onclick=()=>ladeDatei(f);
+    d.appendChild(b);
+  }
+  d.title=`${anzeigeName(f)}\n${groesse(f.size)}`;
+  const x=document.createElement("button"); x.className="del"; x.type="button";
+  x.textContent="✕"; x.title="Entfernen";
+  x.onclick=async e=>{
+    e.stopPropagation();
+    if(!confirm(`„${f.name}“ wirklich löschen?`)) return;
+    await Files.remove(f.id); await refreshCounts(); zeigeAssignAnhaenge();
+    sperreSetzen(editing && editing.mode==="run" ? editing.jobId : null); render();
+  };
+  d.appendChild(x);
+  return d;
+}
+
+async function nimmDateienAssign(fileList){
+  if(!assignJobId) return;
+  const files=[...fileList].filter(f=>f.size>0);
+  if(!files.length) return;
+  try{ for(const f of files) await Files.add(assignJobId,f); }
+  catch(e){ alert("Die Datei konnte nicht gespeichert werden. Vermutlich ist der Speicher des Browsers voll."); }
+  await refreshCounts(); zeigeAssignAnhaenge(); renderPool();
+  sperreSetzen(editing && editing.mode==="run" ? editing.jobId : null); render();
+}
+
+document.getElementById("asFileInput").onchange=e=>{ nimmDateienAssign(e.target.files); e.target.value=""; };
+document.getElementById("asCamInput").onchange=e=>{ nimmDateienAssign(e.target.files); e.target.value=""; };
+(function(){
+  const z=document.getElementById("asDrop");
+  z.addEventListener("dragover",e=>{ if(assignJobId){e.preventDefault();z.classList.add("over");} });
+  z.addEventListener("dragleave",e=>{ if(!z.contains(e.relatedTarget)) z.classList.remove("over"); });
+  z.addEventListener("drop",e=>{
+    z.classList.remove("over");
+    if(!assignJobId) return;
+    e.preventDefault();
+    if(e.dataTransfer.files&&e.dataTransfer.files.length) nimmDateienAssign(e.dataTransfer.files);
+  });
+})();
+
+/* Bestehendes Einsatzfeld anklicken: immer der ganze zusammenhängende Einsatz */
+function openRun(teamId,jobId,dateStr,slot){
+  const r=runFor(teamId,jobId,dateStr,slot);
+  editing={mode:"run",teamId,jobId,first:r.first,last:r.last};
+  const a=parse(r.first[0]), b=parse(r.last[0]);
+  const span=`${DSHORT[(a.getDay()+6)%7]} ${a.getDate()}.${a.getMonth()+1}.${r.first[1]==="PM"?" mittags":""} bis ${DSHORT[(b.getDay()+6)%7]} ${b.getDate()}.${b.getMonth()+1}.${r.last[1]==="AM"?" mittags":""}`;
+  fillAssignDialog(teamId,jobId,r.first[0],r.first[1],r.last[0],r.last[1],
+    "Einsatz ändern",
+    `Der Einsatz läuft ${span}, also ${r.count/2} Tage. Änderungen gelten für den ganzen Einsatz. „Aus Kalender nehmen“ räumt nur den Termin – Auftrag und Fotos bleiben im Auftragspool.`,
+    true,"Aus Kalender nehmen");
+}
+
+/* Freie Fläche anklicken */
+function openNew(teamId,dateStr,slot,full){
+  editing={mode:"new",teamId};
+  const d=parse(dateStr);
+  const wo = full?"ganzer Tag":(slot==="AM"?"erste Tageshälfte":"zweite Tageshälfte");
+  fillAssignDialog(teamId,null,dateStr,full?"AM":slot,dateStr,full?"PM":slot,
+    "Einsatz eintragen",
+    `Angeklickt: ${DAYS[(d.getDay()+6)%7]}, ${d.getDate()}.${d.getMonth()+1}., ${wo}. Über „Bis“ läuft der Einsatz über mehrere Tage — auch halbe, z.B. von Dienstag morgens bis Mittwoch mittags.`,
+    false);
+}
+
+/* Aus der Jetzt-Ansicht */
+function openAssign(teamId,date,slot){
+  const a=assignAt(teamId,date,slot);
+  if(a) openRun(teamId,a.jobId,date,slot); else openNew(teamId,date,slot,false);
+}
+
+/* Schnellwahl-Knöpfe */
+function markQuick(){
+  const f=document.getElementById("asFrom").value, t=document.getElementById("asTo").value;
+  const fs=document.getElementById("asFromSlot").value, ts=document.getElementById("asToSlot").value;
+  const one = f===t;
+  const q = one ? (fs==="AM"&&ts==="PM"?"BOTH":(fs==="AM"&&ts==="AM"?"AM":(fs==="PM"&&ts==="PM"?"PM":null))) : null;
+  document.querySelectorAll(".quick button").forEach(b=>b.classList.toggle("on", b.dataset.q===q));
+}
+document.querySelectorAll(".quick button").forEach(b=>b.onclick=()=>{
+  const day=document.getElementById("asFrom").value;
+  document.getElementById("asTo").value=day;
+  if(b.dataset.q==="BOTH"){asFromSlot.value="AM";asToSlot.value="PM";}
+  if(b.dataset.q==="AM"){asFromSlot.value="AM";asToSlot.value="AM";}
+  if(b.dataset.q==="PM"){asFromSlot.value="PM";asToSlot.value="PM";}
+  markQuick();
+});
+["asFrom","asTo","asFromSlot","asToSlot"].forEach(id=>document.getElementById(id).addEventListener("change",markQuick));
+/* Auftrag aus den Eingabefeldern holen oder neu anlegen */
+function ensureJob(){
+  const name=document.getElementById("asJobName").value.trim();
+  const adr=document.getElementById("asJobAdr").value.trim();
+  if(!name) return null;
+  const hit=state.jobs.find(j=>j.name.toLowerCase()===name.toLowerCase());
+  if(hit){
+    if(adr && !hit.address) hit.address=adr;            // Adresse nachgetragen
+    if(adr && hit.address.toLowerCase()!==adr.toLowerCase()){
+      const created={id:uid(),name,address:adr,lat:null,lng:null,contact:"",note:""};
+      state.jobs.push(created); geocodeQuiet(created);   // gleicher Name, andere Adresse = eigenes Objekt
+      return created;
+    }
+    return hit;
+  }
+  const created={id:uid(),name,address:adr,lat:null,lng:null,contact:"",note:""};
+  state.jobs.push(created); geocodeQuiet(created);
+  return created;
+}
+/* Koordinaten im Hintergrund holen, damit der Pin auf der Karte erscheint */
+async function geocodeQuiet(job){
+  if(!job.address) return;
+  try{
+    const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=de&q="+encodeURIComponent(job.address));
+    const d=await r.json();
+    if(d.length){ job.lat=parseFloat(d[0].lat); job.lng=parseFloat(d[0].lon); save(); if(view==="map") render(); }
+  }catch(e){/* ohne Internet bleibt das Objekt ohne Pin */}
+}
+
+/* Adresse automatisch füllen, wenn ein bekannter Auftrag gewählt wird */
+document.getElementById("asJobName").addEventListener("input",e=>{
+  const hit=state.jobs.find(j=>j.name.toLowerCase()===e.target.value.trim().toLowerCase());
+  const adr=document.getElementById("asJobAdr");
+  if(hit && hit.address && !adr.value.trim()) adr.value=hit.address;
+  zeigeKundeImEinsatz(hit?hit.id:null);
+  zeigeAssignAnhaenge();
+});
+
+document.getElementById("asSave").onclick=()=>{
+  const teamId=document.getElementById("asTeam").value;
+  const job=ensureJob();
+  if(!job){
+    const h=document.getElementById("asJobHint");
+    h.className="hint geo-no"; h.textContent="Bitte eine Bezeichnung für den Auftrag eintragen.";
+    document.getElementById("asJobName").focus(); return;
+  }
+  const jobId=job.id;
+  if(editing.mode==="run" && istFixiert(editing.jobId) && !entsperrt){ alert(fixHinweis(editing.jobId)); return; }
+  if(editing.mode==="new" && istFixiert(jobId) && state.assignments.some(a=>a.jobId===jobId)){
+    if(!confirm("Dieses Objekt ist bereits mit Fotos belegt. Ein zusätzlicher Termin wird trotzdem eingetragen. Fortfahren?")) return;
+  }
+  const from=document.getElementById("asFrom").value;
+  const to=document.getElementById("asTo").value||from;
+  const fromSlot=document.getElementById("asFromSlot").value;
+  const toSlot=document.getElementById("asToSlot").value;
+
+  if(editing.mode==="run") clearRun(editing);
+
+  slotSpan(from,fromSlot,to,toSlot).forEach(({date,slot})=>{
+    const ex=assignAt(teamId,date,slot);
+    if(ex) state.assignments=state.assignments.filter(a=>a.id!==ex.id);
+    state.assignments.push({id:uid(),teamId,jobId,date,slot});
+  });
+  save(); dlgAssign.close(); render();
+};
+
+/* Alle Halbtage zwischen zwei Punkten, Wochenende optional übersprungen */
+function slotSpan(from,fromSlot,to,toSlot){
+  const out=[];
+  let d=parse(from), end=parse(to), guard=0;
+  if(end<d) end=new Date(d);
+  while(d<=end && guard++<800){
+    const ds=iso(d), first=(ds===from), last=(ds===iso(end));
+    ["AM","PM"].forEach(s=>{
+      if(first && fromSlot==="PM" && s==="AM") return;
+      if(last  && toSlot==="AM"  && s==="PM") return;
+      out.push({date:ds,slot:s});
+    });
+    d=addDays(d,1);
+  }
+  return out;
+}
+document.getElementById("asDelete").onclick=()=>{
+  if(editing.mode==="run" && istFixiert(editing.jobId) && !entsperrt){ alert(fixHinweis(editing.jobId)); return; }
+  if(editing.mode==="run") clearRun(editing);
+  save(); dlgAssign.close(); render();
+};
+
+/* Alle Halbtage eines zusammenhängenden Einsatzes entfernen */
+function clearRun(e){
+  const ids=new Set(slotSpan(e.first[0],e.first[1],e.last[0],e.last[1])
+    .map(u=>{const a=assignAt(e.teamId,u.date,u.slot);return a&&a.jobId===e.jobId?a.id:null;})
+    .filter(Boolean));
+  state.assignments=state.assignments.filter(a=>!ids.has(a.id));
+}
+
+/* Einsatz mit gleicher Dauer an eine andere Stelle verschieben */
+function moveRun(r,teamId,ds,slot){
+  if(istFixiert(r.jobId)){ alert(fixHinweis(r.jobId)); return; }
+  clearRun(r);
+  spanFromStart(ds,slot,r.count).forEach(u=>{
+    const ex=assignAt(teamId,u.date,u.slot);
+    if(ex) state.assignments=state.assignments.filter(a=>a.id!==ex.id);
+    state.assignments.push({id:uid(),teamId,jobId:r.jobId,date:u.date,slot:u.slot});
+  });
+  save(); render();
+}
+function spanFromStart(ds,slot,count){
+  const out=[]; let d=ds,s=slot,guard=0;
+  while(out.length<count && guard++<800){
+    out.push({date:d,slot:s});
+    [d,s]=neighborSlot(d,s,1);
+  }
+  return out;
+}
+
+/* Auftrag per Drag auf ein bestehendes Feld: tauscht den ganzen Einsatz aus */
+function replaceRun(teamId,jobId,dateStr,slot,newJobId){
+  if(istFixiert(jobId)){ alert(fixHinweis(jobId)); return; }
+  const r=runFor(teamId,jobId,dateStr,slot);
+  slotSpan(r.first[0],r.first[1],r.last[0],r.last[1]).forEach(u=>{
+    const a=assignAt(teamId,u.date,u.slot);
+    if(a&&a.jobId===jobId) a.jobId=newJobId;
+  });
+  save(); render();
+}
+document.getElementById("asMap").onclick=()=>{
+  const job=ensureJob(); if(!job) return;
+  save(); showOnMap(job.id, document.getElementById("asFrom").value);
+};
+
+function dropAssign(teamId,date,slot,jobId){
+  const slots = slot==="BOTH" ? ["AM","PM"] : [slot];
+  slots.forEach(s=>{
+    const ex=assignAt(teamId,date,s);
+    if(ex) state.assignments=state.assignments.filter(a=>a.id!==ex.id);
+    state.assignments.push({id:uid(),teamId,jobId,date,slot:s});
+  });
+  save(); render();
+}
+
+/* ---- Auftrag ---- */
+let jobEditId=null, jobIsNew=false;
+function openJob(id){
+  jobIsNew=!id;
+  jobEditId=id||uid();
+  const j=id?jobById(id):{name:"",address:"",lat:null,lng:null,contact:"",note:"",customerId:"",wishDate:"",value:""};
+  document.getElementById("jobTitle").textContent=id?"Auftrag bearbeiten":"Auftrag anlegen";
+  zeigeAnhaenge(jobEditId);
+  jbName.value=j.name; jbAdr.value=j.address||""; jbLat.value=j.lat??""; jbLng.value=j.lng??"";
+  jbContact.value=j.contact||""; jbNote.value=j.note||"";
+  fuelleKundenAuswahl(j.customerId||"");
+  jbWish.value=j.wishDate||""; jbValue.value=j.value||"";
+  jbBilled.checked=!!j.billed;
+  document.getElementById("jbDelete").style.display=id?"":"none";
+  document.getElementById("geoHint").className="hint";
+  document.getElementById("geoHint").textContent="Koordinaten werden für die Karte gebraucht. „Adresse suchen“ holt sie automatisch (braucht Internet).";
+  dlgJob.showModal();
+}
+document.getElementById("jbSave").onclick=()=>{
+  if(!jbName.value.trim()){alert("Bitte eine Bezeichnung eingeben.");return;}
+  const data={name:jbName.value.trim(),address:jbAdr.value.trim(),
+    lat:jbLat.value?parseFloat(jbLat.value):null, lng:jbLng.value?parseFloat(jbLng.value):null,
+    contact:jbContact.value.trim(), note:jbNote.value.trim(),
+    customerId:document.getElementById("jbCustomer").value||"",
+    wishDate:jbWish.value||"", value:jbValue.value.trim(), billed:jbBilled.checked||undefined};
+  if(jobIsNew) state.jobs.push(Object.assign({id:jobEditId},data));
+  else Object.assign(jobById(jobEditId),data);
+  jobIsNew=false;
+  save(); dlgJob.close(); render();
+};
+
+/* ---- Anhänge ---- */
+let anhangURLs=[];
+function freiURLs(){ anhangURLs.forEach(u=>URL.revokeObjectURL(u)); anhangURLs=[]; }
+
+function kachel(f,klein){
+  const d=document.createElement("div"); d.className="att";
+  if(istBild(f.type)){
+    const img=document.createElement("img"); img.alt=f.name; img.loading="lazy";
+    img.style.background="rgba(255,255,255,.05)";
+    dateiURL(f).then(u=>{ if(u) img.src=u; });
+    img.onclick=()=>zeigeBild(f);
+    d.appendChild(img);
+  }else{
+    const b=document.createElement("div"); b.className="doc";
+    b.innerHTML=`<b>▤</b><span>${esc(anzeigeName(f))}</span>`;
+    b.onclick=()=>ladeDatei(f);
+    d.appendChild(b);
+  }
+  d.title=`${anzeigeName(f)}\n${groesse(f.size)}`;
+  if(!klein){
+    const x=document.createElement("button"); x.className="del"; x.type="button";
+    x.textContent="✕"; x.title="Entfernen";
+    x.onclick=async e=>{
+      e.stopPropagation();
+      if(!confirm(`„${f.name}“ wirklich löschen?`)) return;
+      await Files.remove(f.id); await refreshCounts(); zeigeAnhaenge(jobEditId); render();
+    };
+    d.appendChild(x);
+  }
+  return d;
+}
+
+async function zeigeAnhaenge(jobId){
+  const box=document.getElementById("jbFiles"); if(!box) return;
+  freiURLs(); box.replaceChildren();
+  const list=await Files.forJob(jobId);
+  document.getElementById("jbFileCount").textContent = list.length ? `· ${list.length}` : "";
+  list.forEach(f=>box.appendChild(kachel(f,false)));
+}
+
+async function nimmDateien(fileList){
+  const files=[...fileList].filter(f=>f.size>0);
+  if(!files.length) return;
+  const gross=files.filter(f=>f.size>25*1024*1024);
+  if(gross.length && !confirm(`${gross.length} Datei(en) sind größer als 25 MB. Viele große Dateien können den Browserspeicher füllen. Trotzdem hinzufügen?`)) return;
+  try{
+    for(const f of files) await Files.add(jobEditId,f);
+  }catch(e){
+    alert("Die Datei konnte nicht gespeichert werden. Vermutlich ist der Speicher des Browsers voll. Bitte über „Sichern / Laden“ eine Sicherung anlegen und ältere Fotos entfernen.");
+  }
+  await refreshCounts(); zeigeAnhaenge(jobEditId); render();
+}
+
+document.getElementById("jbPick").onclick=()=>document.getElementById("jbFileInput").click();
+document.getElementById("jbCam").onclick=()=>document.getElementById("jbCamInput").click();
+document.getElementById("jbCamInput").onchange=e=>{ nimmDateien(e.target.files); e.target.value=""; };
+document.getElementById("jbFileInput").onchange=e=>{ nimmDateien(e.target.files); e.target.value=""; };
+(function(){
+  const z=document.getElementById("jbDrop");
+  z.addEventListener("dragover",e=>{e.preventDefault();z.classList.add("over");});
+  z.addEventListener("dragleave",e=>{ if(!z.contains(e.relatedTarget)) z.classList.remove("over"); });
+  z.addEventListener("drop",e=>{
+    e.preventDefault(); z.classList.remove("over");
+    if(e.dataTransfer.files&&e.dataTransfer.files.length) nimmDateien(e.dataTransfer.files);
+  });
+})();
+
+/* Bild groß ansehen */
+let vwURL=null, vwFile=null;
+function zeigeBild(f){
+  vwFile=f; vwURL=null;
+  const img=document.getElementById("vwImg");
+  img.removeAttribute("src");
+  dateiURL(f).then(u=>{ if(u) img.src=u; });
+  document.getElementById("vwTitle").textContent=anzeigeName(f);
+  const d=new Date(f.added);
+  document.getElementById("vwMeta").textContent=
+    `${groesse(f.size)} · hinzugefügt ${d.toLocaleDateString("de-DE")}`;
+  document.getElementById("dlgView").showModal();
+}
+async function ladeDatei(f){
+  const u=await dateiURL(f);
+  if(!u){ alert("Die Datei konnte nicht geladen werden."); return; }
+  const a=document.createElement("a"); a.href=u; a.download=anzeigeName(f);
+  a.target="_blank"; a.rel="noopener"; a.click();
+}
+document.getElementById("vwDown").onclick=()=>{ if(vwFile) ladeDatei(vwFile); };
+document.getElementById("dlgView").addEventListener("close",()=>{
+  document.getElementById("vwImg").src="";
+  if(vwURL){ URL.revokeObjectURL(vwURL); vwURL=null; }
+});
+document.getElementById("jbDelete").onclick=async()=>{
+  if(!jobEditId) return;
+  const n=state.assignments.filter(a=>a.jobId===jobEditId).length;
+  const anz=(fileCounts[jobEditId]||0);
+  let frage=[];
+  if(n) frage.push(`${n}× im Kalender eingetragen`);
+  if(anz) frage.push(`${anz} Foto(s) bzw. Datei(en)`);
+  if(frage.length && !confirm("Der Auftrag hat "+frage.join(" und ")+". Alles mit löschen?")) return;
+  state.assignments=state.assignments.filter(a=>a.jobId!==jobEditId);
+  state.jobs=state.jobs.filter(j=>j.id!==jobEditId);
+  await Files.removeJob(jobEditId); await refreshCounts();
+  save(); dlgJob.close(); render();
+};
+document.getElementById("jbGeo").onclick=async()=>{
+  const q=jbAdr.value.trim(); const h=document.getElementById("geoHint");
+  if(!q){h.textContent="Erst eine Adresse eintragen.";return;}
+  h.className="hint"; h.textContent="Suche läuft …";
+  try{
+    const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=de&q="+encodeURIComponent(q));
+    const d=await r.json();
+    if(!d.length){h.className="hint geo-no";h.textContent="Nichts gefunden. Koordinaten bitte von Hand eintragen.";return;}
+    jbLat.value=parseFloat(d[0].lat).toFixed(5); jbLng.value=parseFloat(d[0].lon).toFixed(5);
+    h.className="hint geo-ok"; h.textContent="Gefunden: "+d[0].display_name;
+  }catch(e){h.className="hint geo-no";h.textContent="Suche nicht möglich (keine Internetverbindung). Koordinaten von Hand eintragen.";}
+};
+/* Einsatz aus dem Kalender zurück in den Auftragspool ziehen */
+(function(){
+  const zone=document.querySelector("aside");
+  const isRun=e=>[...e.dataTransfer.types].includes("application/json");
+  zone.addEventListener("dragover",e=>{ if(isRun(e)){e.preventDefault();e.dataTransfer.dropEffect="move";zone.classList.add("dropzone");} });
+  zone.addEventListener("dragleave",e=>{ if(!zone.contains(e.relatedTarget)) zone.classList.remove("dropzone"); });
+  zone.addEventListener("drop",e=>{
+    zone.classList.remove("dropzone");
+    const raw=e.dataTransfer.getData("application/json"); if(!raw) return;
+    e.preventDefault();
+    try{ const r=JSON.parse(raw); if(r.kind==="run"){
+      if(istFixiert(r.jobId)){ alert(fixHinweis(r.jobId)); return; }
+      clearRun(r); save(); render();
+    } }catch(_){}
+  });
+})();
+
+document.getElementById("btnNewJob").onclick=()=>openJob(null);
+document.getElementById("btnAllJobs").onclick=()=>{poolShowAll=!poolShowAll;renderPool();};
+
+/* ---- Kontextmenü auf einem Einsatz ---- */
+function abrechnungSetzen(jobId,wert){
+  const j=jobById(jobId); if(!j) return;
+  if(wert) j.billed=true; else delete j.billed;
+  save(); render();
+}
+
+function zeigeKontext(x,y,jobId,teamId,ds,slot){
+  const job=jobById(jobId); if(!job) return;
+  const team=teamById(teamId);
+  const m=document.getElementById("kontext");
+  const abger=!!job.billed;
+  m.innerHTML=`<div class="kopf"><b>${esc(job.name)}</b><small>${esc(team?team.name:"")}${job.value?" · "+esc(job.value):""}</small></div>`;
+
+  const knopf=(txt,farbe,fn)=>{
+    const b=document.createElement("button"); b.type="button";
+    b.innerHTML=(farbe?`<span class="pkt" style="background:${farbe}"></span>`:`<span class="pkt"></span>`)+esc(txt);
+    b.onclick=()=>{ schliesseKontext(); fn(); };
+    m.appendChild(b);
+  };
+  if(abger) knopf("Abrechnung zurücknehmen", team?team.color:"#6B7585", ()=>abrechnungSetzen(jobId,false));
+  else      knopf("Als abgerechnet markieren", "#6B7585", ()=>abrechnungSetzen(jobId,true));
+  knopf("Einsatz öffnen", "", ()=>openRun(teamId,jobId,ds,slot));
+  knopf("Auftrag bearbeiten", "", ()=>openJob(jobId));
+  if(job.lat!=null) knopf("Auf Karte zeigen", "", ()=>showOnMap(jobId,ds));
+
+  m.hidden=false;
+  kontextSeit=Date.now();
+  const b=m.getBoundingClientRect();
+  m.style.left=Math.min(x, innerWidth-b.width-10)+"px";
+  m.style.top=Math.min(y, innerHeight-b.height-10)+"px";
+}
+/* Langes Tippen öffnet auf dem Telefon dasselbe Menü wie der Rechtsklick */
+function langDruck(el,fn){
+  let t=null, start=null, lief=false;
+  const aus=()=>{ clearTimeout(t); t=null; };
+  el.addEventListener("touchstart",e=>{
+    const p=e.touches[0]; start=[p.clientX,p.clientY]; lief=false;
+    t=setTimeout(()=>{ lief=true; if(navigator.vibrate) navigator.vibrate(12); fn(start[0],start[1]); },500);
+  },{passive:true});
+  el.addEventListener("touchmove",e=>{
+    if(!t||!start) return;
+    const p=e.touches[0];
+    if(Math.abs(p.clientX-start[0])>12||Math.abs(p.clientY-start[1])>12) aus();
+  },{passive:true});
+  el.addEventListener("touchend",e=>{ aus(); if(lief){ e.preventDefault(); lief=false; } });
+  el.addEventListener("touchcancel",aus,{passive:true});
+}
+
+let kontextSeit=0;
+function schliesseKontext(){ const m=document.getElementById("kontext"); if(m) m.hidden=true; }
+function kontextAussen(e){
+  if(Date.now()-kontextSeit<350) return;          // der öffnende Klick zählt nicht
+  if(e.target.closest && e.target.closest(".kontext")) return;
+  schliesseKontext();
+}
+document.addEventListener("pointerdown",kontextAussen,true);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") schliesseKontext(); });
+window.addEventListener("scroll",e=>{ if(Date.now()-kontextSeit>350) schliesseKontext(); },true);
+
+/* ---- Auftrag aus Formular übernehmen ---- */
+const API_KEY="einsatzplaner.apikey";
+const MODELL_STANDARD="claude-sonnet-5-5";
+const schluessel = () => { try{ return localStorage.getItem(API_KEY)||""; }catch(e){ return ""; } };
+
+let scanDatei=null, scanURL=null;
+
+function openScan(){
+  scanDatei=null;
+  if(scanURL){ URL.revokeObjectURL(scanURL); scanURL=null; }
+  document.getElementById("scanImgBox").innerHTML=
+    `<div class="scan-drop" id="scanDrop">
+       <b>Foto des ausgefüllten Formulars</b>
+       <span><button type="button" class="linky" id="scanCam">Formular abfotografieren</button> · <button type="button" class="linky" id="scanPick">Datei wählen</button></span>
+       <small>JPG, PNG oder HEIC vom Handy. Auch ein Screenshot aus WhatsApp.</small>
+     </div>
+     <input type="file" id="scanInput" accept="image/*,.heic,application/pdf" hidden>`;
+  bindeScanFeld();
+  ["scContact","scAdr","scDate","scValue","scWork","scName","scKundeText"].forEach(id=>document.getElementById(id).value="");
+  fuelleScanKunden("");
+  document.getElementById("scanRead").disabled=true;
+  document.getElementById("scanStatus").textContent="";
+  document.getElementById("scanStatus").className="hint";
+  document.getElementById("scanText").value="";
+  document.getElementById("scanTextOut").textContent="";
+  scanQuelle("foto");
+  document.getElementById("scanSetup").hidden=true;
+  document.getElementById("scanRead").hidden=false;
+  document.getElementById("scanHint").textContent = schluessel()
+    ? "Nach dem Hochladen werden die Felder automatisch gelesen."
+    : "Ohne Einrichtung werden die Felder von Hand eingetippt.";
+  dlgScan.showModal();
+}
+
+function bindeScanFeld(){
+  const box=document.getElementById("scanImgBox");
+  const input=document.getElementById("scanInput");
+  const pick=document.getElementById("scanPick");
+  if(pick) pick.onclick=()=>input.click();
+  const cam=document.getElementById("scanCam");
+  if(cam) cam.onclick=()=>{
+    const c=document.createElement("input");
+    c.type="file"; c.accept="image/*"; c.capture="environment";
+    c.onchange=e=>{ if(e.target.files[0]) scanBildSetzen(e.target.files[0]); };
+    c.click();
+  };
+  input.onchange=e=>{ if(e.target.files[0]) scanBildSetzen(e.target.files[0]); e.target.value=""; };
+  box.ondragover=e=>{e.preventDefault();box.classList.add("over");};
+  box.ondragleave=e=>{ if(!box.contains(e.relatedTarget)) box.classList.remove("over"); };
+  box.ondrop=e=>{
+    e.preventDefault(); box.classList.remove("over");
+    const f=e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(f) scanBildSetzen(f);
+  };
+}
+
+function scanBildSetzen(file){
+  scanDatei=file;
+  const box=document.getElementById("scanImgBox");
+  if(scanURL) URL.revokeObjectURL(scanURL);
+  const bild=/^image\//.test(file.type||"");
+  if(bild){
+    scanURL=URL.createObjectURL(file);
+    box.innerHTML=`<img src="${scanURL}" alt="Formular"><button type="button" class="scan-neu">Anderes Foto</button>`;
+    box.querySelector("img").onclick=()=>window.open(scanURL,"_blank");
+  }else{
+    box.innerHTML=`<div class="scan-drop"><b>${esc(file.name)}</b>
+      <span>wird am Auftrag gespeichert</span>
+      <small>Vorschau und automatisches Auslesen gibt es nur für Fotos.</small></div>
+      <button type="button" class="scan-neu">Andere Datei</button>`;
+  }
+  const inp=document.createElement("input");
+  inp.type="file"; inp.id="scanInput"; inp.accept="image/*,.heic,application/pdf"; inp.hidden=true;
+  box.appendChild(inp);
+  box.querySelector(".scan-neu").onclick=()=>inp.click();
+  bindeScanFeld();
+  const bereit = bild && !!schluessel();
+  const einrichten = bild && !schluessel();
+  document.getElementById("scanRead").disabled = !bereit;
+  document.getElementById("scanRead").hidden = einrichten;
+  document.getElementById("scanSetup").hidden = !einrichten;
+  const st=document.getElementById("scanStatus");
+  st.className="hint";
+  st.textContent = !bild ? "Für Dateien ohne Bild bitte die Felder abtippen." : "";
+  if(bereit) formularLesen();
+}
+
+document.getElementById("scanSetupGo").onclick=()=>{
+  dlgScan.close();
+  document.getElementById("btnSettings").click();
+  setTimeout(()=>document.getElementById("stApiKey").focus(),200);
+};
+
+function fuelleScanKunden(selId){
+  const sel=document.getElementById("scKunde"); sel.replaceChildren();
+  const leer=document.createElement("option"); leer.value=""; leer.textContent="– neuer oder unbekannter Kunde –";
+  sel.appendChild(leer);
+  [...state.customers].sort((a,b)=>a.company.localeCompare(b.company,"de")).forEach(k=>{
+    const o=document.createElement("option"); o.value=k.id; o.textContent=k.company; sel.appendChild(o);
+  });
+  sel.value=selId||"";
+}
+document.getElementById("scKundeNeu").onclick=()=>openKunde(null,id=>fuelleScanKunden(id));
+
+/* ---------- Auftrag aus Text übernehmen ---------- */
+const VORLAGE =
+  "Kunde: \n"+
+  "Ansprechpartner: \n"+
+  "Adresse: \n"+
+  "Datum: \n"+
+  "Betrag: \n"+
+  "Auftrag: ";
+
+/* Welche Beschriftung gehört zu welchem Feld */
+const FELDWORTE = [
+  ["auftraggeber", ["kunde","auftraggeber","firma","auftraggeberin","bauherr"]],
+  ["ansprechpartner", ["ansprechpartner","ansprechpartnerin","kontakt","telefon","tel","handy","mobil","rufnummer"]],
+  ["adresse", ["adresse","objekt","objektadresse","baustelle","einsatzort","ort","anschrift","strasse","straße"]],
+  ["beginn", ["datum","beginn","termin","wunschtermin","start","starttermin","ausführung","wunschbeginn"]],
+  ["wert", ["betrag","auftragswert","wert","preis","summe","budget","angebotssumme","honorar"]],
+  ["arbeiten", ["auftrag","arbeiten","leistung","leistungen","tätigkeit","taetigkeit","beschreibung","was","arbeit"]],
+  ["bezeichnung", ["bezeichnung","titel","kurz","überschrift","ueberschrift"]]
+];
+function feldFuer(wort){
+  const w=wort.toLowerCase().replace(/[^a-zäöüß]/g,"");
+  for(const [feld,worte] of FELDWORTE) if(worte.includes(w)) return feld;
+  return null;
+}
+
+/* Datumsangaben aus dem Text verstehen */
+function datumLesen(txt){
+  if(!txt) return "";
+  const t=txt.trim();
+  let m=t.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m=t.match(/(\d{1,2})\s*[.\/-]\s*(\d{1,2})(?:\s*[.\/-]\s*(\d{2,4}))?/);
+  if(m){
+    const tag=+m[1], mon=+m[2];
+    let jahr = m[3] ? +m[3] : null;
+    if(jahr!==null && jahr<100) jahr+=2000;
+    if(jahr===null){
+      const heute=new Date(); heute.setHours(0,0,0,0);
+      jahr=heute.getFullYear();
+      if(new Date(jahr,mon-1,tag)<heute) jahr++;
+    }
+    if(tag>=1&&tag<=31&&mon>=1&&mon<=12)
+      return `${jahr}-${String(mon).padStart(2,"0")}-${String(tag).padStart(2,"0")}`;
+  }
+  const kurz=t.toLowerCase();
+  const heute=new Date(); heute.setHours(0,0,0,0);
+  if(/^heute/.test(kurz)) return iso(heute);
+  if(/^morgen/.test(kurz)) return iso(addDays(heute,1));
+  if(/^übermorgen|^ubermorgen/.test(kurz)) return iso(addDays(heute,2));
+  const woche=["montag","dienstag","mittwoch","donnerstag","freitag","samstag","sonntag"];
+  const wi=woche.findIndex(d=>kurz.startsWith(d));
+  if(wi>=0){
+    let d=new Date(heute);
+    do{ d=addDays(d,1); }while(((d.getDay()+6)%7)!==wi);
+    return iso(d);
+  }
+  return "";
+}
+
+/* Zeilen der Form „Beschriftung: Inhalt“ auswerten */
+function textAuswerten(roh){
+  const felder={}; let aktuell=null;
+  roh.split(/\r?\n/).forEach(zeile=>{
+    const m=zeile.match(/^\s*[-*•]?\s*([A-Za-zÄÖÜäöüß .\/]{2,30}?)\s*[:=]\s*(.*)$/);
+    if(m){
+      const feld=feldFuer(m[1]);
+      if(feld){ aktuell=feld; felder[feld]=(m[2]||"").trim(); return; }
+    }
+    const rest=zeile.trim();
+    if(aktuell && rest){ felder[aktuell]=((felder[aktuell]||"")+" "+rest).trim(); }
+  });
+  return felder;
+}
+
+function kurzTitel(txt){
+  const erst=String(txt).split(/[.,;\n]/)[0].trim();
+  if(erst.length<=42) return erst;
+  const teil=erst.slice(0,42);
+  return teil.slice(0, teil.lastIndexOf(" ")>18 ? teil.lastIndexOf(" ") : 42).trim();
+}
+
+function textUebernehmen(){
+  const roh=document.getElementById("scanText").value;
+  const out=document.getElementById("scanTextOut");
+  if(!roh.trim()){ out.className="hint"; out.textContent=""; return; }
+  const f=textAuswerten(roh);
+  const erkannt=[];
+
+  if(f.auftraggeber){
+    const treffer=state.customers.find(k=>k.company.toLowerCase()===f.auftraggeber.toLowerCase());
+    if(treffer){ fuelleScanKunden(treffer.id); document.getElementById("scKundeText").value=""; }
+    else { fuelleScanKunden(""); document.getElementById("scKundeText").value=f.auftraggeber; }
+    erkannt.push("Kunde");
+  }
+  if(f.ansprechpartner){ scContact.value=f.ansprechpartner; erkannt.push("Ansprechpartner"); }
+  if(f.adresse){ scAdr.value=f.adresse; erkannt.push("Adresse"); }
+  if(f.beginn){
+    const d=datumLesen(f.beginn);
+    if(d){ scDate.value=d; erkannt.push("Datum"); }
+    else { scDate.value=""; }
+  }
+  if(f.wert){ scValue.value=f.wert; erkannt.push("Betrag"); }
+  if(f.arbeiten){ scWork.value=f.arbeiten; erkannt.push("Arbeiten"); }
+  if(f.bezeichnung) scName.value=f.bezeichnung;
+  else if(f.arbeiten && !scName.value) scName.value=kurzTitel(f.arbeiten);
+
+  if(!erkannt.length){
+    out.className="hint geo-no";
+    out.textContent="Keine Felder erkannt. Jede Zeile sollte so aussehen: Kunde: Muster Bau GmbH";
+    return;
+  }
+  const fehlt=[];
+  if(!scAdr.value.trim()) fehlt.push("Adresse");
+  if(!scDate.value) fehlt.push("Datum");
+  out.className=fehlt.length?"hint geo-no":"hint geo-ok";
+  out.textContent = (fehlt.length
+    ? `${erkannt.length} Felder übernommen. Es fehlt noch: ${fehlt.join(", ")}.`
+    : `${erkannt.length} Felder übernommen: ${erkannt.join(", ")}.`);
+}
+
+(function(){
+  const t=document.getElementById("scanText"); let timer=null;
+  t.addEventListener("input",()=>{ clearTimeout(timer); timer=setTimeout(textUebernehmen,250); });
+})();
+
+document.getElementById("scanVorlage").onclick=async()=>{
+  const out=document.getElementById("scanTextOut");
+  try{
+    await navigator.clipboard.writeText(VORLAGE);
+    out.className="hint geo-ok";
+    out.textContent="Vorlage kopiert – kannst du dem Kunden schicken.";
+  }catch(e){
+    document.getElementById("scanText").value=VORLAGE;
+    out.className="hint";
+    out.textContent="Vorlage ins Feld geschrieben – von dort kopieren.";
+  }
+};
+
+/* Umschalten zwischen Foto und Text */
+function scanQuelle(q){
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.q===q));
+  document.getElementById("scanImgBox").hidden = q!=="foto";
+  document.getElementById("scanTextBox").hidden = q!=="text";
+  const nurFoto = q==="foto";
+  document.getElementById("scanRead").hidden = !nurFoto || !!document.getElementById("scanSetup").hidden===false;
+  if(q==="text"){
+    document.getElementById("scanRead").hidden=true;
+    document.getElementById("scanSetup").hidden=true;
+    document.getElementById("scanStatus").textContent="";
+    document.getElementById("scanHint").textContent="Zeilen der Form „Kunde: …“ werden sofort übernommen.";
+    setTimeout(()=>document.getElementById("scanText").focus(),50);
+  }else{
+    document.getElementById("scanHint").textContent = schluessel()
+      ? "Nach dem Hochladen werden die Felder automatisch gelesen."
+      : "Ohne Einrichtung werden die Felder von Hand eingetippt.";
+  }
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>scanQuelle(b.dataset.q));
+document.getElementById("btnScan").onclick=openScan;
+
+/* Bild für die Übertragung vorbereiten: verkleinern und als Text kodieren */
+function bildVerkleinern(file,maxKante=1600){
+  return new Promise((res,rej)=>{
+    const u=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{
+      const f=Math.min(1,maxKante/Math.max(img.width,img.height));
+      const c=document.createElement("canvas");
+      c.width=Math.round(img.width*f); c.height=Math.round(img.height*f);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(u);
+      res(c.toDataURL("image/jpeg",0.82).split(",")[1]);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(u); rej(new Error("Bild nicht lesbar")); };
+    img.src=u;
+  });
+}
+
+document.getElementById("scanRead").onclick=()=>formularLesen();
+
+async function formularLesen(){
+  const key=schluessel();
+  const st=document.getElementById("scanStatus");
+  const btn=document.getElementById("scanRead");
+  if(!key || !scanDatei) return;
+  btn.disabled=true; const alt=btn.textContent; btn.textContent="Formular wird gelesen …";
+  st.className="hint"; st.textContent="Das dauert ein paar Sekunden.";
+  try{
+    const b64=await bildVerkleinern(scanDatei);
+    const heute=todayISO();
+    const anweisung =
+      "Das Bild zeigt ein ausgefülltes Auftragsformular mit dem Titel „Auftragserteilung“, "+
+      "meist handschriftlich ausgefüllt. Es hat sechs nummerierte Felder in fester Anordnung:\n"+
+      "1 Auftraggeber / Firma (oben links)\n"+
+      "2 Ansprechpartner und Telefon (oben rechts)\n"+
+      "3 Objektadresse – wo wird gearbeitet (ganze Breite)\n"+
+      "4 Gewünschter Beginn (links, Format TT.MM.JJJJ)\n"+
+      "5 Auftragswert / Budget (rechts, in Euro)\n"+
+      "6 Auszuführende Arbeiten (mehrzeiliger Kasten unten)\n"+
+      "Ort/Datum und Unterschrift darunter werden NICHT ausgelesen. "+
+      "Die hellgrauen Beispieltexte in leeren Kästen („Straße und Hausnummer, PLZ, Ort“, „TT . MM . JJJJ“, "+
+      "„EUR, netto – falls bekannt“) sind Vordruck und niemals Inhalt. "+
+      "Heute ist "+heute+".\n\n"+
+      "Gib ausschließlich JSON zurück, ohne weiteren Text, in dieser Form:\n"+
+      '{"auftraggeber":"","ansprechpartner":"","adresse":"","beginn":"JJJJ-MM-TT","wert":"","arbeiten":"","bezeichnung":""}\n'+
+      "Regeln: Leere oder unleserliche Felder als leeren Text zurückgeben, niemals etwas erfinden. "+
+      "\"beginn\" immer als JJJJ-MM-TT. Deutsches Format, Tag vor Monat: 09.11.26 ist der 9. November 2026. "+
+      "Zweistellige Jahreszahlen zu 20JJ ergänzen. "+
+      "\"ansprechpartner\" enthält Name und Telefonnummer zusammen. "+
+      "\"bezeichnung\" ist eine knappe Überschrift für den Kalender aus den Arbeiten, höchstens vier Wörter.";
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key":key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body:JSON.stringify({
+        model:(state.settings.model||MODELL_STANDARD),
+        max_tokens:700,
+        messages:[{role:"user",content:[
+          {type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},
+          {type:"text",text:anweisung}
+        ]}]
+      })
+    });
+    if(!r.ok){
+      let txt=await r.text();
+      try{ txt=(JSON.parse(txt).error||{}).message||txt; }catch(_){}
+      throw new Error(txt.slice(0,200));
+    }
+    const d=await r.json();
+    const roh=(d.content||[]).map(c=>c.text||"").join("");
+    const m=roh.match(/\{[\s\S]*\}/);
+    if(!m) throw new Error("Die Antwort enthielt keine Felder.");
+    const f=JSON.parse(m[0]);
+
+    if(f.auftraggeber){
+      const treffer=state.customers.find(k=>k.company.toLowerCase()===String(f.auftraggeber).trim().toLowerCase());
+      if(treffer){ fuelleScanKunden(treffer.id); document.getElementById("scKundeText").value=""; }
+      else { fuelleScanKunden(""); document.getElementById("scKundeText").value=f.auftraggeber; }
+    }
+    if(f.ansprechpartner) scContact.value=f.ansprechpartner;
+    if(f.adresse) scAdr.value=f.adresse;
+    if(f.beginn && /^\d{4}-\d{2}-\d{2}$/.test(f.beginn)) scDate.value=f.beginn;
+    if(f.wert) scValue.value=f.wert;
+    if(f.arbeiten) scWork.value=f.arbeiten;
+    scName.value=f.bezeichnung || (f.arbeiten?String(f.arbeiten).split(/[.,\n]/)[0].trim().slice(0,40):"");
+
+    const leer=["adresse","beginn","arbeiten"].filter(x=>!f[x]);
+    st.className=leer.length?"hint geo-no":"hint geo-ok";
+    st.textContent=leer.length
+      ? "Gelesen, aber unvollständig. Bitte prüfen und ergänzen: "+leer.join(", ")+"."
+      : "Felder übernommen. Bitte am Foto gegenprüfen, besonders Zahlen.";
+  }catch(e){
+    st.className="hint geo-no";
+    st.textContent="Automatisches Lesen nicht möglich: "+e.message+" — Felder bitte von Hand eintragen.";
+  }
+  btn.disabled=false; btn.textContent=alt;
+}
+
+document.getElementById("scanSave").onclick=async()=>{
+  const adr=scAdr.value.trim();
+  const bez=(scName.value.trim() || kurzTitel(scWork.value) || adr);
+  if(!bez){
+    document.getElementById("scanHint").textContent="Bitte wenigstens Adresse oder Bezeichnung eintragen.";
+    scAdr.focus(); return;
+  }
+  // Kunde bestimmen oder neu anlegen
+  let kid=document.getElementById("scKunde").value;
+  const neuerName=document.getElementById("scKundeText").value.trim();
+  if(!kid && neuerName){
+    const treffer=state.customers.find(k=>k.company.toLowerCase()===neuerName.toLowerCase());
+    if(treffer) kid=treffer.id;
+    else{
+      kid=uid();
+      state.customers.push({id:kid,company:neuerName,contact:scContact.value.trim(),
+        address:"",phone:"",mobile:"",mail:"",tax:"",note:"aus Auftragsformular übernommen"});
+    }
+  }
+  const job={id:uid(),name:bez,address:adr,lat:null,lng:null,
+    contact:scContact.value.trim(),note:scWork.value.trim(),
+    customerId:kid||"", wishDate:scDate.value||"", value:scValue.value.trim()};
+  state.jobs.push(job);
+  if(adr) geocodeQuiet(job);
+  if(scanDatei){
+    try{ await Files.add(job.id,scanDatei); await refreshCounts(); }catch(e){}
+  }
+  save(); dlgScan.close();
+  poolShowAll=false; render();
+  openJob(job.id);
+};
+
+/* ---- Kunden ---- */
+function openKunden(){
+  const list=document.getElementById("kdList"); list.replaceChildren();
+  if(!state.customers.length){
+    const p=document.createElement("div"); p.className="pool-empty";
+    p.textContent="Noch keine Kunden angelegt.";
+    list.appendChild(p);
+  }
+  [...state.customers].sort((a,b)=>a.company.localeCompare(b.company,"de")).forEach(k=>{
+    const n=state.jobs.filter(j=>j.customerId===k.id).length;
+    const row=document.createElement("div"); row.className="kdrow";
+    row.innerHTML=`<div>
+        <b>${esc(k.company)}</b>
+        <small>${esc([k.contact,k.address].filter(Boolean).join(" · ")||"keine weiteren Angaben")}</small>
+        ${(k.phone||k.mobile)?`<small>${esc([k.phone,k.mobile].filter(Boolean).join(" · "))}</small>`:""}
+      </div>
+      <span class="n">${n?`${n} Auftrag${n===1?"":"­e"}`:"kein Auftrag"}</span>`;
+    row.onclick=()=>openKunde(k.id);
+    list.appendChild(row);
+  });
+  dlgCustomers.showModal();
+}
+
+let kundeEditId=null, kundeCallback=null;
+function openKunde(id,callback){
+  kundeEditId=id||null; kundeCallback=callback||null;
+  const k=id?kundeById(id):{company:"",contact:"",address:"",phone:"",mobile:"",mail:"",tax:"",note:""};
+  document.getElementById("kdTitle").textContent=id?"Kunde bearbeiten":"Kunde anlegen";
+  kdCompany.value=k.company||""; kdContact.value=k.contact||""; kdAddress.value=k.address||"";
+  kdPhone.value=k.phone||""; kdMobile.value=k.mobile||""; kdMail.value=k.mail||"";
+  kdTax.value=k.tax||""; kdNote.value=k.note||"";
+  document.getElementById("kdDelete").style.display=id?"":"none";
+  dlgCustomer.showModal();
+}
+
+document.getElementById("kdSave").onclick=()=>{
+  if(!kdCompany.value.trim()){ alert("Bitte einen Firmennamen eingeben."); kdCompany.focus(); return; }
+  const data={company:kdCompany.value.trim(),contact:kdContact.value.trim(),address:kdAddress.value.trim(),
+    phone:kdPhone.value.trim(),mobile:kdMobile.value.trim(),mail:kdMail.value.trim(),
+    tax:kdTax.value.trim(),note:kdNote.value.trim()};
+  let id=kundeEditId;
+  if(id) Object.assign(kundeById(id),data);
+  else { id=uid(); state.customers.push(Object.assign({id},data)); }
+  save(); dlgCustomer.close();
+  if(kundeCallback){ kundeCallback(id); kundeCallback=null; }
+  else if(dlgCustomers.open) openKunden();
+  render();
+};
+
+document.getElementById("kdDelete").onclick=()=>{
+  if(!kundeEditId) return;
+  const n=state.jobs.filter(j=>j.customerId===kundeEditId).length;
+  if(n && !confirm(`Dieser Kunde hängt an ${n} Auftrag/Aufträgen. Die Aufträge bleiben erhalten, nur die Zuordnung geht verloren. Trotzdem löschen?`)) return;
+  state.jobs.forEach(j=>{ if(j.customerId===kundeEditId) delete j.customerId; });
+  state.customers=state.customers.filter(k=>k.id!==kundeEditId);
+  save(); dlgCustomer.close();
+  if(dlgCustomers.open) openKunden();
+  render();
+};
+document.getElementById("kdAdd").onclick=()=>openKunde(null);
+document.getElementById("btnKunden").onclick=openKunden;
+
+/* Kundenauswahl im Auftragsdialog */
+function fuelleKundenAuswahl(selId){
+  const sel=document.getElementById("jbCustomer"); sel.replaceChildren();
+  const leer=document.createElement("option"); leer.value=""; leer.textContent="– kein Kunde zugeordnet –";
+  sel.appendChild(leer);
+  [...state.customers].sort((a,b)=>a.company.localeCompare(b.company,"de")).forEach(k=>{
+    const o=document.createElement("option"); o.value=k.id; o.textContent=k.company; sel.appendChild(o);
+  });
+  sel.value=selId||"";
+  zeigeKundenInfo();
+}
+function zeigeKundenInfo(){
+  const k=kundeById(document.getElementById("jbCustomer").value);
+  const info=document.getElementById("jbCustomerInfo");
+  if(!k){ info.textContent="Noch kein Kunde angelegt? Über „Neu anlegen“ oder oben über „Kunden“."; return; }
+  info.textContent=[k.contact,k.address,k.phone||k.mobile].filter(Boolean).join(" · ")||"keine weiteren Angaben";
+}
+document.getElementById("jbCustomer").onchange=zeigeKundenInfo;
+document.getElementById("jbNewCustomer").onclick=()=>openKunde(null,id=>{
+  fuelleKundenAuswahl(id);
+});
+
+/* ---- Teams ---- */
+function openTeams(){
+  const list=document.getElementById("teamList"); list.replaceChildren();
+  state.teams.forEach(t=>list.appendChild(teamRow(t)));
+  dlgTeams.showModal();
+}
+function teamRow(t){
+  const row=document.createElement("div"); row.className="rowitem"; row.dataset.id=t.id;
+  row.innerHTML=`<input type="color" value="${t.color}" title="Farbe">
+    <input type="text" class="nm" value="${esc(t.name)}" placeholder="Teamname" style="max-width:120px">
+    <input type="text" class="mb" value="${esc(t.members.join(", "))}" placeholder="Anton, Igor">
+    <button class="x" title="Team entfernen">✕</button>`;
+  row.querySelector(".x").onclick=()=>row.remove();
+  return row;
+}
+document.getElementById("btnAddTeam").onclick=()=>{
+  const n=document.getElementById("teamList").children.length;
+  document.getElementById("teamList").appendChild(teamRow({id:uid(),name:"Team "+(n+1),color:PALETTE[n%PALETTE.length],members:[]}));
+};
+document.getElementById("teamsSave").onclick=()=>{
+  const rows=[...document.getElementById("teamList").children];
+  const keep=new Set(rows.map(r=>r.dataset.id));
+  const next=rows.map(r=>({
+    id:r.dataset.id,
+    color:r.querySelector("input[type=color]").value,
+    name:r.querySelector(".nm").value.trim()||"Team",
+    members:r.querySelector(".mb").value.split(",").map(s=>s.trim()).filter(Boolean)
+  }));
+  state.assignments=state.assignments.filter(a=>keep.has(a.teamId));
+  state.teams=next; save(); dlgTeams.close(); render();
+};
+document.getElementById("btnTeams").onclick=openTeams;
+
+/* ---- Einstellungen ---- */
+document.getElementById("btnSettings").onclick=()=>{
+  const s=state.settings;
+  stCompany.value=s.company; stAmS.value=s.amStart; stAmE.value=s.amEnd; stPmS.value=s.pmStart; stPmE.value=s.pmEnd;
+  try{ stApiKey.value=localStorage.getItem(API_KEY)||""; }catch(e){}
+  stModel.value=(s.model||MODELL_STANDARD);
+  dlgSettings.showModal();
+};
+document.getElementById("stTest").onclick=async()=>{
+  const out=document.getElementById("stTestOut");
+  const key=document.getElementById("stApiKey").value.trim();
+  const modell=document.getElementById("stModel").value.trim()||MODELL_STANDARD;
+  if(!key){ out.className="hint geo-no"; out.textContent="Erst den Schlüssel einfügen."; return; }
+  out.className="hint"; out.textContent="Wird geprüft …";
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"content-type":"application/json","x-api-key":key,
+        "anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:modell,max_tokens:12,messages:[{role:"user",content:"Antworte nur: ok"}]})
+    });
+    if(r.ok){ out.className="hint geo-ok"; out.textContent="Verbindung steht. Jetzt noch speichern."; return; }
+    let t=await r.text();
+    try{ t=(JSON.parse(t).error||{}).message||t; }catch(_){}
+    out.className="hint geo-no";
+    out.textContent = r.status===401 ? "Schlüssel wird nicht akzeptiert – bitte neu kopieren."
+      : r.status===400 ? "Modellname stimmt nicht: "+t.slice(0,90)
+      : (r.status===429 ? "Kein Guthaben oder Limit erreicht." : t.slice(0,110));
+  }catch(e){
+    out.className="hint geo-no"; out.textContent="Keine Verbindung zum Internet.";
+  }
+};
+
+document.getElementById("stSave").onclick=()=>{
+  Object.assign(state.settings,{company:stCompany.value.trim()||"Betrieb",amStart:stAmS.value,amEnd:stAmE.value,pmStart:stPmS.value,pmEnd:stPmE.value,
+    model:(stModel.value.trim()||MODELL_STANDARD)});
+  try{
+    const k=stApiKey.value.trim();
+    if(k) localStorage.setItem(API_KEY,k); else localStorage.removeItem(API_KEY);
+  }catch(e){}
+  save(); dlgSettings.close(); render();
+};
+
+/* ---- Daten ---- */
+document.getElementById("btnData").onclick=async()=>{
+  const el=document.getElementById("storeState");
+  el.textContent = storageOK
+    ? "Automatisch gespeichert auf diesem Rechner."
+    : "Achtung: Der Browser erlaubt hier kein automatisches Speichern. Bitte vor dem Schließen exportieren.";
+  dlgData.showModal();
+  const alle=await Files.all();
+  const bytes=alle.reduce((n,f)=>n+(f.size||0),0);
+  el.textContent += alle.length
+    ? `  Dazu ${alle.length} Foto(s) und Datei(en), zusammen ${groesse(bytes)}. Diese stecken nur in „Mit Fotos sichern“.`
+    : "";
+};
+
+/* ---------- Einfacher ZIP-Packer (ohne Komprimierung) ---------- */
+const CRC_TAB=(()=>{const t=new Uint32Array(256);
+  for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}
+  return t;})();
+function crc32(buf){
+  let c=0xFFFFFFFF;
+  for(let i=0;i<buf.length;i++) c=CRC_TAB[(c^buf[i])&0xFF]^(c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function dosZeit(d){
+  const t=((d.getHours()<<11)|(d.getMinutes()<<5)|Math.floor(d.getSeconds()/2))&0xFFFF;
+  const g=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+  return [t,g];
+}
+function zipBauen(eintraege){
+  const enc=new TextEncoder(), teile=[], verz=[];
+  let pos=0;
+  eintraege.forEach(e=>{
+    const name=enc.encode(e.name);
+    const crc=crc32(e.data);
+    const [zt,zd]=dosZeit(e.datum||new Date());
+    const lok=new DataView(new ArrayBuffer(30));
+    lok.setUint32(0,0x04034b50,true); lok.setUint16(4,20,true); lok.setUint16(6,0x0800,true);
+    lok.setUint16(8,0,true); lok.setUint16(10,zt,true); lok.setUint16(12,zd,true);
+    lok.setUint32(14,crc,true); lok.setUint32(18,e.data.length,true); lok.setUint32(22,e.data.length,true);
+    lok.setUint16(26,name.length,true); lok.setUint16(28,0,true);
+    teile.push(new Uint8Array(lok.buffer),name,e.data);
+    const z=new DataView(new ArrayBuffer(46));
+    z.setUint32(0,0x02014b50,true); z.setUint16(4,20,true); z.setUint16(6,20,true);
+    z.setUint16(8,0x0800,true); z.setUint16(10,0,true); z.setUint16(12,zt,true); z.setUint16(14,zd,true);
+    z.setUint32(16,crc,true); z.setUint32(20,e.data.length,true); z.setUint32(24,e.data.length,true);
+    z.setUint16(28,name.length,true); z.setUint32(42,pos,true);
+    verz.push(new Uint8Array(z.buffer),name);
+    pos+=30+name.length+e.data.length;
+  });
+  const vStart=pos;
+  let vLen=0; verz.forEach(v=>vLen+=v.length);
+  const end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);
+  end.setUint16(8,eintraege.length,true); end.setUint16(10,eintraege.length,true);
+  end.setUint32(12,vLen,true); end.setUint32(16,vStart,true);
+  return new Blob([...teile,...verz,new Uint8Array(end.buffer)],{type:"application/zip"});
+}
+
+document.getElementById("dtZip").onclick=async()=>{
+  const btn=document.getElementById("dtZip"); const alt=btn.textContent;
+  const alle=await Files.all();
+  if(!alle.length){ alert("Es sind noch keine Fotos oder Dateien gespeichert."); return; }
+  btn.disabled=true;
+  try{
+    alle.sort((a,b)=>(a.nr||0)-(b.nr||0));
+    const eintraege=[];
+    const zeilen=["Dateiname;Objekt;Adresse;Kunde;Hinzugefuegt;Groesse"];
+    for(let i=0;i<alle.length;i++){
+      const f=alle[i];
+      btn.textContent=`Packe ${i+1} von ${alle.length} …`;
+      const job=jobById(f.jobId)||{};
+      const kunde=kundeById(job.customerId);
+      const u=await dateiURL(f);
+      if(!u) continue;
+      const roh=await (await fetch(u)).arrayBuffer();
+      eintraege.push({name:"fotos/"+anzeigeName(f),
+        data:new Uint8Array(roh),
+        datum:new Date(f.added||Date.now())});
+      zeilen.push([anzeigeName(f),job.name||"",job.address||"",kunde?kunde.company:"",
+        String(f.added||"").slice(0,10),groesse(f.size)]
+        .map(x=>String(x).replace(/;/g,",")).join(";"));
+    }
+    eintraege.push({name:"uebersicht.csv",
+      data:new TextEncoder().encode("\uFEFF"+zeilen.join("\r\n")),datum:new Date()});
+    const blob=zipBauen(eintraege);
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="einsatzplaner-fotos-"+todayISO()+".zip"; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),6000);
+  }catch(e){
+    alert("Der Ordner konnte nicht gepackt werden: "+e.message);
+  }
+  btn.disabled=false; btn.textContent=alt;
+};
+
+function ladeJSON(obj,name){
+  const blob=new Blob([JSON.stringify(obj)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+const blobZuText = blob => new Promise(res=>{
+  const r=new FileReader();
+  r.onload=()=>res(String(r.result).split(",")[1]||"");
+  r.onerror=()=>res("");
+  r.readAsDataURL(blob);
+});
+function textZuBlob(b64,type){
+  const bin=atob(b64||""); const arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:type||"application/octet-stream"});
+}
+document.getElementById("dtExport").onclick=()=>{
+  ladeJSON(state,"einsatzplanung-"+todayISO()+".json");
+};
+
+document.getElementById("dtExportAll").onclick=async()=>{
+  const btn=document.getElementById("dtExportAll");
+  const alle=await Files.all();
+  if(!alle.length){ ladeJSON(state,"einsatzplanung-"+todayISO()+".json"); return; }
+  const bytes=alle.reduce((n,f)=>n+(f.size||0),0);
+  if(!confirm(`${alle.length} Foto(s) und Datei(en) mit ${groesse(bytes)} werden in die Sicherung gepackt. Das dauert einen Moment. Fortfahren?`)) return;
+  btn.disabled=true; const alt=btn.textContent;
+  try{
+    const dateien=[];
+    for(let i=0;i<alle.length;i++){
+      const f=alle[i];
+      btn.textContent=`Packe ${i+1} von ${alle.length} …`;
+      const u=await dateiURL(f);
+      if(!u) continue;
+      const blob=await (await fetch(u)).blob();
+      dateien.push({id:f.id,jobId:f.jobId,nr:f.nr,name:f.name,storedName:anzeigeName(f),
+                    type:f.type,size:f.size,added:f.added,
+                    inhalt:await blobZuText(blob)});
+    }
+    ladeJSON({...state,_dateien:dateien},"einsatzplanung-mit-fotos-"+todayISO()+".json");
+  }catch(e){
+    alert("Die Sicherung konnte nicht erstellt werden. Bei sehr vielen Fotos hilft es, einzelne Aufträge zu bereinigen.");
+  }
+  btn.disabled=false; btn.textContent=alt;
+};
+document.getElementById("dtImportBtn").onclick=()=>document.getElementById("dtImport").click();
+document.getElementById("dtImport").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    try{
+      const d=JSON.parse(rd.result);
+      if(!d.teams||!d.jobs) throw 0;
+      const dateien=d._dateien||[]; delete d._dateien;
+      state=d; if(!state.settings) state.settings=demoState().settings;
+      if(dateien.length){
+        const btn=document.getElementById("dtImportBtn"); btn.disabled=true;
+        for(let i=0;i<dateien.length;i++){
+          const x=dateien[i];
+          btn.textContent=`Lade ${i+1} von ${dateien.length} …`;
+          try{
+            const bl=textZuBlob(x.inhalt,x.type);
+            await Files.add(x.jobId, new File([bl], x.name||"datei", {type:x.type||""}));
+          }catch(_){}
+        }
+        btn.disabled=false; btn.textContent="Sicherung laden";
+        await refreshCounts();
+      }
+      save(); dlgData.close(); render();
+    }catch(err){alert("Diese Datei ist keine gültige Planung.");}
+  };
+  rd.readAsText(f); e.target.value="";
+};
+document.getElementById("dtReset").onclick=async()=>{
+  if(!confirm("Alle Teams, Aufträge, Einsätze UND alle gespeicherten Fotos löschen und neu anfangen?")) return;
+  for(const f of await Files.all()) await Files.remove(f.id);
+  await refreshCounts();
+  state=demoState(); save(); dlgData.close(); render();
+};
+
+/* =========================================================
+   Navigation
+   ========================================================= */
+const dlgMenu=document.getElementById("dlgMenu");
+document.querySelectorAll(".tabbar button").forEach(b=>b.onclick=()=>{
+  const q=b.dataset.pv;
+  const inp=document.getElementById("qSearch");
+  const box=inp.closest(".searchbox");
+  if(q==="search"){
+    if(view!=="search") vorherigeAnsicht=view;
+    view="search"; render();
+    box.classList.add("aktiv");
+    setTimeout(()=>inp.focus(),80);
+    return;
+  }
+  suchText=""; inp.value=""; box.classList.remove("aktiv");
+  view=q;
+  if(q==="map"){ mapDay=iso(anchor); mapFocusJob=null; }
+  render();
+});
+
+document.getElementById("btnMenu").onclick=()=>dlgMenu.showModal();
+dlgMenu.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{
+  const m=b.dataset.m; dlgMenu.close();
+  setTimeout(()=>{
+    if(m==="kunden") openKunden();
+    else if(m==="teams") openTeams();
+    else if(m==="scan") openScan();
+    else if(m==="konto") document.getElementById("btnKonto").click();
+    else if(m==="einst") document.getElementById("btnSettings").click();
+    else if(m==="sichern") document.getElementById("btnData").click();
+    else if(m==="woche"){ view="week"; render(); }
+    else if(m==="monat"){ view="month"; pendingScrollToday=true; render(); }
+  },120);
+});
+
+let letzteBreite=window.innerWidth;
+window.addEventListener("resize",()=>{
+  const jetztPhone=isPhone(), warPhone=letzteBreite<760;
+  letzteBreite=window.innerWidth;
+  if(jetztPhone!==warPhone) render();
+});
+
+document.querySelectorAll(".views button").forEach(b=>b.onclick=()=>{
+  view=b.dataset.view;
+  suchText=""; document.getElementById("qSearch").value="";
+  if(view==="month") pendingScrollToday=true;
+  if(view!=="map") mapFocusJob=null;
+  render();
+});
+document.getElementById("zoomIn").onclick=()=>{
+  if(view==="month") monthVisible=Math.max(5,monthVisible-2);
+  else zoomWeek=Math.min(2.6,(zoomWeek??1)+0.2);
+  render();
+};
+document.getElementById("zoomOut").onclick=()=>{
+  if(view==="month") monthVisible=Math.min(31,monthVisible+2);
+  else zoomWeek=(zoomWeek===null||zoomWeek<=1.05)?null:zoomWeek-0.2;
+  render();
+};
+(function(){
+  const q=document.getElementById("qSearch");
+  let t=null;
+  q.addEventListener("input",()=>{
+    clearTimeout(t);
+    t=setTimeout(()=>{
+      const leer=!q.value.trim();
+      if(leer && view==="search" && !isPhone()){ suchText=""; view=vorherigeAnsicht; render(); return; }
+      if(leer && view==="search"){ suchText=""; render(); return; }
+      if(!leer){
+        if(view!=="search") vorherigeAnsicht=view;
+        suchText=q.value; view="search"; render();
+      }
+    },180);
+  });
+  q.addEventListener("keydown",e=>{
+    if(e.key==="Escape"){ q.value=""; suchText=""; if(view==="search") view=vorherigeAnsicht; render(); q.blur(); }
+  });
+})();
+document.getElementById("prev").onclick=()=>shift(-1);
+document.getElementById("next").onclick=()=>shift(1);
+document.getElementById("today").onclick=()=>{
+  anchor=new Date(); anchor.setHours(0,0,0,0);
+  mapDay=todayISO(); mapFocusJob=null; pendingScrollToday=true;
+  if(view==="search"){                       // aus der Suche zurück in den Kalender
+    suchText=""; document.getElementById("qSearch").value="";
+    view = (vorherigeAnsicht==="search") ? "month" : vorherigeAnsicht;
+  }
+  render();
+};
+function shift(n){
+  if(view==="day"){ anchor=addDays(anchor,n); render(); return; }
+  if(view==="jobs") return;
+  if(view==="week") anchor=addDays(anchor,7*n);
+  else if(view==="month"){ anchor=new Date(anchor.getFullYear(),anchor.getMonth()+n,1); pendingScrollToday=true; }
+  else if(view==="map"){ mapDay=iso(addDays(parse(mapDay),n)); mapFocusJob=null; }
+  else { view="week"; anchor=addDays(mondayOf(new Date()),7*n); }
+  render();
+}
+document.addEventListener("keydown",e=>{
+  if(e.target.matches("input,select,textarea")||document.querySelector("dialog[open]")) return;
+  if(e.key==="ArrowLeft") shift(-1);
+  if(e.key==="ArrowRight") shift(1);
+  const m={"1":"now","2":"week","3":"month","4":"map"}[e.key];
+  if(m){view=m;render();}
+});
+
+/* =========================================================
+   Von Kunden eingereichte Aufträge
+   ========================================================= */
+let eingereichte=[];
+
+async function eingereichteLaden(){
+  if(!sb) return;
+  try{
+    const { data, error } = await sb.from("kunden_auftraege")
+      .select("*").order("created_at",{ascending:false});
+    if(error) throw error;
+    eingereichte=data||[];
+  }catch(e){ eingereichte=[]; }
+}
+
+function liveEingereichte(){
+  if(!sb) return;
+  sb.channel("eingereicht")
+    .on("postgres_changes",{event:"*",schema:"public",table:"kunden_auftraege"},async()=>{
+      await eingereichteLaden();
+      if(istKunde()) renderKundenWelt(); else { renderPool(); }
+    })
+    .subscribe();
+}
+
+/* Der Planer übernimmt einen eingereichten Auftrag in den eigenen Pool */
+async function einreichungUebernehmen(e){
+  if(state.jobs.some(j=>j.herkunft===e.id)) return;
+  const job={id:uid(),name:e.titel||"Auftrag",address:e.adresse||"",lat:null,lng:null,
+    contact:e.ansprechpartner||"", note:e.beschreibung||"",
+    customerId:e.customer_id||"", wishDate:e.wunschdatum||"", value:"", herkunft:e.id};
+  state.jobs.push(job);
+  if(job.address) geocodeQuiet(job);
+  save();
+  try{ await sb.from("kunden_auftraege").update({status:"uebernommen"}).eq("id",e.id); }catch(_){}
+  await eingereichteLaden();
+  render();
+  openJob(job.id);
+}
+
+/* Nach jeder Planänderung den Kunden den Termin ihrer Aufträge mitteilen */
+async function termineZurueckmelden(){
+  if(!sb || istKunde() || !eingereichte.length) return;
+  for(const e of eingereichte){
+    const job=state.jobs.find(j=>j.herkunft===e.id);
+    if(!job) continue;
+    const bl=einsaetzeZu(job.id);
+    let termin=null, team=null, bis=null;
+    if(bl.length){
+      const b=bl[0];
+      termin=b.first[0];
+      bis=b.last[0];
+      const t=teamById(b.teamId); team=t?t.name:null;
+    }
+    const neu={status: termin?"geplant":"uebernommen", termin, termin_bis:bis, team};
+    if(e.status!==neu.status || e.termin!==neu.termin || e.team!==neu.team || e.termin_bis!==neu.termin_bis){
+      try{ await sb.from("kunden_auftraege").update(neu).eq("id",e.id); }catch(_){}
+      Object.assign(e,neu);
+    }
+  }
+}
+
+/* =========================================================
+   Kundenansicht
+   ========================================================= */
+async function kundenWeltStarten(){
+  document.querySelector("header").style.display="none";
+  const tb=document.querySelector(".tabbar"); if(tb) tb.style.display="none";
+  const as=document.querySelector("aside"); if(as) as.style.display="none";
+  await eingereichteLaden();
+  renderKundenWelt();
+  liveEingereichte();
+}
+
+function renderKundenWelt(){
+  const stage=document.getElementById("stage");
+  const wrap=document.createElement("div"); wrap.className="kundenwelt";
+  const meine=eingereichte.filter(e=>!meinKunde || e.customer_id===meinKunde);
+
+  wrap.innerHTML=`<h2>Ihre Aufträge</h2>
+    <div class="sub">Angemeldet als ${esc(meinName)} · <button type="button" class="linky" id="kwLogout">abmelden</button></div>`;
+
+  const neu=document.createElement("button"); neu.className="kneu";
+  neu.textContent="Neuen Auftrag einreichen";
+  neu.onclick=()=>{
+    ["erName","erAdr","erWunsch","erTel","erNote"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("erMsg").textContent="";
+    document.getElementById("dlgEinreichen").showModal();
+  };
+  wrap.appendChild(neu);
+
+  if(!meine.length){
+    const d=document.createElement("div"); d.className="pool-empty";
+    d.innerHTML="Noch keine Aufträge eingereicht.<br>Über den Knopf oben können Sie einen Auftrag melden.";
+    wrap.appendChild(d);
+  }
+
+  meine.forEach(e=>{
+    const geplant=e.status==="geplant" && e.termin;
+    const c=document.createElement("div");
+    c.className="kkarte "+(geplant?"geplant":"offen");
+    const d=e.termin?parse(e.termin):null;
+    const dBis=e.termin_bis?parse(e.termin_bis):null;
+    const zeitraum = d
+      ? (dBis && e.termin_bis!==e.termin
+          ? `${DAYS[(d.getDay()+6)%7]}, ${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()} bis ${dBis.getDate()}.${dBis.getMonth()+1}.${dBis.getFullYear()}`
+          : `${DAYS[(d.getDay()+6)%7]}, ${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}`)
+      : "";
+    c.innerHTML=`
+      <div class="kopf">
+        <div>
+          <b>${esc(e.titel||"Auftrag")}</b>
+          <div class="adr">${esc(e.adresse||"")}</div>
+          ${e.wunschdatum?`<div class="meta">Ihr Wunschbeginn: ${esc(wunschText(e.wunschdatum))}</div>`:""}
+          <div class="meta">eingereicht am ${new Date(e.created_at).toLocaleDateString("de-DE")}</div>
+        </div>
+        <span class="kstatus ${geplant?"fest":"wartet"}">${geplant?"Termin steht":"in Bearbeitung"}</span>
+      </div>
+      ${geplant?`<div class="ktermin">
+          <div class="wann">${esc(zeitraum)}</div>
+          <div class="wer">${e.team?"Ausführung: "+esc(e.team):"Team wird noch eingeteilt"}</div>
+        </div>`:""}
+      ${e.beschreibung?`<div class="meta" style="margin-top:11px;white-space:pre-wrap">${esc(e.beschreibung)}</div>`:""}`;
+    wrap.appendChild(c);
+  });
+
+  stage.replaceChildren(wrap);
+  const lo=document.getElementById("kwLogout");
+  if(lo) lo.onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+}
+
+document.getElementById("erSave").onclick=async()=>{
+  const m=document.getElementById("erMsg");
+  const titel=document.getElementById("erName").value.trim();
+  const adresse=document.getElementById("erAdr").value.trim();
+  if(!titel || !adresse){
+    m.className="hint geo-no";
+    m.textContent="Bitte wenigstens angeben, was gemacht werden soll und wo.";
+    return;
+  }
+  m.className="hint"; m.textContent="Wird übermittelt …";
+  try{
+    const { error } = await sb.from("kunden_auftraege").insert({
+      customer_id: meinKunde,
+      titel, adresse,
+      wunschdatum: document.getElementById("erWunsch").value || null,
+      ansprechpartner: document.getElementById("erTel").value.trim(),
+      beschreibung: document.getElementById("erNote").value.trim(),
+      status: "neu",
+      eingereicht_von: meinName
+    });
+    if(error) throw error;
+    document.getElementById("dlgEinreichen").close();
+    await eingereichteLaden();
+    renderKundenWelt();
+  }catch(e){
+    m.className="hint geo-no";
+    m.textContent="Konnte nicht übermittelt werden: "+(e.message||"");
+  }
+};
+
+/* =========================================================
+   Anmeldung und Start
+   ========================================================= */
+const mailVon = u => u.includes("@") ? u.trim() : u.trim().toLowerCase()+"@"+MAIL_DOMAIN;
+const nameVon = m => String(m||"").split("@")[0];
+
+function zeigeLogin(txt,art){
+  document.getElementById("login").classList.remove("weg");
+  const m=document.getElementById("lgMsg");
+  m.textContent=txt||""; m.className="lgmsg"+(art?" "+art:"");
+}
+
+async function anmelden(user,pass){
+  const m=document.getElementById("lgMsg");
+  const btn=document.getElementById("lgGo");
+  btn.disabled=true; m.className="lgmsg"; m.textContent="Wird geprüft …";
+  try{
+    const { data, error } = await sb.auth.signInWithPassword({ email:mailVon(user), password:pass });
+    if(error) throw error;
+    await nachAnmeldung(data.user);
+  }catch(e){
+    const t=String(e.message||"");
+    m.className="lgmsg";
+    m.textContent = /Invalid login/i.test(t) ? "Benutzername oder Passwort stimmt nicht."
+      : /Email not confirmed/i.test(t) ? "Der Zugang ist noch nicht bestätigt. In Supabase unter Authentication die Bestätigung abschalten oder den Benutzer bestätigen."
+      : "Anmeldung fehlgeschlagen: "+t;
+  }
+  btn.disabled=false;
+}
+
+async function nachAnmeldung(user){
+  meinName=nameVon(user.email);
+  // Rolle aus der Tabelle profiles
+  try{
+    const { data } = await sb.from("profiles").select("rolle,customer_id,name").eq("id",user.id).single();
+    rolle=(data&&data.rolle)||"kunde";
+    meinKunde=(data&&data.customer_id)||null;
+    if(data&&data.name) meinName=data.name;
+  }catch(e){ rolle="kunde"; }
+
+  document.getElementById("login").classList.add("weg");
+  document.body.classList.toggle("alsKunde",istKunde());
+
+  if(istKunde()) await kundenWeltStarten();
+  else await planungStarten();
+}
+
+async function planungStarten(){
+  setSync("Planung wird geladen …");
+  const frisch=await serverStandHolen();
+  if(frisch){ state=frisch.data; version=frisch.version; setSync("Verbunden "+zeitJetzt(),"ok"); }
+  else{
+    // Noch nichts auf dem Server: aktuellen Stand anlegen
+    state=zustandPruefen(state)||demoState();
+    version=0;
+    setSync("Neue Planung angelegt","ok");
+    await hochladen();
+  }
+  await refreshCounts();
+  await nummernNachtragen();
+  await eingereichteLaden();
+  render();
+  liveVerbinden();
+  liveEingereichte();
+  rollenRechte();
+}
+
+/* Bedienelemente abschalten, die die Rolle nicht darf */
+function rollenRechte(){
+  const nurPlaner=["btnNewJob","btnScan","btnKunden","btnTeams","btnData"];
+  if(rolle==="monteur"){
+    nurPlaner.forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display="none"; });
+  }
+  const ko=document.getElementById("koAdmin");
+  if(ko) ko.hidden = rolle!=="admin";
+}
+
+document.getElementById("loginForm").onsubmit=e=>{
+  e.preventDefault();
+  anmelden(document.getElementById("lgUser").value, document.getElementById("lgPass").value);
+};
+
+/* ---- Konto ---- */
+document.getElementById("btnKonto").onclick=async()=>{
+  document.getElementById("koWer").textContent =
+    `Angemeldet als ${meinName} · Rolle: ${({admin:"Chef",buero:"Büro",monteur:"Monteur",kunde:"Kunde"})[rolle]||rolle}`;
+  document.getElementById("koNeu").value=""; document.getElementById("koNeu2").value="";
+  document.getElementById("koMsg").textContent="";
+  document.getElementById("koAdmin").hidden = rolle!=="admin";
+  if(rolle==="admin") await zugaengeLaden();
+  document.getElementById("dlgKonto").showModal();
+};
+document.getElementById("koSave").onclick=async()=>{
+  const a=document.getElementById("koNeu").value, b=document.getElementById("koNeu2").value;
+  const m=document.getElementById("koMsg");
+  if(a.length<8){ m.className="hint geo-no"; m.textContent="Mindestens 8 Zeichen."; return; }
+  if(a!==b){ m.className="hint geo-no"; m.textContent="Die beiden Eingaben stimmen nicht überein."; return; }
+  m.className="hint"; m.textContent="Wird geändert …";
+  const { error } = await sb.auth.updateUser({ password:a });
+  if(error){ m.className="hint geo-no"; m.textContent="Fehlgeschlagen: "+error.message; return; }
+  m.className="hint geo-ok"; m.textContent="Passwort geändert. Es gilt ab sofort.";
+  document.getElementById("koNeu").value=""; document.getElementById("koNeu2").value="";
+};
+document.getElementById("koLogout").onclick=async()=>{
+  await sb.auth.signOut();
+  location.reload();
+};
+
+async function zugaengeLaden(){
+  const box=document.getElementById("koListe"); box.replaceChildren();
+  try{
+    const { data, error } = await sb.from("profiles").select("id,name,rolle,customer_id").order("rolle");
+    if(error) throw error;
+    (data||[]).forEach(pr=>{
+      const kunde=pr.customer_id?kundeById(pr.customer_id):null;
+      const row=document.createElement("div"); row.className="kdrow";
+      row.innerHTML=`<div><b>${esc(pr.name||"(ohne Namen)")}</b>
+        <small>${({admin:"Chef",buero:"Büro",monteur:"Monteur",kunde:"Kunde"})[pr.rolle]||pr.rolle}${kunde?" · "+esc(kunde.company):""}</small></div>`;
+      const sel=document.createElement("select");
+      sel.style.cssText="flex:0 0 150px;background:rgba(0,0,0,.26);border:1px solid var(--line-soft);border-radius:10px;padding:7px 9px;color:var(--ink);font-size:12px";
+      [["admin","Chef"],["buero","Büro"],["monteur","Monteur"],["kunde","Kunde"]].forEach(([v,t])=>{
+        const o=document.createElement("option"); o.value=v; o.textContent=t; sel.appendChild(o);
+      });
+      sel.value=pr.rolle||"kunde";
+      sel.onchange=async()=>{
+        const patch={rolle:sel.value};
+        if(sel.value==="kunde"){
+          const wahl=prompt("Zu welchem Kunden gehört dieser Zugang?\n\n"+
+            state.customers.map((k,i)=>`${i+1} = ${k.company}`).join("\n")+"\n\nNummer eingeben:");
+          const k=state.customers[parseInt(wahl,10)-1];
+          if(k) patch.customer_id=k.id;
+        }else patch.customer_id=null;
+        await sb.from("profiles").update(patch).eq("id",pr.id);
+        zugaengeLaden();
+      };
+      row.appendChild(sel);
+      box.appendChild(row);
+    });
+    if(!data||!data.length){
+      const p=document.createElement("div"); p.className="pool-empty";
+      p.textContent="Noch keine Zugänge angelegt."; box.appendChild(p);
+    }
+  }catch(e){
+    const p=document.createElement("div"); p.className="pool-empty";
+    p.textContent="Zugänge konnten nicht geladen werden."; box.appendChild(p);
+  }
+}
+
+/* ---- Start ---- */
+(async function start(){
+  if(!window.supabase){
+    zeigeLogin("Die Serververbindung konnte nicht geladen werden. Besteht Internetverbindung?");
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const { data } = await sb.auth.getSession();
+  if(data && data.session) await nachAnmeldung(data.session.user);
+  else zeigeLogin("");
+})();
+setInterval(()=>{ if(view==="now") renderNow(); }, 60000);
+render();
+</script>
+</body>
+</html>
