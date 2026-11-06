@@ -3881,16 +3881,32 @@ async function zugaengeLaden(){
   }
 }
 
-/* ---- Start ---- */
+/* ---- Start ----- */
 (async function start(){
-  if(!window.supabase){
-    zeigeLogin("Die Serververbindung konnte nicht geladen werden. Besteht Internetverbindung?");
-    return;
-  }
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const { data } = await sb.auth.getSession();
-  if(data && data.session) await nachAnmeldung(data.session.user);
-  else zeigeLogin("");
+    // Принудительно ждем загрузку библиотеки, если она задержалась
+    if (!window.supabase) {
+        await new Promise(res => {
+            let t = setInterval(() => { if(window.supabase){ clearInterval(t); res(); } }, 50);
+            setTimeout(() => { clearInterval(t); res(); }, 2000);
+        });
+    }
+    
+    try {
+        // Создаем подключение напрямую через переданные ключи
+        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true }
+        });
+        
+        const { data } = await sb.auth.getSession();
+        if(data && data.session) {
+            await nachAnmeldung(data.session.user);
+        } else {
+            zeigeLogin("");
+        }
+    } catch(e) {
+        console.error(e);
+        zeigeLogin("Verbindung zum Server fehlgeschlagen. Bitte Seite neu laden.");
+    }
 })();
 setInterval(()=>{ if(view==="now") renderNow(); }, 60000);
 render();
