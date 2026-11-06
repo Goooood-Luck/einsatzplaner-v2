@@ -3883,20 +3883,35 @@ async function zugaengeLaden(){
 
 /* ---- Start ----- */
 (async function start(){
-    // Принудительно ждем загрузку библиотеки, если она задержалась
     if (!window.supabase) {
         await new Promise(res => {
             let t = setInterval(() => { if(window.supabase){ clearInterval(t); res(); } }, 50);
             setTimeout(() => { clearInterval(t); res(); }, 2000);
         });
     }
+
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true }
+    });
     
+    // Автоматический мостик для подмены 'data' на 'content' во всех запросах
+    const originalFrom = sb.from;
+    sb.from = function(table) {
+        const instance = originalFrom.call(this, table);
+        if (table === 'schedule_data') {
+            const originalUpdate = instance.update;
+            instance.update = function(values, options) {
+                if (values && 'data' in values) {
+                    values.content = values.data;
+                    delete values.data;
+                }
+                return originalUpdate.call(this, values, options);
+            };
+        }
+        return instance;
+    };
+
     try {
-        // Создаем подключение напрямую через переданные ключи
-        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-            auth: { persistSession: true, autoRefreshToken: true }
-        });
-        
         const { data } = await sb.auth.getSession();
         if(data && data.session) {
             await nachAnmeldung(data.session.user);
@@ -3905,7 +3920,7 @@ async function zugaengeLaden(){
         }
     } catch(e) {
         console.error(e);
-        zeigeLogin("Verbindung zum Server fehlgeschlagen. Bitte Seite neu laden.");
+        zeigeLogin("");
     }
 })();
 setInterval(()=>{ if(view==="now") renderNow(); }, 60000);
