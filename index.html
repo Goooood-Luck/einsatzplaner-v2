@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1251,8 +1249,8 @@ function demoState(){
 /* =========================================================
    Serververbindung, Anmeldung, Speichern
    ========================================================= */
-const SUPABASE_URL = "https://rxxoseetbynqwtfzcufe.supabase.co";
-const SUPABASE_KEY = "sb_publishable_kVheMr16jEn4WW4A65T26w_xPARWcAW";
+const SUPABASE_URL = "https://ehoygnjlyqwhpsevtgtf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_AItKYP4npF-bG6O8FZyI3Q_F4rZ0iAD";
 const BUCKET = "einsatz-files";
 const MAIL_DOMAIN = "einsatzplaner.local";     // aus „admin“ wird admin@einsatzplaner.local
 
@@ -3883,12 +3881,16 @@ async function zugaengeLaden(){
   }
 }
 
-/* ---- Start ----- */
+/* ---- Start ---- */
 (async function start(){
-    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data } = await sb.auth.getSession();
-    if(data && data.session) await nachAnmeldung(data.session.user);
-    else zeigeLogin("");
+  if(!window.supabase){
+    zeigeLogin("Die Serververbindung konnte nicht geladen werden. Besteht Internetverbindung?");
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const { data } = await sb.auth.getSession();
+  if(data && data.session) await nachAnmeldung(data.session.user);
+  else zeigeLogin("");
 })();
 setInterval(()=>{ if(view==="now") renderNow(); }, 60000);
 render();
