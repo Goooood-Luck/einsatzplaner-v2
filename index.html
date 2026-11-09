@@ -1394,7 +1394,7 @@ dialog.hell .btn.danger{color:#A82C36;border-color:#E0BFC2;background:#FBEFF0}
 /* =========================================================
    Supabase & Cloud Sync
    ========================================================= */
-const SUPABASE_URL = "https://your-project.supabase.co"; // Замените на ваши данные из Supabase при необходимости
+const SUPABASE_URL = "https://your-project.supabase.co"; // Замените при необходимости
 const SUPABASE_ANON_KEY = "your-anon-key";
 let supabaseClient = null;
 try {
@@ -1582,8 +1582,6 @@ async function syncToSupabase(){
   st.textContent = "Speichere…";
   st.className = "sync warn";
   try {
-    // Пример сохранения в Supabase (таблица app_data)
-    // const { error } = await supabaseClient.from('app_data').upsert({ id: 1, payload: state });
     st.textContent = "Gespeichert";
     st.className = "sync ok";
   } catch(e) {
@@ -1601,8 +1599,7 @@ document.getElementById("loginForm").onsubmit = async (e) => {
   msg.textContent = "";
   if(supabaseClient) {
     try {
-      // Пример аутентификации Supabase Auth
-      // const { data, error } = await supabaseClient.auth.signInWithPassword({ email: u, password: p });
+      // const { error } = await supabaseClient.auth.signInWithPassword({ email: u, password: p });
       // if (error) throw error;
     } catch(err) {
       msg.textContent = err.message || "Anmeldung fehlgeschlagen";
@@ -1619,7 +1616,6 @@ document.getElementById("lgOut").onclick = () => {
   document.getElementById("login").classList.remove("weg");
 };
 
-/* Остальной базовый функционал рендеринга и управления (аналогичен вашему приложению) */
 const DAYS=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
 const DSHORT=["Mo","Di","Mi","Do","Fr","Sa","So"];
 const MONTHS=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
@@ -1662,7 +1658,6 @@ function render(){
 function renderPeriodLabel(){
   const l=document.getElementById("periodLabel");
   const a=new Date(anchor.getFullYear(),anchor.getMonth(),1);
-  const b=new Date(anchor.getFullYear(),anchor.getMonth()+1,1);
   l.textContent = `${MONTHS[a.getMonth()]} ${a.getFullYear()}`;
 }
 
@@ -1680,6 +1675,21 @@ function renderPool(){}
 
 document.querySelectorAll(".tabbar button").forEach(b=>b.onclick=()=>{
   view=b.dataset.pv; render();
+});
+
+document.querySelectorAll(".views button").forEach(b=>b.onclick=()=>{
+  view=b.dataset.view; render();
+});
+
+document.getElementById("btnSettings").onclick = () => document.getElementById("dlgSettings").showModal();
+document.getElementById("btnTeams").onclick = () => document.getElementById("dlgTeams").showModal();
+document.getElementById("btnKunden").onclick = () => document.getElementById("dlgCustomers").showModal();
+document.getElementById("btnListe").onclick = () => document.getElementById("dlgListe").showModal();
+document.getElementById("btnData").onclick = () => document.getElementById("dlgData").showModal();
+document.getElementById("btnNewJob").onclick = () => document.getElementById("dlgJob").showModal();
+
+document.querySelectorAll("[data-close]").forEach(btn => {
+  btn.onclick = () => btn.closest("dialog")?.close();
 });
 
 refreshCounts().then(()=>nummernNachtragen()).then(()=>renderPool());
