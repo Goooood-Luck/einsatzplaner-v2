@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="KUBIK">
+<meta name="apple-mobile-web-app-title" content="Einsatzplaner">
 <meta name="theme-color" content="#10141A">
-<title>KUBIK – Elektro Meisterbetrieb</title>
+<title>Einsatzplaner – Elektro Meisterbetrieb</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,13 +96,12 @@ main{flex:1;display:flex;min-height:0}
   border:1px solid var(--line-soft);box-shadow:var(--schatten),var(--kante-oben);}
 
 aside{
-  flex:0 0 462px;margin:14px 14px 14px 0;border-radius:20px;
+  flex:0 0 280px;margin:14px 14px 14px 0;border-radius:20px;
   background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.028));
   backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);
   border:1px solid var(--line-soft);box-shadow:var(--schatten),var(--kante-oben);
   display:flex;flex-direction:column;min-height:0;overflow:hidden;
 }
-aside.einspalte{flex:0 0 280px}
 aside h2{
   font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:17px;
   margin:0;padding:13px 16px 10px;border-bottom:1px solid var(--line-soft);
@@ -129,7 +128,7 @@ aside h2 .count{color:var(--ink-faint);font-size:12px;font-family:Inter,sans-ser
 .aside-foot button.primary{background:var(--focus);color:#07121A;border-color:transparent;font-weight:650;box-shadow:0 6px 20px rgba(127,212,255,.28)}
 
 /* ---------- Planungsraster ---------- */
-table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:720px;table-layout:fixed}
+table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:660px;table-layout:fixed}
 table.board th,table.board td{border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);padding:0}
 table.board thead th{
   position:sticky;top:0;z-index:5;background:rgba(16,21,29,.86);
@@ -141,38 +140,15 @@ table.board thead th.today{color:var(--focus);background:rgba(127,212,255,.12)}
 th.teamcol,td.teamcol{
   position:sticky;left:0;z-index:4;background:rgba(16,21,29,.86);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  width:208px;min-width:208px;border-right:1px solid var(--line);
+  width:150px;min-width:150px;border-right:1px solid var(--line);
 }
-table.board thead th.teamcol{z-index:7;background:#121822;backdrop-filter:none;-webkit-backdrop-filter:none}
-.teamcell{padding:5px 7px 5px 9px;display:flex;gap:7px;align-items:stretch;cursor:grab;position:relative}
+table.board thead th.teamcol{z-index:7;background:rgba(16,21,29,.92)}
+.teamcell{padding:8px 11px;display:flex;gap:9px;align-items:center;cursor:grab;position:relative}
 .teamcell:active{cursor:grabbing}
-.teamcell .tn{flex:1 1 50%;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.teamcell .tn{flex:1;min-width:0}
 .teamcell.dragging{opacity:.4}
 .teamcell.dropteam{background:#1B2735;box-shadow:inset 0 0 0 2px var(--focus)}
-
-/* Teamspalte wirkt wie zwei Spalten: links das Team, rechts die beiden Namen */
-.teamcell .leute{
-  flex:1 1 50%;min-width:0;display:flex;flex-direction:column;gap:3px;justify-content:center;
-  border-left:1px solid var(--line-soft);padding-left:7px;
-}
-button.tmknopf,button.mknopf{
-  display:block;width:100%;text-align:left;background:rgba(255,255,255,.045);
-  border:1px solid var(--line-soft);border-radius:var(--pille);
-  color:var(--ink);font:inherit;padding:3px 9px;cursor:pointer;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-button.tmknopf{font-size:13px;font-weight:600;letter-spacing:.01em;background:none;border-color:transparent;padding:2px 4px}
-button.tmknopf:hover{background:rgba(255,255,255,.07);border-color:var(--line)}
-button.mknopf{font-size:11.5px;color:var(--ink-dim);line-height:1.35}
-button.mknopf:hover{color:var(--ink);border-color:var(--focus);background:rgba(127,212,255,.1)}
-button.mknopf.leer{color:var(--ink-faint);font-style:italic}
-.teamcell small.sum{color:var(--ink-faint);font-size:10px;display:block;margin-top:1px;padding-left:4px}
-table.month .teamcell{padding:3px 6px 3px 8px}
-table.month button.tmknopf{font-size:12px}
-table.month button.mknopf{font-size:10.5px;padding:1px 7px}
-table.month .teamcell small.sum{display:none}
-
-.order{display:flex;flex-direction:column;gap:2px;opacity:0;flex:0 0 auto;justify-content:center}
+.order{display:flex;flex-direction:column;gap:2px;opacity:0;flex:0 0 auto}
 .teamcell:hover .order{opacity:1}
 .order button{
   background:var(--panel-2);border:1px solid var(--line);border-radius:3px;
@@ -534,15 +510,8 @@ dialog h3{
   .tabbar button b{font-size:17px;font-weight:400;line-height:1}
   .tabbar button[aria-pressed="true"]{color:var(--focus)}
 
-  dialog,dialog.weit{width:100vw;max-width:100vw;border-radius:15px 15px 0 0;margin:auto auto 0}
+  dialog{width:100vw;max-width:100vw;border-radius:15px 15px 0 0;margin:auto auto 0}
   .dlg-body{max-height:66vh;padding:15px}
-  .jahrwrap{max-height:48vh}
-  table.jahr th.namecol,table.jahr td.namecol{min-width:112px;padding:5px 8px}
-  table.jahr td.namecol b{font-size:12px}
-  table.jahr td.namecol small{font-size:9.5px}
-  .zelle{width:58px;height:36px}
-  .zelle input{font-size:15px}
-
   .dlg-foot{flex-wrap:wrap;gap:8px;padding:11px 15px max(13px,env(safe-area-inset-bottom))}
   .dlg-foot .btn{flex:1 1 44%;padding:13px 10px;text-align:center}
   .field input,.field select,.field textarea{font-size:16px;padding:12px 13px}
@@ -565,10 +534,7 @@ dialog h3{
 .pcard{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ink-faint);border-radius:10px;overflow:hidden}
 .phd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:11px 13px 9px}
 .phd b{font-family:"Barlow Condensed",sans-serif;font-size:18px;font-weight:600;letter-spacing:.02em}
-
 .phd span{color:var(--ink-faint);font-size:11.5px;text-align:right}
-.phd .tmknopf{font-family:"Barlow Condensed",sans-serif;font-size:18px;font-weight:600;letter-spacing:.02em;padding:2px 7px;background:rgba(255,255,255,.05);border:1px solid var(--line-soft)}
-.phd .mknopf{padding:4px 11px;font-size:12px}
 .phalves{display:flex;gap:1px;background:var(--line);border-top:1px solid var(--line)}
 .phalf{
   flex:1;min-width:0;background:var(--panel-2);border:0;padding:11px 12px;
@@ -594,334 +560,6 @@ dialog h3{
   padding:14px;font-size:13.5px;font-weight:600;
 }
 .pbtns button.zweit{background:var(--panel-2);color:var(--ink-dim);border:1px solid var(--line)}
-
-/* ---------- Zwei Auftragsspalten ---------- */
-.pools{flex:1;display:flex;min-height:0}
-.poolcol{flex:1 1 0;min-width:0;display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line-soft)}
-.poolcol:last-child{border-right:0}
-.poolcol.dropzone{background:#1B2735;box-shadow:inset 0 0 0 2px var(--focus)}
-.poolcol h2{font-size:15px;padding:12px 11px 9px;flex-wrap:nowrap;gap:6px}
-.poolcol h2 .titel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.poolcol h2 .count{margin-left:auto;white-space:nowrap;font-size:11px}
-.poolcol h2 .marke{
-  width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--focus);
-}
-.poolcol[data-pool="irina"] h2 .marke{background:#C9A6FF}
-.poolcol[data-pool="irina"]{background:rgba(201,166,255,.045)}
-.jobcard.irina{border-left-color:#C9A6FF}
-.spaltenschalter{
-  background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:var(--pille);
-  color:var(--ink-faint);font-size:11px;line-height:1;padding:4px 7px;cursor:pointer;flex:0 0 auto;
-}
-.spaltenschalter:hover{color:var(--ink);border-color:var(--focus)}
-.spaltenschalter[aria-pressed="true"]{color:#C9A6FF;border-color:rgba(201,166,255,.45);background:rgba(201,166,255,.12)}
-aside.einspalte .poolcol[data-pool="irina"]{display:none}
-
-/* ---------- Jahrestabelle: Stunden und Kilometer ---------- */
-dialog.weit{width:min(1260px,96vw)}
-.jahrkopf{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
-.umschalter{display:flex;gap:3px;background:rgba(0,0,0,.26);border:1px solid var(--line-soft);border-radius:var(--pille);padding:3px}
-.umschalter button{
-  border:0;background:none;border-radius:var(--pille);padding:6px 14px;
-  font-size:12px;color:var(--ink-dim);cursor:pointer;
-}
-.umschalter button[aria-pressed="true"]{background:var(--focus);color:#07121A;font-weight:650}
-
-.jahrkopf .jahrnav{display:flex;gap:5px;align-items:center}
-.jahrkopf .jahrnav b{font-family:"Barlow Condensed",sans-serif;font-size:17px;min-width:52px;text-align:center}
-.jahrkopf .btn{padding:7px 13px;font-size:12px}
-.jahrwrap{
-  overflow:auto;max-height:58vh;border:1px solid var(--line-soft);border-radius:15px;
-  background:rgba(0,0,0,.22);-webkit-overflow-scrolling:touch;
-}
-table.jahr{border-collapse:separate;border-spacing:0;font-size:12px}
-table.jahr th,table.jahr td{
-  border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);
-  padding:0;white-space:nowrap;
-}
-table.jahr thead th{
-  position:sticky;top:0;z-index:3;background:#161D27;
-  font-family:"Barlow Condensed",sans-serif;font-weight:500;font-size:11px;
-  color:var(--ink-dim);padding:4px 3px;text-align:center;
-}
-table.jahr .mlab{position:sticky;display:inline-block}
-table.jahr thead tr.monate th{
-  top:0;z-index:4;background:#1A2330;color:var(--ink);
-  font-size:12.5px;letter-spacing:.05em;padding:5px 9px;text-align:left;
-  border-left:1px solid var(--line);
-}
-table.jahr thead tr.tage th{top:25px;z-index:3}
-table.jahr thead tr.tage th.monatsanfang{border-left:1px solid var(--line)}
-table.jahr td.monatsanfang{border-left:1px solid var(--line)}
-table.jahr th.namecol,table.jahr td.namecol{
-  position:sticky;left:0;z-index:2;background:#161D27;text-align:left;
-  padding:5px 12px 6px;min-width:176px;border-right:1px solid var(--line);
-}
-table.jahr thead th.namecol,
-table.jahr thead tr.monate th.namecol{z-index:8;background:#1A2330}
-table.jahr td.namecol{padding:0}
-table.jahr td.namecol .zeilenknopf{
-  display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;
-  color:var(--ink);font:inherit;padding:5px 12px 6px;border-left:3px solid transparent;
-}
-table.jahr td.namecol .zeilenknopf:hover{background:rgba(255,255,255,.05)}
-table.jahr tr.aktiv td.namecol .zeilenknopf{background:rgba(127,212,255,.13);border-left-color:var(--focus)}
-table.jahr td.namecol b{font-size:12.5px;display:flex;align-items:center;gap:7px}
-
-table.jahr td.namecol small{color:var(--ink-faint);font-size:10.5px;display:block;margin-top:1px}
-table.jahr td.namecol i.pkt{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
-table.jahr thead th.heute,table.jahr td.heute{background:rgba(127,212,255,.11)}
-table.jahr thead th.heute{color:var(--focus)}
-table.jahr th.monatssumme,table.jahr td.monatssumme{
-  background:rgba(127,212,255,.08);border-left:1px solid var(--line);
-  border-right:1px solid var(--line);text-align:right;padding:0 9px;
-  font-variant-numeric:tabular-nums;font-weight:650;font-size:12px;white-space:nowrap;
-}
-table.jahr thead th.monatssumme{color:var(--focus);font-weight:600;text-align:center;padding:4px 7px}
-.zelle{position:relative;width:54px;height:31px;display:flex}
-.zelle input{
-  width:100%;border:0;background:none;color:var(--ink);text-align:center;
-  font:inherit;font-size:12px;padding:0 11px 0 3px;-moz-appearance:textfield;
-}
-.zelle input::-webkit-outer-spin-button,.zelle input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.zelle input:focus{outline:2px solid var(--focus);outline-offset:-2px;background:rgba(127,212,255,.12);border-radius:4px}
-.zelle input.hat{font-weight:650}
-.zelle .nz{
-  position:absolute;right:1px;top:2px;width:15px;height:15px;border:0;border-radius:4px;
-  background:none;color:rgba(238,243,250,.22);font-size:9px;line-height:15px;padding:0;cursor:pointer;
-}
-.zelle:hover .nz{color:var(--ink-faint)}
-.zelle .nz:hover{color:var(--ink);background:rgba(255,255,255,.12)}
-.zelle .nz.da{color:#FFC978}
-.zelle.ziel{box-shadow:inset 0 0 0 2px var(--focus);border-radius:5px}
-.jahrfuss{color:var(--ink-faint);font-size:11.5px;line-height:1.5;margin:11px 0 0}
-.notizliste{display:flex;flex-direction:column;gap:8px}
-.notizpost{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:15px;padding:10px 13px;cursor:pointer}
-.notizpost:hover{border-color:var(--focus)}
-.notizpost b{font-size:11.5px;display:block;color:var(--focus);font-weight:600}
-.notizpost span.wert{color:var(--ink-dim);font-weight:400}
-.notizpost p{margin:4px 0 0;font-size:12.5px;line-height:1.5;color:var(--ink-dim);white-space:pre-wrap}
-
-/* Die Kopfleiste soll einzeilig bleiben, auch auf dem MacBook Air */
-@media (min-width:761px) and (max-width:1820px){
-  header{gap:6px;padding:10px 11px}
-  .ghost{padding:7px 10px;font-size:12px}
-  .searchbox{flex:1 1 120px;min-width:96px;max-width:190px}
-  .views button{padding:5px 11px;font-size:14px}
-  .navdate .label{min-width:0}
-}
-/* Ab hier wandern die selteneren Knöpfe ins Menü, damit die Leiste einzeilig bleibt */
-@media (min-width:761px) and (max-width:1600px){
-  #btnKunden,#btnTeams,#btnSettings,#btnData{display:none}
-  #btnMenu.nurPhone{display:block}
-}
-@media (min-width:761px) and (max-width:1560px){
-  header{gap:5px;padding:9px}
-  .brand b{font-size:19px}
-  .ghost{padding:7px 8px;font-size:11.5px}
-  .searchbox{flex:1 1 90px;min-width:84px;max-width:132px}
-  .views button{padding:5px 9px;font-size:13.5px}
-  .navdate{gap:4px}
-  .navdate .label{font-size:13.5px;min-width:0}
-  .navdate .ghost{padding:7px 7px}
-  .sync{font-size:10.5px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-}
-
-/* ---------- Auftragsliste: helles Blatt ---------- */
-dialog.hell{
-  --l-bg:#EDEEF1; --l-feld:#FFFFFF; --l-ink:#1B212A; --l-dim:#5A6472;
-  --l-line:#C9CED7; --l-kopf:#DCE0E6; --l-zebra:#F5F6F8; --l-akzent:#1C6FB8;
-  width:min(1500px,97vw);
-  background:linear-gradient(180deg,#F2F3F5,#E7E9ED);
-  border-color:#B9BFC9; color:var(--l-ink);
-}
-dialog.hell h3{color:var(--l-ink);border-bottom:1px solid var(--l-line)}
-dialog.hell .dlg-foot{border-top:1px solid var(--l-line)}
-dialog.hell .btn{background:#FFF;border-color:var(--l-line);color:#2A313B}
-dialog.hell .btn:hover{border-color:var(--l-akzent);color:var(--l-akzent)}
-dialog.hell .btn.primary{background:var(--l-akzent);border-color:transparent;color:#fff;box-shadow:0 5px 14px rgba(28,111,184,.3)}
-dialog.hell .hint{color:var(--l-dim)}
-dialog.hell .dlg-body{max-height:76vh}
-
-/* Blattreiter wie in einer Tabellenmappe */
-.blattleiste{
-  display:flex;gap:4px;align-items:flex-end;flex-wrap:wrap;
-  margin:0 0 12px;padding-bottom:0;border-bottom:1px solid var(--l-line);
-}
-.reiter{
-  background:#E1E4E9;border:1px solid var(--l-line);border-bottom:0;
-  border-radius:9px 9px 0 0;padding:7px 15px;font-size:12.5px;color:#4A5362;
-  cursor:pointer;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  position:relative;top:1px;
-}
-.reiter:hover{background:#EAEDF1;color:var(--l-ink)}
-.reiter.an{background:var(--l-feld);color:var(--l-ink);font-weight:650;box-shadow:0 -2px 0 var(--l-akzent) inset}
-.reiter.plus{padding:7px 12px;color:var(--l-dim);font-size:15px;line-height:1;background:none;border-color:transparent}
-.reiter.plus:hover{background:#E1E4E9;border-color:var(--l-line)}
-
-.listekopf{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 11px}
-.listekopf select,.listekopf input[type=search]{
-  background:var(--l-feld);border:1px solid var(--l-line);border-radius:var(--pille);
-  padding:7px 13px;color:var(--l-ink);font-size:12.5px;
-}
-.listekopf input[type=search]{min-width:190px}
-.listesumme{
-  margin-left:auto;display:flex;gap:16px;font-size:12px;color:var(--l-dim);white-space:nowrap;
-}
-.listesumme b{color:var(--l-ink);font-size:13.5px;display:block;font-variant-numeric:tabular-nums}
-
-.listewrap{
-  overflow:auto;max-height:60vh;border:1px solid var(--l-line);border-radius:12px;background:var(--l-feld);
-}
-table.liste{border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:12.5px;color:var(--l-ink)}
-table.liste th,table.liste td{
-  border-right:1px solid var(--l-line);border-bottom:1px solid var(--l-line);
-  padding:0;vertical-align:middle;
-}
-table.liste thead th{
-  position:sticky;top:0;z-index:3;background:var(--l-kopf);
-  font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:12.5px;letter-spacing:.02em;
-  color:#39414D;padding:7px 9px;text-align:left;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;
-}
-table.liste thead th .griff{
-  position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:4;
-}
-table.liste thead th .griff:hover{background:var(--l-akzent);opacity:.45}
-table.liste thead th{position:sticky}
-table.liste tbody tr:nth-child(even) td{background:var(--l-zebra)}
-table.liste thead th.rolle{color:var(--l-akzent)}
-table.liste tfoot td{
-  position:sticky;bottom:0;background:var(--l-kopf);border-top:1px solid var(--l-line);
-  font-weight:650;font-variant-numeric:tabular-nums;padding:5px 9px;text-align:right;height:28px;
-}
-
-table.liste tbody tr:hover td{background:#E9F1F9}
-table.liste td input[type=text],table.liste td input[type=date],table.liste td input[type=number]{
-  width:100%;border:0;background:none;font:inherit;font-size:12.5px;color:var(--l-ink);
-  padding:4px 8px;border-radius:0;line-height:1.45;
-}
-/* Leere Datumsfelder bleiben leer, statt „TT.MM.JJJJ“ zu zeigen */
-table.liste td input[type=date]:not(.hat):not(:focus)::-webkit-datetime-edit{color:transparent}
-table.liste td input[type=date]:not(.hat):not(:focus)::-webkit-calendar-picker-indicator{opacity:.25}
-table.liste td input[type=date]{min-height:24px}
-table.liste tbody td{height:30px}
-table.liste td input:focus{outline:2px solid var(--l-akzent);outline-offset:-2px;background:#fff}
-table.liste td.geld input{text-align:right;font-variant-numeric:tabular-nums}
-table.liste td.haken{text-align:center}
-table.liste td.haken input{width:15px;height:15px;accent-color:var(--l-akzent);margin:5px 0 4px;cursor:pointer}
-table.liste td.tat{text-align:center;white-space:nowrap;padding:0 4px}
-table.liste td.tat .knoepfe{display:flex;gap:5px;align-items:center;justify-content:center}
-table.liste td.tat button{
-  border:1px solid var(--l-line);background:#fff;border-radius:var(--pille);
-  font-size:11px;padding:3px 9px;color:#3A4350;cursor:pointer;margin:2px;
-}
-table.liste td.tat button:hover{border-color:var(--l-akzent);color:var(--l-akzent)}
-table.liste td.tat button.weg{color:#B4323C;border-color:#E3C2C5}
-table.liste tr.imPool td.tat button.pool{background:#DFF0DC;border-color:#A9D3A2;color:#2E6B2A}
-.listefuss{color:var(--l-dim);font-size:11.5px;line-height:1.5;margin:10px 0 0}
-
-/* Spalten einrichten */
-.spaltenliste{display:flex;flex-direction:column;gap:7px}
-.spaltezeile{display:flex;gap:7px;align-items:center}
-.spaltezeile input[type=text]{
-  flex:1;min-width:0;background:var(--l-feld);border:1px solid var(--l-line);
-  border-radius:9px;padding:8px 11px;color:var(--l-ink);font-size:12.5px;
-}
-.spaltezeile select{
-  background:var(--l-feld);border:1px solid var(--l-line);border-radius:9px;
-  padding:8px 7px;color:var(--l-ink);font-size:12px;flex:0 0 auto;
-}
-.spaltezeile button{
-  background:var(--l-feld);border:1px solid var(--l-line);border-radius:8px;
-  color:#4A5362;font-size:10px;padding:7px 8px;cursor:pointer;flex:0 0 auto;
-}
-.spaltezeile button:hover:not(:disabled){border-color:var(--l-akzent);color:var(--l-akzent)}
-.spaltezeile button:disabled{opacity:.3;cursor:default}
-.spaltezeile button.weg{color:#B4323C;border-color:#E3C2C5}
-dialog.hell .btn.danger{color:#A82C36;border-color:#E0BFC2;background:#FBEFF0}
-
-
-/* ---------- Messenger ---------- */
-dialog.chatfenster{width:min(1120px,96vw)}
-.chatraum{display:flex;gap:0;height:min(64vh,620px);min-height:380px;
-  border:1px solid var(--line-soft);border-radius:15px;overflow:hidden;background:rgba(0,0,0,.2)}
-.chatliste{
-  flex:0 0 250px;min-width:0;overflow:auto;border-right:1px solid var(--line-soft);
-  background:rgba(255,255,255,.03);
-}
-.chatliste .leer{color:var(--ink-faint);padding:18px 14px;font-size:12px;line-height:1.5}
-.chatteam{
-  width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line-soft);
-  padding:11px 13px;color:var(--ink);cursor:pointer;display:flex;gap:10px;align-items:center;
-}
-.chatteam:hover{background:rgba(255,255,255,.05)}
-.chatteam.an{background:rgba(127,212,255,.13);box-shadow:inset 3px 0 0 var(--focus)}
-.chatteam .farbe{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
-.chatteam .wer{flex:1;min-width:0}
-.chatteam b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chatteam small{display:block;color:var(--ink-faint);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.chatteam .zahl{
-  flex:0 0 auto;background:var(--focus);color:#07121A;border-radius:999px;
-  font-size:10.5px;font-weight:700;padding:2px 7px;min-width:20px;text-align:center;
-}
-.chatseite{flex:1;min-width:0;display:flex;flex-direction:column}
-.chatkopf{
-  padding:10px 15px;border-bottom:1px solid var(--line-soft);
-  display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.035);
-}
-.chatkopf b{font-family:"Barlow Condensed",sans-serif;font-size:17px;font-weight:600}
-.chatkopf small{color:var(--ink-faint);font-size:11.5px}
-.chatverlauf{flex:1;overflow:auto;padding:14px 15px;display:flex;flex-direction:column;gap:9px}
-.chattag{align-self:center;color:var(--ink-faint);font-size:10.5px;letter-spacing:.05em;
-  background:rgba(255,255,255,.06);border-radius:999px;padding:3px 11px;margin:5px 0}
-.blase{
-  max-width:74%;background:rgba(255,255,255,.07);border:1px solid var(--line-soft);
-  border-radius:15px 15px 15px 5px;padding:8px 12px;align-self:flex-start;
-}
-.blase.ich{align-self:flex-end;background:rgba(127,212,255,.17);border-color:rgba(127,212,255,.3);
-  border-radius:15px 15px 5px 15px}
-.blase .von{font-size:11px;color:var(--focus);font-weight:600;margin-bottom:3px}
-.blase.ich .von{color:var(--ink-dim)}
-.blase p{margin:0;font-size:13.5px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
-.blase .zeit{font-size:10px;color:var(--ink-faint);margin-top:4px;text-align:right}
-.blase img{max-width:100%;border-radius:10px;display:block;margin:2px 0 5px;cursor:zoom-in}
-.blase .zuordnen{
-  background:rgba(255,255,255,.07);border:1px solid var(--line-soft);border-radius:var(--pille);
-  font-size:10.5px;color:var(--ink-dim);padding:3px 10px;margin-top:3px;cursor:pointer;
-}
-.blase .zuordnen:hover{border-color:var(--focus);color:var(--ink)}
-.blase .zuordnen.fertig{color:#9BDCA0;border-color:rgba(155,220,160,.35);background:rgba(155,220,160,.1);cursor:default}
-.chatfuss{
-  padding:10px 12px;border-top:1px solid var(--line-soft);display:flex;gap:8px;align-items:flex-end;
-  background:rgba(255,255,255,.035);
-}
-.chatfuss textarea{
-  flex:1;resize:none;background:rgba(0,0,0,.28);border:1px solid var(--line-soft);
-  border-radius:15px;padding:10px 14px;color:var(--ink);font:inherit;font-size:13.5px;
-  max-height:110px;min-height:40px;line-height:1.4;
-}
-.chatfuss textarea:focus{outline:2px solid var(--focus);outline-offset:-1px}
-.chatfuss button{
-  flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:999px;
-  color:var(--ink-dim);padding:10px 14px;font-size:13px;cursor:pointer;
-}
-.chatfuss button.senden{background:var(--focus);color:#07121A;border-color:transparent;font-weight:650}
-.chatfuss button:disabled{opacity:.4;cursor:default}
-.chatstatus{color:var(--ink-faint);font-size:11.5px;margin:9px 0 0;line-height:1.5}
-.glocke{position:relative}
-.glocke .punkt{
-  position:absolute;top:-4px;right:-4px;background:#FF6B6B;color:#fff;border-radius:999px;
-  font-size:9.5px;font-weight:700;padding:1px 5px;min-width:16px;text-align:center;line-height:1.5;
-}
-@media (max-width:760px){
-  .chatraum{height:auto;min-height:0;flex-direction:column;border:0;border-radius:0}
-  .chatliste{flex:0 0 auto;max-height:28vh;border-right:0;border-bottom:1px solid var(--line-soft)}
-  .chatliste.weg{display:none}
-  .chatverlauf{max-height:44vh}
-  .chatfuss textarea{font-size:16px}
-  .blase{max-width:88%}
-}
 
 /* Menüblatt */
 .menuliste{display:flex;flex-direction:column;gap:7px}
@@ -1002,7 +640,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
 
 <div id="login" class="login">
   <form class="loginbox" id="loginForm">
-    <h1>KUBIK</h1>
+    <h1>Einsatzplaner</h1>
     <p class="sub" id="loginSub">Bitte anmelden</p>
     <label for="lgUser">Benutzername</label>
     <input type="text" id="lgUser" autocomplete="username" autocapitalize="none" spellcheck="false" required>
@@ -1014,7 +652,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
 </div>
 
 <header>
-  <div class="brand"><b>KUBIK</b><span id="companyName">Elektro Meisterbetrieb</span></div>
+  <div class="brand"><b>Einsatzplaner</b><span id="companyName">Elektro Meisterbetrieb</span></div>
 
   <div class="views" role="group" aria-label="Ansicht">
     <button data-view="now">Jetzt</button>
@@ -1039,10 +677,6 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <button class="ghost" id="zoomIn" title="Spalten breiter">+</button>
   <button class="ghost nurPhone" id="btnMenu" aria-label="Menü">☰</button>
   <button class="ghost" id="btnKonto">Konto</button>
-  <button class="ghost glocke" id="btnChat" title="Nachrichten an die Teams">Chat</button>
-  <button class="ghost" id="btnListe" title="Auftragsliste mit Rechnungen und Zahlungseingängen">Liste</button>
-  <button class="ghost" id="btnStunden" title="Arbeitsstunden je Mitarbeiter, Tag für Tag">Stunden</button>
-  <button class="ghost" id="btnKm" title="Gefahrene Kilometer je Team, Tag für Tag">Kilometer</button>
   <button class="ghost" id="btnKunden">Kunden</button>
   <button class="ghost" id="btnTeams">Teams</button>
   <button class="ghost" id="btnSettings">Einstellungen</button>
@@ -1054,21 +688,8 @@ dialog.chatfenster{width:min(1120px,96vw)}
 <main>
   <div id="stage"></div>
   <aside>
-    <div class="pools">
-      <div class="poolcol" data-pool="haupt">
-        <h2><span class="marke"></span><span class="titel">Auftragspool</span>
-          <span class="count" id="poolCount"></span>
-          <button class="spaltenschalter" id="btnIrinaSpalte" aria-pressed="true"
-                  title="Zweite Auftragsspalte ein- oder ausblenden">⟩</button></h2>
-        <div class="pool" id="pool"></div>
-      </div>
-      <div class="poolcol" data-pool="irina">
-        <h2><span class="marke"></span><span class="titel" id="irinaName">Irina</span>
-          <span class="count" id="poolCountIrina"></span></h2>
-        <div class="pool" id="poolIrina"></div>
-      </div>
-    </div>
-
+    <h2>Auftragspool <span class="count" id="poolCount"></span></h2>
+    <div class="pool" id="pool"></div>
     <div class="aside-foot">
       <button class="primary" id="btnNewJob">Auftrag anlegen</button>
       <button id="btnScan" title="Ausgefülltes Auftragsformular abfotografiert? Hier hochladen.">Scannen</button>
@@ -1091,10 +712,6 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <div class="menuliste">
       <button type="button" data-m="kunden">Kunden</button>
       <button type="button" data-m="teams">Teams</button>
-      <button type="button" data-m="chat">Nachrichten</button>
-      <button type="button" data-m="liste">Auftragsliste</button>
-      <button type="button" data-m="stunden">Stunden der Mitarbeiter</button>
-      <button type="button" data-m="km">Kilometer der Teams</button>
       <button type="button" data-m="scan">Auftrag übernehmen</button>
       <button type="button" data-m="konto">Konto</button>
       <button type="button" data-m="einst">Einstellungen</button>
@@ -1202,13 +819,6 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <div class="two">
       <div class="field"><label for="jbWish">Gewünschter Beginn</label><input type="date" id="jbWish"></div>
       <div class="field"><label for="jbValue">Auftragswert</label><input type="text" id="jbValue" placeholder="z.B. 2.400 €"></div>
-    </div>
-    <div class="field">
-      <label for="jbPool">Auftragsspalte</label>
-      <select id="jbPool">
-        <option value="haupt">Auftragspool</option>
-        <option value="irina">zweite Spalte</option>
-      </select>
     </div>
     <div class="field">
       <label><input type="checkbox" id="jbBilled" style="width:auto;margin-right:8px">Abgerechnet – im Kalender grau statt farbig</label>
@@ -1329,7 +939,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
 
     <div id="koAdmin" hidden>
       <h4 style="margin:22px 0 10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600">Zugänge</h4>
-      <p class="hint" style="margin:0 0 11px">Neue Zugänge legst du in der Supabase-Oberfläche an, unter <b>Authentication → Users</b>. Danach hier Rolle und Team zuweisen. Das Team entscheidet, welchen Nachrichtenverlauf ein Monteur sieht.</p>
+      <p class="hint" style="margin:0 0 11px">Neue Zugänge legst du in der Supabase-Oberfläche an, unter <b>Authentication → Users</b>. Danach hier die Rolle zuweisen.</p>
       <div class="kdlist" id="koListe"></div>
     </div>
   </div>
@@ -1402,18 +1012,9 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <p class="hint" style="margin:0 0 13px">Ein Team kann aus einer oder mehreren Personen bestehen. Namen mit Komma trennen.</p>
     <div class="rowlist" id="teamList"></div>
     <button class="btn" id="btnAddTeam" style="margin-top:13px">Team hinzufügen</button>
-    <div class="field" style="margin:15px 0 0">
-      <label for="tmExtra">Weitere Mitarbeiter ohne Team</label>
-      <input type="text" id="tmExtra" placeholder="Irina, Aushilfe Jonas">
-      <p class="hint" style="margin-top:6px">Stehen in der Stundentabelle mit, auch wenn sie keinem Team zugeordnet sind.</p>
-    </div>
-    <p class="hint" style="margin-top:13px">Die ersten zwei Namen eines Teams stehen im Kalender neben dem Teamnamen. Ein Klick darauf öffnet die Stundentabelle, ein Klick auf den Teamnamen die Kilometertabelle.</p>
   </div>
   <div class="dlg-foot">
-    <button class="btn" id="tmStunden" style="margin-right:auto">Stunden</button>
-    <button class="btn" id="tmKm">Kilometer</button>
     <button class="btn" data-close>Schließen</button>
-
     <button class="btn primary" id="teamsSave">Speichern</button>
   </div>
 </dialog>
@@ -1453,16 +1054,6 @@ dialog.chatfenster{width:min(1120px,96vw)}
       <p class="hint" style="margin-top:7px;color:var(--ink-faint)">Der Schlüssel liegt nur in diesem Browser, nicht in der Programmdatei. Wenn du die Datei weitergibst, geht er nicht mit. Pro Formular fallen Bruchteile eines Cents an.</p>
     </div>
     <div class="field">
-      <label for="stListePin">Passwort für die Auftragsliste</label>
-      <input type="password" id="stListePin" autocomplete="new-password" placeholder="leer lassen = kein Passwort">
-      <p class="hint" style="margin-top:7px" id="stListeHint"></p>
-    </div>
-    <div class="field">
-      <label for="stZweit">Name der zweiten Auftragsspalte</label>
-      <input type="text" id="stZweit" placeholder="Irina">
-      <p class="hint" style="margin-top:7px">Neben dem gemeinsamen Auftragspool steht eine zweite Spalte. Aufträge lassen sich zwischen beiden hin- und herziehen und aus beiden in den Kalender.</p>
-    </div>
-    <div class="field">
       <label for="stModel">Verwendetes Modell</label>
       <input type="text" id="stModel" placeholder="claude-sonnet-5-5">
       <p class="hint" style="margin-top:7px">Nur ändern, wenn es einen Grund gibt. „claude-sonnet-5-5“ liest Handschrift am zuverlässigsten.</p>
@@ -1492,129 +1083,6 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <div class="dlg-foot"><button class="btn" data-close>Schließen</button></div>
 </dialog>
 
-<!-- Messenger -->
-<dialog id="dlgChat" class="chatfenster">
-  <h3>Nachrichten</h3>
-  <div class="dlg-body">
-    <div class="chatraum">
-      <div class="chatliste" id="chListe"></div>
-      <div class="chatseite">
-        <div class="chatkopf">
-          <button class="btn nurPhone" id="chZurueck" style="padding:6px 11px">‹</button>
-          <b id="chTitel">—</b><small id="chWer"></small>
-        </div>
-        <div class="chatverlauf" id="chVerlauf"></div>
-        <div class="chatfuss">
-          <button id="chBild" title="Foto senden">📷</button>
-          <input type="file" id="chDatei" accept="image/*" hidden>
-          <textarea id="chText" rows="1" placeholder="Nachricht schreiben …"></textarea>
-          <button class="senden" id="chSenden">Senden</button>
-        </div>
-      </div>
-    </div>
-    <p class="chatstatus" id="chStatus"></p>
-  </div>
-  <div class="dlg-foot">
-    <button class="btn" id="chAufraeumen" style="margin-right:auto">Medien aufräumen</button>
-    <button class="btn primary" data-close>Fertig</button>
-  </div>
-</dialog>
-
-<!-- Auftragsliste: eine Mappe mit einem Blatt je Auftraggeber -->
-<dialog id="dlgListe" class="weit hell">
-  <h3>Auftragsliste</h3>
-  <div class="dlg-body">
-    <div class="blattleiste" id="liBlaetter"></div>
-    <div class="listekopf">
-      <input type="search" id="liSuche" placeholder="Objekt, Straße, Rechnungsnummer …">
-      <button class="btn" id="liNeu">Zeile hinzufügen</button>
-      <button class="btn" id="liSpalten">Spalten …</button>
-      <button class="btn" id="liBlattNeu">Blatt hinzufügen</button>
-      <div class="listesumme" id="liSummen"></div>
-    </div>
-    <div class="listewrap" id="liWrap"></div>
-    <p class="listefuss" id="liFuss"></p>
-  </div>
-  <div class="dlg-foot">
-    <button class="btn" id="liImport" style="margin-right:auto">Aus Numbers übernehmen</button>
-    <input type="file" id="liImportDatei" accept=".json,application/json" hidden>
-    <button class="btn" id="liSperren" hidden>Wieder sperren</button>
-    <button class="btn" id="liCsv">Blatt als CSV</button>
-    <button class="btn primary" data-close>Fertig</button>
-  </div>
-</dialog>
-
-<!-- Spalten eines Blattes einrichten -->
-<dialog id="dlgSpalten" class="hell">
-  <h3 id="spTitel">Spalten</h3>
-  <div class="dlg-body">
-    <p class="hint" style="margin-top:0">Reihenfolge, Name und Art jeder Spalte. „Objekt“ und „Betrag“ sagen dem Programm, woraus es einen Auftrag bauen soll.</p>
-    <div class="spaltenliste" id="spListe"></div>
-    <button class="btn" id="spNeu" style="margin-top:12px">Spalte hinzufügen</button>
-  </div>
-  <div class="dlg-foot">
-    <button class="btn danger" id="spBlattWeg" style="margin-right:auto">Blatt löschen</button>
-    <button class="btn" data-close>Abbrechen</button>
-    <button class="btn primary" id="spSpeichern">Speichern</button>
-  </div>
-</dialog>
-
-<!-- Jahrestabelle: Stunden je Mitarbeiter oder Kilometer je Team -->
-<dialog id="dlgJahr" class="weit">
-  <h3 id="jahrTitel">Stunden</h3>
-  <div class="dlg-body">
-    <div class="jahrkopf">
-      <div class="umschalter" role="group" aria-label="Tabelle">
-        <button id="jahrModusP" aria-pressed="true">Stunden</button>
-        <button id="jahrModusT" aria-pressed="false">Kilometer</button>
-      </div>
-      <div class="jahrnav">
-        <button class="btn" id="jahrPrev" aria-label="Vorjahr">◀</button>
-        <b id="jahrLabel">2026</b>
-        <button class="btn" id="jahrNext" aria-label="Folgejahr">▶</button>
-      </div>
-      <button class="btn" id="jahrHeute">Heute</button>
-      <span class="hint" id="jahrHint" style="margin:0"></span>
-    </div>
-    <div class="jahrwrap" id="jahrWrap"></div>
-    <p class="jahrfuss" id="jahrFuss"></p>
-  </div>
-  <div class="dlg-foot">
-    <button class="btn" id="jahrAlleNotizen" style="margin-right:auto">Alle Notizen</button>
-    <button class="btn primary" data-close>Fertig</button>
-  </div>
-</dialog>
-
-<!-- Eine Notiz zu einem Tag -->
-<dialog id="dlgNotiz">
-  <h3 id="nzTitel">Notiz</h3>
-  <div class="dlg-body">
-    <div class="field" style="margin-bottom:9px">
-      <label id="nzWertLabel" for="nzWert">Stunden</label>
-      <input type="number" id="nzWert" step="0.25" min="0" inputmode="decimal">
-    </div>
-    <div class="field" style="margin-bottom:0">
-      <label for="nzText">Notiz zu diesem Tag</label>
-      <textarea id="nzText" rows="4" placeholder="z.B. 8 Stunden, davon eine Stunde Abstecher für Materialabholung"></textarea>
-    </div>
-  </div>
-  <div class="dlg-foot">
-    <button class="btn" id="nzAlle" style="margin-right:auto">Alle Notizen zu dieser Person</button>
-    <button class="btn" data-close>Abbrechen</button>
-    <button class="btn primary" id="nzSave">Speichern</button>
-  </div>
-</dialog>
-
-<!-- Alle Notizen zu einer Person oder einem Team -->
-<dialog id="dlgNotizen">
-  <h3 id="nlTitel">Alle Notizen</h3>
-  <div class="dlg-body">
-    <p class="hint" style="margin-top:0" id="nlHint"></p>
-    <div class="notizliste" id="nlListe"></div>
-  </div>
-  <div class="dlg-foot"><button class="btn" data-close>Schließen</button></div>
-</dialog>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -1624,7 +1092,6 @@ dialog.chatfenster{width:min(1120px,96vw)}
    Daten
    ========================================================= */
 const PALETTE = ["#F2B01E","#2FA8E0","#E04F5F","#59C26A","#A77BF3","#FF8A3D","#35D0C3","#E86BB0","#9FD356","#6E8BFF"];
-const TEAMCOL = 208;   // Breite der Teamspalte links, passend zur CSS-Regel
 const STORE_KEY = "einsatzplaner.v1";
 
 /* =========================================================
@@ -1785,14 +1252,13 @@ function demoState(){
 const SUPABASE_URL = "https://rxxoseetbynqwtfzcufe.supabase.co";
 const SUPABASE_KEY = "sb_publishable_kVheMr16jEn4WW4A65T26w_xPARWcAW";
 const BUCKET = "einsatz-files";
-const MAIL_DOMAINS = ["kubik.local","einsatzplaner.local"];  // aus „admin“ wird admin@kubik.local
+const MAIL_DOMAIN = "einsatzplaner.local";     // aus „admin“ wird admin@einsatzplaner.local
 
 let sb = null;
 let state = demoState();
 let version = 0;                 // Stand, den dieses Fenster zuletzt gesehen hat
 let rolle = null;                // "admin" | "buero" | "monteur" | "kunde"
 let meinKunde = null;            // bei Rolle "kunde": zugehörige Kunden-ID
-let meineId   = null;            // eigene Benutzerkennung
 let meinName = "";
 let storageOK = true;
 let speicherLaeuft = false, nochmalSpeichern = false;
@@ -1816,13 +1282,6 @@ function zustandPruefen(d){
   if(!Array.isArray(d.customers)) d.customers=[];
   if(!Array.isArray(d.fileRegistry)) d.fileRegistry=[];
   if(!d.settings.model) d.settings.model="claude-sonnet-5-5";
-  /* Stunden je Mitarbeiter und Kilometer je Team, Schlüssel "Name|2026-11-09" */
-  if(!d.stunden || typeof d.stunden!=="object") d.stunden={};
-  if(!d.km || typeof d.km!=="object") d.km={};
-  if(!Array.isArray(d.extraLeute)) d.extraLeute=[];
-  if(!Array.isArray(d.blaetter)) d.blaetter=[];
-  if(!d.settings.zweitpool) d.settings.zweitpool="Irina";
-  if(d.settings.zweitpoolAn===undefined) d.settings.zweitpoolAn=true;
   return d;
 }
 
@@ -2061,18 +1520,7 @@ function renderPhoneDay(){
   state.teams.forEach(team=>{
     const card=document.createElement("div"); card.className="pcard";
     card.style.borderLeftColor=team.color;
-    card.innerHTML=`<div class="phd">
-      <button class="tmknopf" style="width:auto;flex:0 0 auto">${esc(team.name)}</button>
-      <span style="display:flex;gap:5px;flex-wrap:wrap">${
-        (team.members.length?team.members:["–"]).map(nm=>nm==="–"
-          ? `<span style="color:var(--ink-faint)">–</span>`
-          : `<button class="mknopf" data-person="${esc(nm)}" style="width:auto">${esc(nm)}</button>`).join("")
-      }</span></div>`;
-    card.querySelector(".tmknopf").onclick=e=>{e.stopPropagation();openJahr("team",team.id,ds);};
-    card.querySelectorAll("[data-person]").forEach(b=>{
-      b.onclick=e=>{e.stopPropagation();openJahr("person",b.dataset.person,ds);};
-    });
-
+    card.innerHTML=`<div class="phd"><b>${esc(team.name)}</b><span>${esc(team.members.join(", ")||"–")}</span></div>`;
     const halves=document.createElement("div"); halves.className="phalves";
 
     [["AM","Vormittag"],["PM","Nachmittag"]].forEach(([slot,txt])=>{
@@ -2136,18 +1584,12 @@ function renderPhoneJobs(){
       ${k?`<small style="margin-top:3px;color:var(--ink-dim)">${esc(k.company)}</small>`:""}
       ${j.wishDate?`<small style="margin-top:3px;color:#FFC978">Wunschbeginn ${esc(wunschText(j.wishDate))}</small>`:""}
       <small style="margin-top:3px;color:var(--ink-faint)">${planned.has(j.id)?"eingeplant":"noch offen"}${j.billed?" · abgerechnet":""}${fileCounts[j.id]?` · ${fileCounts[j.id]} Anhang`:""}</small>
-      <div class="row"><button data-e="${j.id}">Öffnen</button><button data-m="${j.id}">Karte</button
-        >${darfPlanen()?`<button data-p="${j.id}">→ ${esc(istZweit(j)?"Pool":state.settings.zweitpool)}</button>`:""}</div>`;
-    if(istZweit(j)) c.classList.add("irina");
+      <div class="row"><button data-e="${j.id}">Öffnen</button><button data-m="${j.id}">Karte</button></div>`;
     wrap.appendChild(c);
   });
   stage.replaceChildren(wrap);
   wrap.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>openJob(b.dataset.e));
   wrap.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>showOnMap(b.dataset.m,iso(anchor)));
-  wrap.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
-    const j=jobById(b.dataset.p); if(!j) return;
-    spalteSetzen(j, istZweit(j)?"haupt":"irina"); render();
-  });
 }
 
 /* ---- Suche ---- */
@@ -2243,7 +1685,7 @@ async function renderSearch(){
           requestAnimationFrame(()=>{
             const n=new Date(anchor.getFullYear(),anchor.getMonth()+1,0).getDate();
             const tbl=stage.querySelector("table");
-            if(tbl){ const dw=(tbl.offsetWidth-TEAMCOL)/n; stage.scrollLeft=Math.max(0,(parse(b.first[0]).getDate()-2)*dw); }
+            if(tbl){ const dw=(tbl.offsetWidth-150)/n; stage.scrollLeft=Math.max(0,(parse(b.first[0]).getDate()-2)*dw); }
           });
         };
         row.appendChild(btn);
@@ -2331,11 +1773,7 @@ function buildBoard(dates,isMonth){
   const tbl=document.createElement("table");
   tbl.className="board"+(isMonth?" month":"");
   const th=document.createElement("thead"), tr=document.createElement("tr");
-  tr.innerHTML=`<th class="teamcol"><span style="display:flex;gap:7px">
-      <span style="flex:1 1 50%;text-align:left;padding-left:9px">Team</span>
-      <span style="flex:1 1 50%;text-align:left;padding-left:7px;border-left:1px solid var(--line-soft)">Besetzung</span>
-    </span></th>`;
-
+  tr.innerHTML=`<th class="teamcol">Team</th>`;
   dates.forEach(d=>{
     const h=document.createElement("th");
     h.textContent=isMonth?`${DSHORT[(d.getDay()+6)%7]} ${d.getDate()}.${d.getMonth()+1}.`:`${DAYS[(d.getDay()+6)%7]} ${d.getDate()}.${d.getMonth()+1}.`;
@@ -2389,7 +1827,7 @@ function buildBoard(dates,isMonth){
   tbl.appendChild(tb);
   if(isMonth){
     const avail=Math.max(620, stage.clientWidth);
-    tbl.style.minWidth = Math.round(TEAMCOL + (avail-TEAMCOL)/monthVisible*n) + "px";
+    tbl.style.minWidth = Math.round(150 + (avail-150)/monthVisible*n) + "px";
   }else{
     tbl.style.minWidth = zoomWeek ? Math.round(1120*zoomWeek)+"px" : "";
   }
@@ -2401,35 +1839,13 @@ function buildTeamCell(team,idx,total){
   const tc=document.createElement("td"); tc.className="teamcol";
   const inner=document.createElement("div"); inner.className="teamcell"; inner.draggable=true;
   inner.title="Zum Umsortieren nach oben oder unten ziehen";
-  /* Immer zwei Plätze. Ist einer unbesetzt, bleibt er als Lücke stehen. */
-  const leute=[team.members[0]||"", team.members[1]||""];
-  const weitere=team.members.slice(2);
-  const kmJahr=summeKm(team.id,new Date().getFullYear());
-
   inner.innerHTML=`<span class="swatch" style="background:${team.color}"></span>
-    <span class="tn">
-      <button class="tmknopf" title="Kilometer für ${esc(team.name)} eintragen">${esc(team.name)}</button>
-      ${kmJahr?`<small class="sum">${kmJahr.toLocaleString("de-DE")} km</small>`:""}
-    </span>
-    <span class="leute">
-      ${leute.map((nm,i)=>nm
-        ? `<button class="mknopf" data-person="${esc(nm)}" title="Stunden für ${esc(nm)} eintragen">${esc(nm)}</button>`
-        : `<button class="mknopf leer" data-leer="${i}" title="Noch niemand eingetragen – über „Teams“ ergänzen">frei</button>`
-      ).join("")}
-      ${weitere.length?`<button class="mknopf" data-person="${esc(weitere[0])}" title="Weitere: ${esc(weitere.join(", "))}">+${weitere.length} weitere</button>`:""}
-    </span>
+    <span class="tn"><b>${esc(team.name)}</b><small>${esc(team.members.join(", ")||"–")}</small></span>
     <span class="order">
       <button class="up" title="nach oben"${idx===0?" disabled":""}>▲</button>
       <button class="dn" title="nach unten"${idx===total-1?" disabled":""}>▼</button>
     </span>`;
-
-  inner.querySelector(".tmknopf").onclick=e=>{e.stopPropagation();openJahr("team",team.id,todayISO());};
-  inner.querySelectorAll("[data-person]").forEach(b=>{
-    b.onclick=e=>{e.stopPropagation();openJahr("person",b.dataset.person,todayISO());};
-  });
-  inner.querySelectorAll("[data-leer]").forEach(b=>{ b.onclick=e=>{e.stopPropagation();openTeams();}; });
   inner.querySelector(".up").onclick=e=>{e.stopPropagation();moveTeam(idx,-1);};
-
   inner.querySelector(".dn").onclick=e=>{e.stopPropagation();moveTeam(idx,1);};
   inner.ondragstart=e=>{
     e.dataTransfer.setData("application/x-team",team.id);
@@ -2552,7 +1968,7 @@ function renderMonth(){
   if(pendingScrollToday){
     pendingScrollToday=false;
     requestAnimationFrame(()=>{
-      const dayW=(tbl.offsetWidth-TEAMCOL)/tage.length;
+      const dayW=(tbl.offsetWidth-150)/tage.length;
       const vorlauf=Math.max(3,Math.round(monthVisible/4));   // heute ins erste Viertel
       const heute=todayISO();
       let i=tage.findIndex(d=>iso(d)===heute);
@@ -2565,40 +1981,16 @@ const short=(s,n)=>!s?"":(s.length>n?s.slice(0,n-1)+"…":s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 /* ---- Auftragspool ---- */
-/* Zwei Spalten: der gemeinsame Pool und die Spalte von Irina.
-   Ein Auftrag gehört zu einer Spalte, Ziehen verschiebt ihn. */
-const istZweit = j => j.pool==="irina";
-
 function renderPool(){
-  document.getElementById("btnAllJobs").textContent = poolShowAll ? "Nur offene" : "Alle";
-  document.getElementById("irinaName").textContent = state.settings.zweitpool;
-  const an=state.settings.zweitpoolAn!==false;
-  document.querySelector("aside").classList.toggle("einspalte",!an);
-  const sch=document.getElementById("btnIrinaSpalte");
-  sch.setAttribute("aria-pressed",an?"true":"false");
-  sch.textContent = an ? "⟩" : "⟨";
-  sch.title = an ? `Spalte „${state.settings.zweitpool}" ausblenden` : `Spalte „${state.settings.zweitpool}" einblenden`;
-  poolSpalte("pool","poolCount",j=>!istZweit(j),true);
-  poolSpalte("poolIrina","poolCountIrina",istZweit,false);
-}
-
-/* Auftrag in die andere Spalte legen */
-function spalteSetzen(job,spalte){
-  if(spalte==="irina") job.pool="irina"; else delete job.pool;
-  if(spalte==="irina") state.settings.zweitpoolAn=true;
-  save(); renderPool();
-}
-
-function poolSpalte(ziel,zaehler,gehoert,mitEinreichungen){
-  const pool=document.getElementById(ziel);
+  const pool=document.getElementById("pool");
   const planned=plannedJobIds();
-  const eigene=state.jobs.filter(gehoert);
-  const list = poolShowAll ? eigene : eigene.filter(j=>!planned.has(j.id));
-  document.getElementById(zaehler).textContent = poolShowAll ? `alle ${eigene.length}` : `${list.length} offen`;
+  const list = poolShowAll ? state.jobs : state.jobs.filter(j=>!planned.has(j.id));
+  document.getElementById("poolCount").textContent = poolShowAll ? `alle ${state.jobs.length}` : `${list.length} ungeplant`;
+  document.getElementById("btnAllJobs").textContent = poolShowAll ? "Nur offene" : "Alle";
   pool.replaceChildren();
 
   // Von Kunden eingereicht, noch nicht übernommen
-  const offen=mitEinreichungen ? eingereichte.filter(e=>e.status==="neu") : [];
+  const offen=eingereichte.filter(e=>e.status==="neu");
   if(offen.length && darfPlanen()){
     const h=document.createElement("div");
     h.style.cssText="color:#FFC978;font-size:11px;letter-spacing:.04em;padding:2px 2px 4px";
@@ -2625,11 +2017,11 @@ function poolSpalte(ziel,zaehler,gehoert,mitEinreichungen){
 
   if(!list.length){
     const p=document.createElement("div"); p.className="pool-empty";
-    p.textContent = poolShowAll ? "Noch keine Aufträge." : "Nichts offen.";
+    p.textContent = poolShowAll ? "Noch keine Aufträge angelegt." : "Alles verplant. Gute Woche.";
     pool.appendChild(p); return;
   }
   list.forEach(j=>{
-    const c=document.createElement("div"); c.className="jobcard"+(istZweit(j)?" irina":""); c.draggable=true;
+    const c=document.createElement("div"); c.className="jobcard"; c.draggable=true;
     if(planned.has(j.id)) c.style.borderLeftColor="#3D4A5C";
     c.innerHTML=`<b>${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
       ${(()=>{const k=kundeById(j.customerId);
@@ -2639,19 +2031,12 @@ function poolSpalte(ziel,zaehler,gehoert,mitEinreichungen){
       ${j.contact?`<small style="margin-top:3px;color:var(--ink-faint)">${esc(j.contact)}</small>`:""}
       ${(j.address&&j.lat==null)?`<small style="margin-top:3px;color:#FFB65C">noch kein Pin – über „Bearbeiten“ Adresse suchen</small>`:""}
       ${fileCounts[j.id]?`<small style="margin-top:3px;color:var(--ink-dim)">${fileCounts[j.id]} Foto${fileCounts[j.id]===1?"":"s"} / Datei${fileCounts[j.id]===1?"":"en"}</small>`:""}
-      <div class="row"><button data-e="${j.id}">Bearbeiten</button><button data-m="${j.id}">Karte</button
-        ><button data-p="${j.id}" title="In die andere Spalte verschieben">→ ${esc(istZweit(j)?"Pool":state.settings.zweitpool)}</button></div>`;
+      <div class="row"><button data-e="${j.id}">Bearbeiten</button><button data-m="${j.id}">Karte</button></div>`;
     c.ondragstart=e=>e.dataTransfer.setData("text/plain",j.id);
     pool.appendChild(c);
   });
   pool.querySelectorAll("[data-e]").forEach(b=>b.onclick=e=>{e.stopPropagation();openJob(b.dataset.e);});
   pool.querySelectorAll("[data-m]").forEach(b=>b.onclick=e=>{e.stopPropagation();showOnMap(b.dataset.m,todayISO());});
-  pool.querySelectorAll("[data-p]").forEach(b=>b.onclick=e=>{
-    e.stopPropagation();
-    const j=jobById(b.dataset.p); if(!j) return;
-    if(!darfPlanen()) return;
-    spalteSetzen(j, istZweit(j)?"haupt":"irina");
-  });
 }
 let poolShowAll=false;
 
@@ -3132,9 +2517,6 @@ function openJob(id){
   fuelleKundenAuswahl(j.customerId||"");
   jbWish.value=j.wishDate||""; jbValue.value=j.value||"";
   jbBilled.checked=!!j.billed;
-  const ps=document.getElementById("jbPool");
-  ps.options[1].textContent=state.settings.zweitpool;
-  ps.value = j.pool==="irina" ? "irina" : "haupt";
   document.getElementById("jbDelete").style.display=id?"":"none";
   document.getElementById("geoHint").className="hint";
   document.getElementById("geoHint").textContent="Koordinaten werden für die Karte gebraucht. „Adresse suchen“ holt sie automatisch (braucht Internet).";
@@ -3146,9 +2528,7 @@ document.getElementById("jbSave").onclick=()=>{
     lat:jbLat.value?parseFloat(jbLat.value):null, lng:jbLng.value?parseFloat(jbLng.value):null,
     contact:jbContact.value.trim(), note:jbNote.value.trim(),
     customerId:document.getElementById("jbCustomer").value||"",
-    wishDate:jbWish.value||"", value:jbValue.value.trim(), billed:jbBilled.checked||undefined,
-    pool: document.getElementById("jbPool").value==="irina" ? "irina" : undefined};
-  if(data.pool==="irina") state.settings.zweitpoolAn=true;
+    wishDate:jbWish.value||"", value:jbValue.value.trim(), billed:jbBilled.checked||undefined};
   if(jobIsNew) state.jobs.push(Object.assign({id:jobEditId},data));
   else Object.assign(jobById(jobEditId),data);
   jobIsNew=false;
@@ -3271,48 +2651,22 @@ document.getElementById("jbGeo").onclick=async()=>{
     h.className="hint geo-ok"; h.textContent="Gefunden: "+d[0].display_name;
   }catch(e){h.className="hint geo-no";h.textContent="Suche nicht möglich (keine Internetverbindung). Koordinaten von Hand eintragen.";}
 };
-/* Einsatz aus dem Kalender zurück in eine der beiden Auftragsspalten ziehen,
-   und Aufträge zwischen den Spalten verschieben */
+/* Einsatz aus dem Kalender zurück in den Auftragspool ziehen */
 (function(){
-  document.querySelectorAll(".poolcol").forEach(zone=>{
-    const spalte = zone.dataset.pool;           // "haupt" oder "irina"
-    const passt = e => { const t=[...e.dataTransfer.types];
-      return t.includes("application/json") || t.includes("text/plain"); };
-    zone.addEventListener("dragover",e=>{
-      if(!passt(e) || !darfPlanen()) return;
-      e.preventDefault(); e.dataTransfer.dropEffect="move"; zone.classList.add("dropzone");
-    });
-    zone.addEventListener("dragleave",e=>{ if(!zone.contains(e.relatedTarget)) zone.classList.remove("dropzone"); });
-    zone.addEventListener("drop",e=>{
-      zone.classList.remove("dropzone");
-      if(!darfPlanen()) return;
-      e.preventDefault();
-
-      /* a) Einsatz aus dem Kalender: Termin löschen, Auftrag in diese Spalte */
-      const raw=e.dataTransfer.getData("application/json");
-      if(raw){
-        try{ const r=JSON.parse(raw); if(r.kind==="run"){
-          if(istFixiert(r.jobId)){ alert(fixHinweis(r.jobId)); return; }
-          clearRun(r);
-          const j=jobById(r.jobId);
-          if(j){ if(spalte==="irina") j.pool="irina"; else delete j.pool; }
-          save(); render(); return;
-        } }catch(_){}
-      }
-
-      /* b) Auftragskarte aus der anderen Spalte */
-      const id=e.dataTransfer.getData("text/plain");
-      const job=id?jobById(id):null;
-      if(job) spalteSetzen(job,spalte);
-    });
+  const zone=document.querySelector("aside");
+  const isRun=e=>[...e.dataTransfer.types].includes("application/json");
+  zone.addEventListener("dragover",e=>{ if(isRun(e)){e.preventDefault();e.dataTransfer.dropEffect="move";zone.classList.add("dropzone");} });
+  zone.addEventListener("dragleave",e=>{ if(!zone.contains(e.relatedTarget)) zone.classList.remove("dropzone"); });
+  zone.addEventListener("drop",e=>{
+    zone.classList.remove("dropzone");
+    const raw=e.dataTransfer.getData("application/json"); if(!raw) return;
+    e.preventDefault();
+    try{ const r=JSON.parse(raw); if(r.kind==="run"){
+      if(istFixiert(r.jobId)){ alert(fixHinweis(r.jobId)); return; }
+      clearRun(r); save(); render();
+    } }catch(_){}
   });
 })();
-
-/* Zweite Spalte ein- und ausblenden */
-document.getElementById("btnIrinaSpalte").onclick=()=>{
-  state.settings.zweitpoolAn = state.settings.zweitpoolAn===false;
-  save(); renderPool(); render();
-};
 
 document.getElementById("btnNewJob").onclick=()=>openJob(null);
 document.getElementById("btnAllJobs").onclick=()=>{poolShowAll=!poolShowAll;renderPool();};
@@ -3859,1198 +3213,10 @@ document.getElementById("jbNewCustomer").onclick=()=>openKunde(null,id=>{
   fuelleKundenAuswahl(id);
 });
 
-/* =========================================================
-   Messenger – ein Verlauf je Team
-   Beteiligt sind der Chef, das Büro und die zwei Monteure
-   des Teams. Andere Teams sehen davon nichts; das regelt
-   die Datenbank, nicht diese Oberfläche.
-   ========================================================= */
-let chTeam=null;                 // gerade geöffneter Verlauf
-let chNachrichten=[];            // Nachrichten des offenen Verlaufs
-let chGelesen={};                // team_id -> Zeitpunkt
-let chUngelesen={};              // team_id -> Anzahl
-let chKanal=null;
-let chBildURLs=new Map();
-let meinTeam=null;               // nur bei Monteuren gesetzt
-
-const chDarfSchreiben = () => rolle==="admin"||rolle==="buero"||rolle==="monteur";
-function chMeineTeams(){
-  if(rolle==="monteur") return state.teams.filter(t=>t.id===meinTeam);
-  if(rolle==="admin"||rolle==="buero") return state.teams;
-  return [];
-}
-
-/* ---- Laden ---- */
-async function chatStarten(){
-  if(!sb || istKunde()) return;
-  try{
-    const { data } = await sb.from("chat_gelesen").select("team_id,bis").eq("user_id",meineId);
-    chGelesen={}; (data||[]).forEach(r=>chGelesen[r.team_id]=r.bis);
-  }catch(e){}
-  await ungelesenZaehlen();
-  chatHorchen();
-}
-
-async function ungelesenZaehlen(){
-  if(!sb) return;
-  const teams=chMeineTeams(); chUngelesen={};
-  for(const t of teams){
-    try{
-      const seit = chGelesen[t.id] || "1970-01-01";
-      const { count } = await sb.from("nachrichten")
-        .select("id",{count:"exact",head:true})
-        .eq("team_id",t.id).gt("created_at",seit).neq("autor",meineId);
-      chUngelesen[t.id]=count||0;
-    }catch(e){ chUngelesen[t.id]=0; }
-  }
-  glockeZeigen();
-}
-
-function glockeZeigen(){
-  const k=document.getElementById("btnChat"); if(!k) return;
-  const n=Object.values(chUngelesen).reduce((a,b)=>a+b,0);
-  let p=k.querySelector(".punkt");
-  if(n>0){
-    if(!p){ p=document.createElement("span"); p.className="punkt"; k.appendChild(p); }
-    p.textContent=n>99?"99+":n;
-  }else if(p) p.remove();
-  if(dlgChat.open) chatListeZeichnen();
-}
-
-/* Neue Nachrichten kommen von selbst herein */
-function chatHorchen(){
-  if(!sb || chKanal) return;
-  chKanal = sb.channel("chat")
-    .on("postgres_changes",{event:"INSERT",schema:"public",table:"nachrichten"}, nutz=>{
-      const n=nutz.new;
-      if(n.autor===meineId) return;
-      if(dlgChat.open && chTeam && n.team_id===chTeam.id){
-        chNachrichten.push(n); verlaufZeichnen(); lesestandSetzen(chTeam.id);
-      }else{
-        chUngelesen[n.team_id]=(chUngelesen[n.team_id]||0)+1;
-        glockeZeigen(); hinweistonSpielen();
-      }
-    })
-    .subscribe();
-}
-
-/* Ein kurzer Ton, solange das Programm offen ist */
-function hinweistonSpielen(){
-  try{
-    const A=window.AudioContext||window.webkitAudioContext; if(!A) return;
-    const c=new A(), o=c.createOscillator(), g=c.createGain();
-    o.connect(g); g.connect(c.destination);
-    o.frequency.value=880; g.gain.setValueAtTime(.0001,c.currentTime);
-    g.gain.exponentialRampToValueAtTime(.16,c.currentTime+.01);
-    g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.3);
-    o.start(); o.stop(c.currentTime+.32);
-    setTimeout(()=>c.close(),600);
-  }catch(e){}
-}
-
-/* ---- Fenster ---- */
-async function openChat(){
-  if(!sb){ alert("Für die Nachrichten braucht es die Verbindung zum Server."); return; }
-  chatListeZeichnen();
-  const teams=chMeineTeams();
-  if(!chTeam && teams.length) await chatOeffnen(teams[0]);
-  else if(chTeam) await chatOeffnen(chTeam);
-  else verlaufZeichnen();
-  dlgChat.showModal();
-  setTimeout(()=>{ const v=document.getElementById("chVerlauf"); v.scrollTop=v.scrollHeight; },60);
-}
-
-function chatListeZeichnen(){
-  const box=document.getElementById("chListe"); box.replaceChildren();
-  const teams=chMeineTeams();
-  if(!teams.length){
-    const d=document.createElement("div"); d.className="leer";
-    d.textContent = rolle==="monteur"
-      ? "Dir ist noch kein Team zugewiesen. Der Chef macht das unter Konto → Zugänge."
-      : "Noch keine Teams angelegt.";
-    box.appendChild(d); return;
-  }
-  teams.forEach(t=>{
-    const b=document.createElement("button");
-    b.className="chatteam"+(chTeam&&chTeam.id===t.id?" an":"");
-    const n=chUngelesen[t.id]||0;
-    b.innerHTML=`<span class="farbe" style="background:${t.color}"></span>
-      <span class="wer"><b>${esc(t.name)}</b><small>${esc(t.members.join(", ")||"keine Besetzung")}</small></span>
-      ${n?`<span class="zahl">${n>99?"99+":n}</span>`:""}`;
-    b.onclick=()=>chatOeffnen(t);
-    box.appendChild(b);
-  });
-}
-
-async function chatOeffnen(team){
-  chTeam=team;
-  document.getElementById("chTitel").textContent=team.name;
-  document.getElementById("chWer").textContent=team.members.join(", ")||"";
-  if(isPhone()) document.getElementById("chListe").classList.add("weg");
-  chatListeZeichnen();
-  const v=document.getElementById("chVerlauf");
-  v.replaceChildren(Object.assign(document.createElement("div"),
-    {className:"chattag",textContent:"wird geladen …"}));
-  try{
-    const { data, error } = await sb.from("nachrichten")
-      .select("*").eq("team_id",team.id).order("created_at",{ascending:true}).limit(500);
-    if(error) throw error;
-    chNachrichten=data||[];
-  }catch(e){ chNachrichten=[]; }
-  verlaufZeichnen();
-  await lesestandSetzen(team.id);
-  setTimeout(()=>{ v.scrollTop=v.scrollHeight; },40);
-}
-
-async function lesestandSetzen(teamId){
-  chUngelesen[teamId]=0; glockeZeigen();
-  const jetzt=new Date().toISOString(); chGelesen[teamId]=jetzt;
-  try{ await sb.from("chat_gelesen").upsert({user_id:meineId,team_id:teamId,bis:jetzt}); }catch(e){}
-}
-
-const chatZeit = s => new Date(s).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
-function chatTag(s){
-  const d=new Date(s), h=new Date(); h.setHours(0,0,0,0);
-  const g=new Date(d); g.setHours(0,0,0,0);
-  const tage=Math.round((h-g)/86400000);
-  if(tage===0) return "Heute";
-  if(tage===1) return "Gestern";
-  return `${DSHORT[(d.getDay()+6)%7]} ${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}`;
-}
-
-function verlaufZeichnen(){
-  const v=document.getElementById("chVerlauf"); v.replaceChildren();
-  if(!chTeam){ 
-    const d=document.createElement("div"); d.className="chattag"; d.textContent="Links einen Verlauf wählen";
-    v.appendChild(d); return;
-  }
-  if(!chNachrichten.length){
-    const d=document.createElement("div"); d.className="chattag";
-    d.textContent="Noch keine Nachrichten"; v.appendChild(d);
-  }
-  let letzterTag="";
-  chNachrichten.forEach(n=>{
-    const tag=chatTag(n.created_at);
-    if(tag!==letzterTag){
-      const t=document.createElement("div"); t.className="chattag"; t.textContent=tag;
-      v.appendChild(t); letzterTag=tag;
-    }
-    const b=document.createElement("div");
-    b.className="blase"+(n.autor===meineId?" ich":"");
-    if(n.autor!==meineId){
-      const von=document.createElement("div"); von.className="von";
-      von.textContent=n.autor_name||"—"; b.appendChild(von);
-    }
-    if(n.bild){
-      const img=document.createElement("img"); img.alt=n.bild_name||"Foto"; img.loading="lazy";
-      chatBildURL(n.bild).then(u=>{ if(u) img.src=u; });
-      img.onclick=()=>{ if(img.src) window.open(img.src,"_blank"); };
-      b.appendChild(img);
-      if(rolle==="admin"||rolle==="buero"){
-        const z=document.createElement("button");
-        z.className="zuordnen"+(n.job_id?" fertig":"");
-        const job=n.job_id?jobById(n.job_id):null;
-        z.textContent = n.job_id ? ("✓ "+(job?short(job.name,24):"zugeordnet")) : "Zum Objekt legen";
-        if(!n.job_id) z.onclick=()=>bildZuordnen(n);
-        b.appendChild(z);
-      }
-    }
-    if(n.text){
-      const p=document.createElement("p"); p.textContent=n.text; b.appendChild(p);
-    }
-    const z=document.createElement("div"); z.className="zeit"; z.textContent=chatZeit(n.created_at);
-    b.appendChild(z);
-    v.appendChild(b);
-  });
-  v.scrollTop=v.scrollHeight;
-  document.getElementById("chStatus").textContent =
-    chTeam ? `${chNachrichten.length} Nachricht${chNachrichten.length===1?"":"en"} in diesem Verlauf.` : "";
-}
-
-async function chatBildURL(pfad){
-  const t=chBildURLs.get(pfad);
-  if(t && t.bis>Date.now()+60000) return t.url;
-  try{
-    const { data } = await sb.storage.from(BUCKET).createSignedUrl(pfad,3600);
-    if(!data) return null;
-    chBildURLs.set(pfad,{url:data.signedUrl,bis:Date.now()+3600*1000});
-    return data.signedUrl;
-  }catch(e){ return null; }
-}
-
-/* ---- Senden ---- */
-async function nachrichtSenden(text,bild,bildName){
-  if(!chTeam) return;
-  const eintrag={team_id:chTeam.id,autor:meineId,autor_name:meinName,
-                 text:text||null,bild:bild||null,bild_name:bildName||null};
-  const { data, error } = await sb.from("nachrichten").insert(eintrag).select().single();
-  if(error){ alert("Die Nachricht ging nicht raus: "+error.message); return; }
-  chNachrichten.push(data); verlaufZeichnen();
-}
-
-document.getElementById("chSenden").onclick=async()=>{
-  const f=document.getElementById("chText");
-  const t=f.value.trim(); if(!t) return;
-  f.value=""; f.style.height="";
-  await nachrichtSenden(t,null,null);
-};
-document.getElementById("chText").onkeydown=e=>{
-  if(e.key==="Enter" && !e.shiftKey && !isPhone()){ e.preventDefault(); document.getElementById("chSenden").click(); }
-};
-document.getElementById("chText").oninput=e=>{
-  e.target.style.height="auto"; e.target.style.height=Math.min(110,e.target.scrollHeight)+"px";
-};
-document.getElementById("chBild").onclick=()=>document.getElementById("chDatei").click();
-document.getElementById("chDatei").onchange=async e=>{
-  const f=e.target.files[0]; e.target.value=""; if(!f||!chTeam) return;
-  const knopf=document.getElementById("chBild"); knopf.disabled=true; knopf.textContent="…";
-  try{
-    const endung=(f.name.split(".").pop()||"jpg").toLowerCase().slice(0,5);
-    const pfad=`chat/${chTeam.id}/${uid()}${uid()}.${endung}`;
-    const { error } = await sb.storage.from(BUCKET).upload(pfad,f,{upsert:false});
-    if(error) throw error;
-    await nachrichtSenden(document.getElementById("chText").value.trim()||null,pfad,f.name||"Foto");
-    document.getElementById("chText").value="";
-  }catch(err){ alert("Das Foto ging nicht raus: "+err.message); }
-  knopf.disabled=false; knopf.textContent="📷";
-};
-document.getElementById("chZurueck").onclick=()=>{
-  document.getElementById("chListe").classList.remove("weg");
-};
-
-/* ---- Ein Foto einem Objekt zuordnen ---- */
-async function bildZuordnen(n){
-  if(!state.jobs.length){ alert("Es gibt noch keine Aufträge, denen das Foto zugeordnet werden könnte."); return; }
-  const liste=state.jobs.map((j,i)=>`${i+1} = ${j.name}`).join("\n");
-  const wahl=prompt("Zu welchem Objekt gehört das Foto?\n\n"+liste+"\n\nNummer eingeben:");
-  const job=state.jobs[parseInt(wahl,10)-1];
-  if(!job) return;
-  try{
-    const nr=naechsteNummer();
-    const endung=(n.bild.split(".").pop()||"jpg");
-    const zielName=`${String(nr).padStart(4,"0")}_${todayISO()}_${slug(job.name)}.${endung}`;
-    const { error } = await sb.storage.from(BUCKET).copy(n.bild,zielName);
-    if(error) throw error;
-    const rec={id:uid()+uid(),jobId:job.id,nr,name:n.bild_name||"Foto aus dem Chat",
-               storedName:zielName,type:"image/"+endung,size:0,added:new Date().toISOString()};
-    if(!state.fileRegistry) state.fileRegistry=[];
-    state.fileRegistry.push(rec);
-    save();
-    await sb.from("nachrichten").update({job_id:job.id}).eq("id",n.id);
-    n.job_id=job.id;
-    await refreshCounts(); verlaufZeichnen(); render();
-  }catch(e){ alert("Das Zuordnen ging schief: "+e.message); }
-}
-
-/* ---- Medien aufräumen ---- */
-document.getElementById("chAufraeumen").onclick=async()=>{
-  if(rolle!=="admin"&&rolle!=="buero"){ alert("Das darf nur der Betrieb."); return; }
-  const tage=parseInt(prompt("Fotos löschen, die älter sind als wie viele Tage?\n\nDer Schriftverkehr bleibt vollständig stehen.","30"),10);
-  if(!tage||tage<1) return;
-  const grenze=new Date(Date.now()-tage*86400000).toISOString();
-  try{
-    const { data, error } = await sb.from("nachrichten")
-      .select("id,team_id,bild,bild_name,job_id,created_at")
-      .not("bild","is",null).lt("created_at",grenze);
-    if(error) throw error;
-    const alle=data||[];
-    if(!alle.length){ alert(`Es gibt keine Fotos, die älter als ${tage} Tage sind.`); return; }
-    const gesichert=alle.filter(x=>x.job_id);
-    const offen=alle.filter(x=>!x.job_id);
-    const text=`Älter als ${tage} Tage: ${alle.length} Foto${alle.length===1?"":"s"}.\n`+
-      `Einem Objekt zugeordnet: ${gesichert.length}\nNoch nicht zugeordnet: ${offen.length}\n\n`+
-      (offen.length
-        ? `OK = nur die ${gesichert.length} gesicherten löschen\nAbbrechen = nichts löschen\n\n`+
-          `Die ${offen.length} nicht zugeordneten bleiben in jedem Fall stehen.`
-        : `OK = alle ${gesichert.length} löschen`);
-    if(!confirm(text)) return;
-    const pfade=gesichert.map(x=>x.bild);
-    for(let i=0;i<pfade.length;i+=50){
-      await sb.storage.from(BUCKET).remove(pfade.slice(i,i+50));
-    }
-    for(const x of gesichert){
-      await sb.from("nachrichten").update({bild:null,bild_name:null,
-        text:(x.bild_name?`[Foto gesichert: ${x.bild_name}]`:"[Foto gesichert]")}).eq("id",x.id);
-    }
-    alert(`${gesichert.length} Foto${gesichert.length===1?"":"s"} aus den Verläufen entfernt.\n`+
-          `Die Bilder liegen weiterhin bei ihren Objekten.`);
-    if(chTeam) chatOeffnen(chTeam);
-  }catch(e){ alert("Das Aufräumen ging schief: "+e.message); }
-};
-
-document.getElementById("btnChat").onclick=openChat;
-
-/* ---- Passwortschutz für die Auftragsliste ----
-   Das Passwort selbst wird nie gespeichert, nur sein Fingerabdruck. */
-let listeOffen=false;          // gilt bis zum Schließen des Programms
-
-async function fingerabdruck(txt){
-  try{
-    const b=new TextEncoder().encode("kubik:"+txt);
-    const h=await crypto.subtle.digest("SHA-256",b);
-    return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("");
-  }catch(e){
-    let h=5381; for(const c of ("kubik:"+txt)) h=((h<<5)+h+c.charCodeAt(0))>>>0;
-    return "e"+h.toString(16);
-  }
-}
-const listeGesperrt = () => !!(state.settings && state.settings.listeSchluessel);
-
-async function listeFreigeben(){
-  if(!listeGesperrt() || listeOffen) return true;
-  for(let versuch=1; versuch<=3; versuch++){
-    const ein=prompt(versuch===1
-      ? "Passwort für die Auftragsliste:"
-      : `Falsch. Noch ${4-versuch} Versuch${versuch===3?"":"e"}:`);
-    if(ein===null) return false;
-    if(await fingerabdruck(ein) === state.settings.listeSchluessel){
-      listeOffen=true; return true;
-    }
-  }
-  alert("Dreimal falsch. Die Liste bleibt zu.");
-  return false;
-}
-
-/* =========================================================
-   Auftragsliste – eine Mappe aus Blättern
-   Ein Blatt je Auftraggeber, jedes mit eigenen Spalten.
-   ========================================================= */
-const SPALTENARTEN=[["text","Text"],["zahl","Zahl"],["geld","Betrag"],["datum","Datum"],["haken","Haken"]];
-const ROLLEN=[["","–"],["objekt","Objekt"],["kunde","Kunde"],["stadt","Stadt"],["betrag","Betrag"],["datum","Termin"]];
-const LISTE_TAT=150;
-
-const istISO = s => /^\d{4}-\d{2}-\d{2}$/.test(s||"");
-function geldText(v){
-  if(v===""||v===null||v===undefined||isNaN(v)) return "";
-  return Number(v).toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function zahlText(v){
-  if(v===""||v===null||v===undefined||isNaN(v)) return "";
-  return Number(v).toLocaleString("de-DE",{maximumFractionDigits:2});
-}
-function geldWert(s){
-  if(typeof s==="number") return s;
-  if(!s) return "";
-  const t=String(s).replace(/[^\d,.\-]/g,"").replace(/\./g,"").replace(",",".");
-  const z=parseFloat(t);
-  return isNaN(z) ? "" : z;
-}
-
-let liBlattId=null, liFilterText="";
-const blattById = id => state.blaetter.find(b=>b.id===id);
-function blattAktiv(){
-  let b=blattById(liBlattId);
-  if(!b){ b=state.blaetter[0]||null; liBlattId=b?b.id:null; }
-  return b;
-}
-function neuesBlatt(name){
-  const b={id:uid(), name:name||"Neues Blatt",
-    spalten:[
-      {f:"s1",t:"Eingang",typ:"datum",b:112,rolle:"datum"},
-      {f:"s2",t:"Objekt",typ:"text",b:320,rolle:"objekt"},
-      {f:"s3",t:"Stadt",typ:"text",b:90,rolle:"stadt"},
-      {f:"s4",t:"Betrag",typ:"geld",b:98,rolle:"betrag"},
-      {f:"s5",t:"Rechnung Nr.",typ:"text",b:110,rolle:""},
-      {f:"s6",t:"Bezahlt",typ:"haken",b:64,rolle:""},
-      {f:"s7",t:"Datum Eingang",typ:"datum",b:118,rolle:""},
-      {f:"s8",t:"Notizen",typ:"text",b:240,rolle:""},
-    ],
-    zeilen:[]};
-  state.blaetter.push(b); return b;
-}
-
-async function openListe(){
-  if(!await listeFreigeben()) return;
-  if(!state.blaetter.length) neuesBlatt("Blatt 1");
-  liFilterText=""; document.getElementById("liSuche").value="";
-  zeichneListe();
-  dlgListe.showModal();
-}
-
-/* ---- Blattreiter ---- */
-function zeichneReiter(){
-  const leiste=document.getElementById("liBlaetter");
-  leiste.replaceChildren();
-  state.blaetter.forEach(b=>{
-    const t=document.createElement("button");
-    t.className="reiter"+(b.id===liBlattId?" an":"");
-    t.textContent=b.name;
-    t.title=`${b.zeilen.length} Zeile${b.zeilen.length===1?"":"n"} · Doppelklick zum Umbenennen`;
-    t.onclick=()=>{ liBlattId=b.id; zeichneListe(); };
-    t.ondblclick=()=>{
-      const n=prompt("Name des Blattes:",b.name);
-      if(n&&n.trim()){ b.name=n.trim(); save(); zeichneListe(); }
-    };
-    leiste.appendChild(t);
-  });
-  const plus=document.createElement("button");
-  plus.className="reiter plus"; plus.textContent="+"; plus.title="Blatt hinzufügen";
-  plus.onclick=blattAnlegen;
-  leiste.appendChild(plus);
-}
-function blattAnlegen(){
-  const n=prompt("Name des neuen Blattes (zum Beispiel der Auftraggeber):","");
-  if(n===null) return;
-  const b=neuesBlatt(n.trim()||("Blatt "+(state.blaetter.length+1)));
-  liBlattId=b.id; save(); zeichneListe();
-}
-
-function zeilenGefiltert(b){
-  const t=liFilterText.trim().toLowerCase();
-  if(!t) return b.zeilen;
-  return b.zeilen.filter(z=>b.spalten.some(c=>String(z[c.f]??"").toLowerCase().includes(t)));
-}
-
-function zeichneListe(){
-  document.getElementById("liSperren").hidden = !listeGesperrt();
-  zeichneReiter();
-  const b=blattAktiv();
-  const wrap=document.getElementById("liWrap");
-  if(!b){ wrap.replaceChildren(); return; }
-  const zeilen=zeilenGefiltert(b);
-  const vorhanden=new Set(state.jobs.map(j=>j.id));
-
-  const tbl=document.createElement("table"); tbl.className="liste";
-  const cg=document.createElement("colgroup");
-  b.spalten.forEach(c=>{const col=document.createElement("col");col.style.width=(c.b||110)+"px";cg.appendChild(col);});
-  const colT=document.createElement("col"); colT.style.width=LISTE_TAT+"px"; cg.appendChild(colT);
-  tbl.appendChild(cg);
-  const breite=()=>b.spalten.reduce((s,c)=>s+(c.b||110),0)+LISTE_TAT;
-  tbl.style.width=breite()+"px";
-
-  const th=document.createElement("thead"), trk=document.createElement("tr");
-  b.spalten.forEach(c=>{
-    const h=document.createElement("th");
-    h.textContent=c.t||" "; h.title=(c.t||"ohne Namen")+(c.rolle?" · "+(ROLLEN.find(r=>r[0]===c.rolle)||["",""])[1]:"");
-    if(c.rolle) h.classList.add("rolle");
-    const g=document.createElement("span"); g.className="griff"; g.title="Breite ziehen";
-    g.onpointerdown=e=>breiteZiehen(e,c);
-    h.appendChild(g); trk.appendChild(h);
-  });
-  trk.appendChild(document.createElement("th"));
-  th.appendChild(trk); tbl.appendChild(th);
-
-  const tb=document.createElement("tbody");
-  zeilen.forEach(z=>{
-    const tr=document.createElement("tr");
-    if(z.jobId && vorhanden.has(z.jobId)) tr.className="imPool";
-    b.spalten.forEach(c=>{
-      const td=document.createElement("td");
-      if(c.typ==="geld"||c.typ==="zahl") td.className="geld";
-      if(c.typ==="haken") td.className="haken";
-      if(c.typ==="haken"){
-        const i=document.createElement("input"); i.type="checkbox"; i.checked=!!z[c.f];
-        i.onchange=()=>{ z[c.f]=i.checked; save(); summenZeigen(); };
-        td.appendChild(i);
-      }else{
-        const i=document.createElement("input");
-        if(c.typ==="datum" && (!z[c.f] || istISO(z[c.f]))){
-          i.type="date"; i.value=z[c.f]||""; i.classList.toggle("hat",!!i.value);
-        }else{
-          i.type="text";
-          i.value = c.typ==="geld" ? geldText(z[c.f]) : (c.typ==="zahl" ? zahlText(z[c.f]) : (z[c.f]??""));
-        }
-        i.title=c.t||"";
-        i.onchange=()=>{
-          z[c.f] = (c.typ==="geld"||c.typ==="zahl") ? geldWert(i.value) : i.value;
-          if(c.typ==="geld") i.value=geldText(z[c.f]);
-          if(c.typ==="zahl") i.value=zahlText(z[c.f]);
-          if(i.type==="date") i.classList.toggle("hat",!!i.value);
-          save(); summenZeigen();
-        };
-        td.appendChild(i);
-      }
-      tr.appendChild(td);
-    });
-    const tt=document.createElement("td"); tt.className="tat";
-    const kn=document.createElement("div"); kn.className="knoepfe";
-    const bp=document.createElement("button"); bp.className="pool";
-    const drin = z.jobId && vorhanden.has(z.jobId);
-    bp.textContent = drin ? "im Pool" : "→ Auftrag";
-    bp.title = drin ? "Auftrag ist angelegt – hier öffnen" : "Aus dieser Zeile einen Auftrag anlegen";
-    bp.onclick=()=> drin ? (dlgListe.close(), setTimeout(()=>openJob(z.jobId),80)) : auftragAusZeile(b,z);
-    const bw=document.createElement("button"); bw.className="weg"; bw.textContent="✕"; bw.title="Zeile löschen";
-    bw.onclick=()=>{
-      const o=b.spalten.find(c=>c.rolle==="objekt");
-      if(!confirm("Diese Zeile löschen?\n\n"+((o&&z[o.f])||"ohne Objekt"))) return;
-      b.zeilen=b.zeilen.filter(x=>x!==z); save(); zeichneListe();
-    };
-    kn.append(bp,bw); tt.appendChild(kn); tr.appendChild(tt);
-    tb.appendChild(tr);
-  });
-
-  if(!zeilen.length){
-    const leer=document.createElement("tr");
-    const td=document.createElement("td"); td.colSpan=b.spalten.length+1;
-    td.style.cssText="padding:26px;text-align:center;color:var(--l-dim)";
-    td.textContent = b.zeilen.length ? "Kein Treffer."
-      : "Noch keine Zeilen auf diesem Blatt. Über „Zeile hinzufügen“ anfangen – oder unten links die Blätter aus Numbers übernehmen.";
-    leer.appendChild(td); tb.appendChild(leer);
-  }
-  tbl.appendChild(tb);
-
-  /* Summenzeile unter der Tabelle */
-  const tf=document.createElement("tfoot"); const trf=document.createElement("tr");
-  b.spalten.forEach(c=>{
-    const td=document.createElement("td");
-    if(c.typ==="geld"||c.typ==="zahl"){
-      td.className="geld summe";
-      const s=zeilen.reduce((a,z)=>a+(Number(z[c.f])||0),0);
-      td.textContent = s ? (c.typ==="geld"?geldText(s):zahlText(s)) : "";
-    }
-    trf.appendChild(td);
-  });
-  trf.appendChild(document.createElement("td"));
-  tf.appendChild(trf); tbl.appendChild(tf);
-
-  wrap.replaceChildren(tbl);
-  summenZeigen();
-}
-
-function summenZeigen(){
-  const b=blattAktiv(); if(!b) return;
-  const zeilen=zeilenGefiltert(b);
-  const geld=b.spalten.filter(c=>c.typ==="geld");
-  const bez =b.spalten.find(c=>c.typ==="haken" && /bezahlt/i.test(c.t||""));
-  const haupt = b.spalten.find(c=>c.rolle==="betrag") || geld[0];
-  let ges=0, be=0;
-  if(haupt) zeilen.forEach(z=>{
-    const w=Number(z[haupt.f])||0; ges+=w;
-    if(bez && z[bez.f]) be+=w;
-  });
-  const k=document.getElementById("liSummen");
-  k.replaceChildren();
-  const teil=(t,v)=>{const e=document.createElement("span");e.innerHTML=`${t}<b>${v}</b>`;k.appendChild(e);};
-  if(haupt){
-    teil("Summe", geldText(ges)+" €");
-    if(bez){ teil("bezahlt", geldText(be)+" €"); teil("offen", geldText(Math.max(0,ges-be))+" €"); }
-  }
-  document.getElementById("liFuss").textContent =
-    `${b.name}: ${zeilen.length} von ${b.zeilen.length} Zeilen, ${b.spalten.length} Spalten. `
-    +`Spaltenbreiten am rechten Rand der Überschrift ziehen; über „Spalten …“ lassen sich Namen und Art ändern.`;
-}
-
-/* Spaltenbreite ziehen wie in einer Tabellenkalkulation */
-function breiteZiehen(ev,spalte){
-  ev.preventDefault(); ev.stopPropagation();
-  const start=ev.clientX, anfang=spalte.b||110;
-  const b=blattAktiv();
-  const sp=b.spalten.indexOf(spalte);
-  const tbl=document.querySelector("#liWrap table.liste");
-  const col=tbl?tbl.querySelectorAll("colgroup col")[sp]:null;
-  const zieh=e=>{
-    spalte.b=Math.max(44, Math.min(760, anfang+(e.clientX-start)));
-    if(col) col.style.width=spalte.b+"px";
-    if(tbl) tbl.style.width=(b.spalten.reduce((s,c)=>s+(c.b||110),0)+LISTE_TAT)+"px";
-  };
-  const los=()=>{
-    window.removeEventListener("pointermove",zieh);
-    window.removeEventListener("pointerup",los);
-    save();
-  };
-  window.addEventListener("pointermove",zieh);
-  window.addEventListener("pointerup",los);
-}
-
-/* Aus einer Zeile einen Auftrag machen */
-function auftragAusZeile(b,z){
-  const hol=r=>{const c=b.spalten.find(x=>x.rolle===r); return c? z[c.f] : "";};
-  const name=String(hol("objekt")||"").trim();
-  if(!name){ alert("Diese Zeile hat kein Objekt.\n\nÜber „Spalten …“ festlegen, welche Spalte das Objekt ist."); return; }
-  const kname=String(hol("kunde")||b.name||"").trim();
-  const k=state.customers.find(c=>(c.company||"").toLowerCase().trim()===kname.toLowerCase());
-  const betrag=hol("betrag"), termin=hol("datum");
-  const job={
-    id:uid(), name:short(name,60),
-    address:[name,String(hol("stadt")||"")].filter(Boolean).join(", ").slice(0,160),
-    lat:null,lng:null,contact:"",customerId:k?k.id:"",
-    wishDate: istISO(termin)?termin:"",
-    value: (betrag!==""&&betrag!=null&&!isNaN(betrag)) ? geldText(betrag)+" €" : "",
-    note:`Aus der Auftragsliste, Blatt ${b.name}`
-  };
-  state.jobs.push(job); z.jobId=job.id;
-  save(); zeichneListe(); renderPool();
-}
-
-/* ---- Spalten einrichten ---- */
-let spEntwurf=null;
-document.getElementById("liSpalten").onclick=()=>{
-  const b=blattAktiv(); if(!b) return;
-  spEntwurf=b.spalten.map(c=>({...c}));
-  document.getElementById("spTitel").textContent="Spalten – "+b.name;
-  zeichneSpalten();
-  dlgSpalten.showModal();
-};
-function zeichneSpalten(){
-  const box=document.getElementById("spListe"); box.replaceChildren();
-  spEntwurf.forEach((c,i)=>{
-    const r=document.createElement("div"); r.className="spaltezeile";
-    const n=document.createElement("input"); n.type="text"; n.value=c.t||""; n.placeholder="Spaltenname";
-    n.oninput=()=>c.t=n.value;
-    const a=document.createElement("select");
-    SPALTENARTEN.forEach(([w,t])=>{const o=document.createElement("option");o.value=w;o.textContent=t;a.appendChild(o);});
-    a.value=c.typ||"text"; a.onchange=()=>c.typ=a.value;
-    const ro=document.createElement("select"); ro.title="Wofür steht die Spalte, wenn ein Auftrag daraus wird?";
-    ROLLEN.forEach(([w,t])=>{const o=document.createElement("option");o.value=w;o.textContent=t;ro.appendChild(o);});
-    ro.value=c.rolle||""; ro.onchange=()=>{
-      if(ro.value) spEntwurf.forEach(x=>{ if(x!==c && x.rolle===ro.value) x.rolle=""; });
-      c.rolle=ro.value; zeichneSpalten();
-    };
-    const hoch=document.createElement("button"); hoch.textContent="▲"; hoch.disabled=i===0;
-    hoch.onclick=()=>{spEntwurf.splice(i-1,0,spEntwurf.splice(i,1)[0]);zeichneSpalten();};
-    const run=document.createElement("button"); run.textContent="▼"; run.disabled=i===spEntwurf.length-1;
-    run.onclick=()=>{spEntwurf.splice(i+1,0,spEntwurf.splice(i,1)[0]);zeichneSpalten();};
-    const weg=document.createElement("button"); weg.textContent="✕"; weg.className="weg"; weg.title="Spalte entfernen";
-    weg.onclick=()=>{ if(confirm("Spalte „"+(c.t||"ohne Namen")+"“ entfernen?\n\nDie Werte dieser Spalte gehen verloren.")){ spEntwurf.splice(i,1); zeichneSpalten(); } };
-    r.append(n,a,ro,hoch,run,weg); box.appendChild(r);
-  });
-}
-document.getElementById("spNeu").onclick=()=>{
-  spEntwurf.push({f:"s"+uid(),t:"",typ:"text",b:140,rolle:""}); zeichneSpalten();
-  const letzte=document.querySelector("#spListe .spaltezeile:last-child input");
-  if(letzte) letzte.focus();
-};
-document.getElementById("spSpeichern").onclick=()=>{
-  const b=blattAktiv(); if(!b) return;
-  b.spalten=spEntwurf.map(c=>({f:c.f,t:(c.t||"").trim(),typ:c.typ||"text",b:c.b||140,rolle:c.rolle||""}));
-  save(); dlgSpalten.close(); zeichneListe();
-};
-document.getElementById("spBlattWeg").onclick=()=>{
-  const b=blattAktiv(); if(!b) return;
-  if(!confirm(`Das Blatt „${b.name}“ mit ${b.zeilen.length} Zeilen löschen?\n\nDas lässt sich nicht rückgängig machen.`)) return;
-  state.blaetter=state.blaetter.filter(x=>x!==b);
-  liBlattId=null; save(); dlgSpalten.close();
-  if(!state.blaetter.length) neuesBlatt("Blatt 1");
-  zeichneListe();
-};
-
-/* ---- Zeile, Suche, Übernahme, CSV ---- */
-document.getElementById("liNeu").onclick=()=>{
-  const b=blattAktiv(); if(!b) return;
-  const z={id:uid()};
-  b.spalten.forEach(c=>z[c.f]= c.typ==="haken" ? false : "");
-  const d=b.spalten.find(c=>c.rolle==="datum");
-  if(d && d.typ==="datum") z[d.f]=todayISO();
-  b.zeilen.unshift(z); save(); zeichneListe();
-  const erstes=document.querySelector("#liWrap tbody tr td input[type=text]");
-  if(erstes) erstes.focus();
-};
-document.getElementById("liBlattNeu").onclick=blattAnlegen;
-document.getElementById("liSuche").oninput=e=>{liFilterText=e.target.value;zeichneListe();};
-
-document.getElementById("liImport").onclick=()=>document.getElementById("liImportDatei").click();
-document.getElementById("liImportDatei").onchange=async e=>{
-  const f=e.target.files[0]; e.target.value=""; if(!f) return;
-  try{
-    const d=JSON.parse(await f.text());
-    const n=mappeUebernehmen(d);
-    alert(n ? (n+" Blätter übernommen.") : "In der Datei stehen keine Blätter.");
-    zeichneListe();
-  }catch(err){ alert("Die Datei ließ sich nicht lesen: "+err.message); }
-};
-function mappeUebernehmen(d){
-  const blaetter = Array.isArray(d) ? d : (d.blaetter||[]);
-  if(!blaetter.length) return 0;
-  /* Gibt es Blätter gleichen Namens, erst fragen */
-  const doppelt=blaetter.map(x=>(x.name||"").trim())
-    .filter(n=>state.blaetter.some(b=>b.name===n));
-  let ersetzen=false;
-  if(doppelt.length){
-    ersetzen=confirm(
-      `Blätter mit diesen Namen gibt es schon:\n\n${[...new Set(doppelt)].join(", ")}\n\n`+
-      `OK = die vorhandenen ersetzen\nAbbrechen = zusätzlich anlegen`);
-    if(ersetzen) state.blaetter=state.blaetter.filter(b=>!doppelt.includes(b.name));
-  }
-  let erstes=null;
-  blaetter.forEach(bl=>{
-    const b={id:uid(), name:(bl.name||"Blatt").trim(),
-      spalten:(bl.spalten||[]).map(c=>({f:c.f||("s"+uid()),t:c.t||"",typ:c.typ||"text",b:c.b||120,rolle:c.rolle||""})),
-      zeilen:(bl.zeilen||[]).map(z=>Object.assign({id:uid()},z))};
-    if(!b.spalten.length) return;
-    state.blaetter.push(b);
-    if(!erstes) erstes=b.id;
-  });
-  /* ein unbenutztes Startblatt steht nur im Weg */
-  state.blaetter=state.blaetter.filter(b=>!(b.zeilen.length===0 && /^Blatt \d+$/.test(b.name) && b.id!==erstes));
-  liBlattId=erstes||(state.blaetter[0]||{}).id||null;
-  save();
-  return blaetter.length;
-}
-document.getElementById("liCsv").onclick=()=>{
-  const b=blattAktiv(); if(!b) return;
-  const kopf=b.spalten.map(c=>c.t||"");
-  const zeilen=zeilenGefiltert(b).map(z=>b.spalten.map(c=>{
-    const v=z[c.f];
-    if(c.typ==="haken") return v?"ja":"";
-    if(c.typ==="geld"||c.typ==="zahl") return v===""||v==null?"":String(v).replace(".",",");
-    return v??"";
-  }));
-  const csv=[kopf,...zeilen].map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(";")).join("\r\n");
-  const bl=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(bl); a.download=`kubik-${b.name.replace(/[^\wäöüÄÖÜß -]/g,"")}-${todayISO()}.csv`; a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-};
-document.getElementById("liSperren").onclick=()=>{ listeOffen=false; dlgListe.close(); };
-document.getElementById("btnListe").onclick=openListe;
-
-/* =========================================================
-   Stunden je Mitarbeiter, Kilometer je Team
-   Eine Tabelle, zwei Betriebsarten: "person" und "team".
-   Schlüssel: Name bzw. Team-Kennung + "|" + Datum.
-   ========================================================= */
-const tagKey=(wer,ds)=>wer+"|"+ds;
-const eintraege = modus => modus==="team" ? state.km : state.stunden;
-
-function eintrag(modus,wer,ds){ return eintraege(modus)[tagKey(wer,ds)]||null; }
-function eintragSetzen(modus,wer,ds,wert,notiz){
-  const topf=eintraege(modus), k=tagKey(wer,ds);
-  const hatWert = wert!==null && wert!==undefined && wert!=="" && !isNaN(wert);
-  const hatNotiz = !!(notiz&&notiz.trim());
-  if(!hatWert && !hatNotiz){ delete topf[k]; }
-  else topf[k]={ ...(hatWert?{w:Number(wert)}:{}) , ...(hatNotiz?{n:notiz.trim()}:{}) };
-  save();
-}
-
-/* Alle Mitarbeiter: in Teamreihenfolge, danach die ohne Team */
-function alleLeute(){
-  const raus=[], gesehen=new Set();
-  state.teams.forEach(t=>t.members.forEach(nm=>{
-    if(nm && !gesehen.has(nm)){ gesehen.add(nm); raus.push({name:nm,team:t}); }
-  }));
-  state.extraLeute.forEach(nm=>{ if(nm&&!gesehen.has(nm)){ gesehen.add(nm); raus.push({name:nm,team:null}); } });
-  return raus;
-}
-const teamVon = nm => state.teams.find(t=>t.members.includes(nm))||null;
-
-function summeJahr(modus,wer,jahr){
-  const topf=eintraege(modus), vor=wer+"|"+jahr+"-";
-  let s=0;
-  for(const k in topf) if(k.startsWith(vor) && topf[k].w) s+=topf[k].w;
-  return Math.round(s*100)/100;
-}
-const summeKm = (teamId,jahr) => summeJahr("team",teamId,jahr);
-
-/* Alle Tage eines Jahres */
-function jahresTage(jahr){
-  const raus=[]; const d=new Date(jahr,0,1);
-  while(d.getFullYear()===jahr){ raus.push(new Date(d)); d.setDate(d.getDate()+1); }
-  return raus;
-}
-
-let jahrModus="person", jahrWer=null, jahrJahr=new Date().getFullYear(), jahrZielTag=null;
-
-function openJahr(modus,wer,ds){
-  jahrModus=modus; jahrWer=wer;
-  jahrJahr = ds ? Number(ds.slice(0,4)) : new Date().getFullYear();
-  jahrZielTag = ds || todayISO();
-  zeichneJahr();
-  if(!dlgJahr.open) dlgJahr.showModal();
-  setTimeout(()=>fokusZelle(jahrWer,jahrZielTag,true),30);
-}
-
-function zeichneJahr(){
-  const istTeam = jahrModus==="team";
-  document.getElementById("jahrTitel").textContent = istTeam
-    ? "Kilometer je Team" : "Arbeitsstunden je Mitarbeiter";
-  document.getElementById("jahrLabel").textContent = jahrJahr;
-  document.getElementById("jahrHint").textContent = istTeam
-    ? "Gefahrene Kilometer pro Tag. Über das Zeichen in der Ecke eine Notiz dazu."
-    : "Geleistete Stunden pro Tag. Über das Zeichen in der Ecke eine Notiz dazu.";
-  document.getElementById("jahrFuss").textContent = istTeam
-    ? "Pfeiltasten wechseln die Zelle, Enter springt zum nächsten Tag. Alles wird sofort gespeichert."
-    : "Pfeiltasten wechseln die Zelle, Enter springt zum nächsten Tag. Alles wird sofort gespeichert.";
-
-  const tage=jahresTage(jahrJahr);
-  const zeilen = istTeam
-    ? state.teams.map(t=>({id:t.id,name:t.name,farbe:t.color,unter:(t.members.join(", ")||"keine Besetzung")}))
-    : alleLeute().map(p=>({id:p.name,name:p.name,farbe:(p.team?p.team.color:"#5C6878"),unter:(p.team?p.team.name:"ohne Team")}));
-
-  const tbl=document.createElement("table"); tbl.className="jahr";
-  const th=document.createElement("thead");
-
-  /* Kopfzeile 1: Monate */
-  const trM=document.createElement("tr"); trM.className="monate";
-  const eckM=document.createElement("th"); eckM.className="namecol";
-  eckM.textContent = istTeam ? "Team" : "Mitarbeiter";
-  eckM.rowSpan=2; trM.appendChild(eckM);
-  for(let m=0;m<12;m++){
-    const anz=new Date(jahrJahr,m+1,0).getDate();
-    const h=document.createElement("th"); h.colSpan=anz+1;
-    h.innerHTML=`<span class="mlab">${MONTHS[m]}</span>`;
-    trM.appendChild(h);
-  }
-  th.appendChild(trM);
-
-  /* Kopfzeile 2: Tage */
-  const trT=document.createElement("tr"); trT.className="tage";
-  tage.forEach((d,i)=>{
-    const h=document.createElement("th");
-    h.innerHTML=`${DSHORT[(d.getDay()+6)%7]}<br>${d.getDate()}`;
-    const kl=[];
-    if(iso(d)===todayISO()) kl.push("heute");
-    if(d.getDate()===1) kl.push("monatsanfang");
-    h.className=kl.join(" ");
-    trT.appendChild(h);
-    /* Letzter Tag des Monats: Summenspalte anhängen */
-    const naechster=tage[i+1];
-    if(!naechster || naechster.getMonth()!==d.getMonth()){
-      const hs=document.createElement("th"); hs.className="monatssumme";
-      hs.innerHTML=`Σ<br>${istTeam?"km":"Std"}`;
-      hs.title=`${MONTHS[d.getMonth()]} ${jahrJahr} zusammengezählt`;
-      trT.appendChild(hs);
-    }
-  });
-  th.appendChild(trT); tbl.appendChild(th);
-
-  const tb=document.createElement("tbody");
-  if(!zeilen.length){
-    const tr=document.createElement("tr");
-    const td=document.createElement("td"); td.colSpan=tage.length+1;
-    td.style.padding="22px"; td.style.color="var(--ink-faint)";
-    td.textContent = istTeam
-      ? "Noch keine Teams angelegt – oben über „Teams“."
-      : "Noch keine Mitarbeiter eingetragen – oben über „Teams“ die Besetzung ergänzen.";
-    tr.appendChild(td); tb.appendChild(tr);
-  }
-  zeilen.forEach(z=>{
-    const tr=document.createElement("tr");
-    const nc=document.createElement("td"); nc.className="namecol";
-    const summe=summeJahr(jahrModus,z.id,jahrJahr);
-    nc.innerHTML=`<button type="button" class="zeilenknopf" title="Auf ${esc(z.name)} wechseln">
-      <b><i class="pkt" style="background:${z.farbe}"></i>${esc(z.name)}</b>
-      <small>${esc(z.unter)}${summe?` · ${summe.toLocaleString("de-DE")} ${istTeam?"km":"h"} ${jahrJahr}`:""}</small>
-    </button>`;
-    tr.dataset.wer=z.id;
-    nc.querySelector(".zeilenknopf").onclick=()=>fokusZelle(z.id, jahrZielTag||todayISO(), true);
-    tr.appendChild(nc);
-
-
-    const summenFelder={};        // Monat -> Zelle, damit sie sich sofort mitändert
-    const monatSumme=m=>{
-      const vor=`${z.id}|${jahrJahr}-${String(m+1).padStart(2,"0")}-`;
-      const topf=eintraege(jahrModus); let w=0;
-      for(const k in topf) if(k.startsWith(vor) && topf[k].w) w+=topf[k].w;
-      return Math.round(w*100)/100;
-    };
-    const summenAuffrischen=m=>{
-      const zelle=summenFelder[m]; if(!zelle) return;
-      const w=monatSumme(m);
-      zelle.textContent = w ? w.toLocaleString("de-DE") : "";
-      nc.querySelector("small").textContent =
-        `${z.unter}${summeJahr(jahrModus,z.id,jahrJahr)?` · ${summeJahr(jahrModus,z.id,jahrJahr).toLocaleString("de-DE")} ${istTeam?"km":"h"} ${jahrJahr}`:""}`;
-    };
-
-    tage.forEach((d,i)=>{
-      const ds=iso(d);
-      const td=document.createElement("td");
-      const kl=[];
-      if(ds===todayISO()) kl.push("heute");
-      if(d.getDate()===1) kl.push("monatsanfang");
-      td.className=kl.join(" ");
-
-      const e=eintrag(jahrModus,z.id,ds);
-      const zelle=document.createElement("div"); zelle.className="zelle";
-      zelle.dataset.wer=z.id; zelle.dataset.tag=ds;
-
-      const inp=document.createElement("input");
-      inp.type="number"; inp.step=istTeam?"1":"0.25"; inp.min="0";
-      inp.inputMode="decimal"; inp.disabled=!darfPlanen();
-      inp.value = e&&e.w!==undefined ? e.w : "";
-      if(inp.value) inp.classList.add("hat");
-      inp.title=`${z.name} · ${wunschText(ds)}`;
-      inp.onchange=()=>{
-        const alt=eintrag(jahrModus,z.id,ds);
-        eintragSetzen(jahrModus,z.id,ds,inp.value,alt?alt.n:"");
-        inp.classList.toggle("hat",!!inp.value);
-        summenAuffrischen(d.getMonth());
-        nc.querySelector("small").textContent =
-          `${z.unter}${summeJahr(jahrModus,z.id,jahrJahr)?` · ${summeJahr(jahrModus,z.id,jahrJahr).toLocaleString("de-DE")} ${istTeam?"km":"h"} ${jahrJahr}`:""}`;
-        if(jahrModus==="team") render();
-      };
-      inp.onkeydown=ev=>tastenInJahr(ev,z.id,ds);
-      zelle.appendChild(inp);
-
-      const nz=document.createElement("button");
-      nz.className="nz"+(e&&e.n?" da":""); nz.type="button";
-      nz.textContent = e&&e.n ? "✎" : "+";
-      nz.title = e&&e.n ? e.n : "Notiz zu diesem Tag";
-      nz.onclick=ev=>{ ev.preventDefault(); ev.stopPropagation(); openNotiz(jahrModus,z.id,ds); };
-      zelle.appendChild(nz);
-
-      td.appendChild(zelle); tr.appendChild(td);
-
-      const naechster=tage[i+1];
-      if(!naechster || naechster.getMonth()!==d.getMonth()){
-        const m=d.getMonth();
-        const ts=document.createElement("td"); ts.className="monatssumme";
-        const w=monatSumme(m);
-        ts.textContent = w ? w.toLocaleString("de-DE") : "";
-        ts.title=`${z.name} · ${MONTHS[m]} ${jahrJahr}`;
-        summenFelder[m]=ts; tr.appendChild(ts);
-      }
-    });
-    tb.appendChild(tr);
-  });
-  tbl.appendChild(tb);
-  document.getElementById("jahrWrap").replaceChildren(tbl);
-
-  /* Die Tageszeile klebt unter der Monatszeile – deren Höhe messen, nicht raten */
-  const hMonat=trM.getBoundingClientRect().height;
-  trT.querySelectorAll("th").forEach(h=>h.style.top=hMonat+"px");
-  /* Monatsname bleibt beim Querscrollen stehen, neben der Namensspalte */
-  const nz=tbl.querySelector("th.namecol");
-  const bn=nz?Math.round(nz.getBoundingClientRect().width):190;
-  trM.querySelectorAll(".mlab").forEach(x=>x.style.left=bn+"px");
-
-  document.getElementById("jahrModusP").setAttribute("aria-pressed",istTeam?"false":"true");
-  document.getElementById("jahrModusT").setAttribute("aria-pressed",istTeam?"true":"false");
-  document.getElementById("jahrAlleNotizen").onclick=()=>openNotizen(jahrModus,jahrWer);
-  aktiveZeileZeigen();
-}
-
-/* Welche Zeile gerade bearbeitet wird: Markierung und Beschriftung unten */
-function aktiveZeileZeigen(){
-  const wrap=document.getElementById("jahrWrap");
-  let name="";
-  wrap.querySelectorAll("tbody tr").forEach(tr=>{
-    const ist = tr.dataset.wer===String(jahrWer);
-    tr.classList.toggle("aktiv",ist);
-    if(ist){ const b=tr.querySelector(".namecol b"); name=b?b.textContent.trim():""; }
-  });
-  const btn=document.getElementById("jahrAlleNotizen");
-  btn.textContent = name
-    ? `Alle Notizen zu ${name}`
-    : (jahrModus==="team" ? "Alle Notizen zu diesem Team" : "Alle Notizen zu dieser Person");
-  btn.disabled = !name;
-  btn.style.opacity = name ? "" : ".45";
-}
-
-/* Zwischen Mitarbeiter- und Teamtabelle wechseln, ohne den Tag zu verlieren.
-   Von einer Person geht es zu ihrem Team und umgekehrt zum ersten Namen. */
-function jahrModusWechseln(neu){
-  if(neu===jahrModus){ return; }
-  const tag=jahrZielTag||todayISO();
-  let ziel=null;
-  if(neu==="team"){
-    const t=teamVon(jahrWer); ziel = t ? t.id : (state.teams[0]||{}).id;
-  }else{
-    const t=teamById(jahrWer);
-    ziel = (t && t.members[0]) || (alleLeute()[0]||{}).name;
-  }
-  jahrModus=neu; jahrWer=ziel||""; jahrZielTag=tag;
-  zeichneJahr();
-  setTimeout(()=>fokusZelle(jahrWer,tag,true),20);
-}
-document.getElementById("jahrModusP").onclick=()=>jahrModusWechseln("person");
-document.getElementById("jahrModusT").onclick=()=>jahrModusWechseln("team");
-
-/* Aus der Kopfleiste: zuletzt bearbeitete Zeile wieder aufgreifen */
-document.getElementById("btnStunden").onclick=()=>{
-  const gab = jahrModus==="person" && jahrWer;
-  const p = gab ? jahrWer : (alleLeute()[0]||{}).name;
-  openJahr("person", p||"", todayISO());
-};
-document.getElementById("btnKm").onclick=()=>{
-  const gab = jahrModus==="team" && jahrWer;
-  const t = gab ? jahrWer : (state.teams[0]||{}).id;
-  openJahr("team", t||"", todayISO());
-};
-
-
-/* Zelle anspringen, markieren und den Blick darauf richten.
-   Der feste Kopf oben und die feste Namensspalte links dürfen sie nicht verdecken. */
-function fokusZelle(wer,ds,scrollen){
-  const wrap=document.getElementById("jahrWrap");
-  wrap.querySelectorAll(".zelle.ziel").forEach(z=>z.classList.remove("ziel"));
-  const zelle=wrap.querySelector(`.zelle[data-wer="${CSS.escape(String(wer))}"][data-tag="${ds}"]`);
-  if(!zelle) return false;
-  zelle.classList.add("ziel");
-  const inp=zelle.querySelector("input");
-  if(scrollen){
-    const wr=wrap.getBoundingClientRect(), zr=zelle.getBoundingClientRect();
-    const kopf=(wrap.querySelector("thead")||{getBoundingClientRect:()=>({height:0})}).getBoundingClientRect().height;
-    const nameZ=wrap.querySelector("td.namecol,th.namecol");
-    const breiteName=nameZ?nameZ.getBoundingClientRect().width:0;
-    const freiH=Math.max(60, wrap.clientHeight-kopf);
-    const freiB=Math.max(80, wrap.clientWidth-breiteName);
-    wrap.scrollTop  = Math.max(0, wrap.scrollTop  + (zr.top -wr.top ) - kopf       - freiH/2 + zr.height/2);
-    wrap.scrollLeft = Math.max(0, wrap.scrollLeft + (zr.left-wr.left) - breiteName - freiB/2 + zr.width/2);
-  }
-  if(inp && !inp.disabled){ inp.focus({preventScroll:true}); inp.select(); }
-  jahrWer=wer; jahrZielTag=ds;
-  aktiveZeileZeigen();
-  return true;
-}
-
-function tastenInJahr(ev,wer,ds){
-  const schritt=(tage)=>{
-    const d=addDays(parse(ds),tage);
-    if(d.getFullYear()!==jahrJahr){
-      jahrJahr=d.getFullYear(); jahrZielTag=iso(d); jahrWer=wer;
-      zeichneJahr(); setTimeout(()=>fokusZelle(wer,iso(d),true),20);
-      return;
-    }
-    fokusZelle(wer,iso(d),true);
-  };
-  const reihe=(richtung)=>{
-    const wrap=document.getElementById("jahrWrap");
-    const alle=[...wrap.querySelectorAll("tbody tr")];
-    const i=alle.findIndex(tr=>tr.querySelector(`.zelle[data-wer="${CSS.escape(String(wer))}"]`));
-    const ziel=alle[i+richtung]; if(!ziel) return;
-    const z=ziel.querySelector(`.zelle[data-tag="${ds}"]`); if(!z) return;
-    fokusZelle(z.dataset.wer,ds,true);
-  };
-  if(ev.key==="ArrowRight"&&(ev.target.selectionStart===ev.target.value.length)){ ev.preventDefault(); schritt(1); }
-  else if(ev.key==="ArrowLeft"&&ev.target.selectionStart===0){ ev.preventDefault(); schritt(-1); }
-  else if(ev.key==="Enter"||ev.key==="Tab"&&!ev.shiftKey){ ev.preventDefault(); ev.target.blur(); schritt(1); }
-  else if(ev.key==="ArrowDown"){ ev.preventDefault(); ev.target.blur(); reihe(1); }
-  else if(ev.key==="ArrowUp"){ ev.preventDefault(); ev.target.blur(); reihe(-1); }
-}
-
-
-/* Zelle anspringen, markieren und den Blick darauf richten.
-   Der feste Kopf oben und die feste Namensspalte links dürfen sie nicht verdecken. */
-function fokusZelle(wer,ds,scrollen){
-  const wrap=document.getElementById("jahrWrap");
-  wrap.querySelectorAll(".zelle.ziel").forEach(z=>z.classList.remove("ziel"));
-  const zelle=wrap.querySelector(`.zelle[data-wer="${CSS.escape(String(wer))}"][data-tag="${ds}"]`);
-  if(!zelle) return false;
-  zelle.classList.add("ziel");
-  const inp=zelle.querySelector("input");
-  if(scrollen){
-    const wr=wrap.getBoundingClientRect(), zr=zelle.getBoundingClientRect();
-    const kopf=(wrap.querySelector("thead")||{getBoundingClientRect:()=>({height:0})}).getBoundingClientRect().height;
-    const nameZ=wrap.querySelector("td.namecol,th.namecol");
-    const breiteName=nameZ?nameZ.getBoundingClientRect().width:0;
-    const freiH=Math.max(60, wrap.clientHeight-kopf);
-    const freiB=Math.max(80, wrap.clientWidth-breiteName);
-    wrap.scrollTop  = Math.max(0, wrap.scrollTop  + (zr.top -wr.top ) - kopf       - freiH/2 + zr.height/2);
-    wrap.scrollLeft = Math.max(0, wrap.scrollLeft + (zr.left-wr.left) - breiteName - freiB/2 + zr.width/2);
-  }
-  if(inp && !inp.disabled){ inp.focus({preventScroll:true}); inp.select(); }
-  jahrWer=wer; jahrZielTag=ds;
-  aktiveZeileZeigen();
-  return true;
-}
-
-function tastenInJahr(ev,wer,ds){
-  const schritt=(tage)=>{
-    const d=addDays(parse(ds),tage);
-    if(d.getFullYear()!==jahrJahr){
-      jahrJahr=d.getFullYear(); jahrZielTag=iso(d); jahrWer=wer;
-      zeichneJahr(); setTimeout(()=>fokusZelle(wer,iso(d),true),20);
-      return;
-    }
-    fokusZelle(wer,iso(d),true);
-  };
-  const reihe=(richtung)=>{
-    const wrap=document.getElementById("jahrWrap");
-    const alle=[...wrap.querySelectorAll("tbody tr")];
-    const i=alle.findIndex(tr=>tr.querySelector(`.zelle[data-wer="${CSS.escape(String(wer))}"]`));
-    const ziel=alle[i+richtung]; if(!ziel) return;
-    const z=ziel.querySelector(`.zelle[data-tag="${ds}"]`); if(!z) return;
-    fokusZelle(z.dataset.wer,ds,true);
-  };
-  if(ev.key==="ArrowRight"&&(ev.target.selectionStart===ev.target.value.length)){ ev.preventDefault(); schritt(1); }
-  else if(ev.key==="ArrowLeft"&&ev.target.selectionStart===0){ ev.preventDefault(); schritt(-1); }
-  else if(ev.key==="Enter"||ev.key==="Tab"&&!ev.shiftKey){ ev.preventDefault(); ev.target.blur(); schritt(1); }
-  else if(ev.key==="ArrowDown"){ ev.preventDefault(); ev.target.blur(); reihe(1); }
-  else if(ev.key==="ArrowUp"){ ev.preventDefault(); ev.target.blur(); reihe(-1); }
-}
-
-document.getElementById("jahrPrev").onclick=()=>{
-  jahrJahr--; zeichneJahr(); setTimeout(()=>fokusZelle(jahrWer,jahrJahr+"-01-01",true),20);
-};
-document.getElementById("jahrNext").onclick=()=>{
-  jahrJahr++; zeichneJahr(); setTimeout(()=>fokusZelle(jahrWer,jahrJahr+"-01-01",true),20);
-};
-document.getElementById("jahrHeute").onclick=()=>{
-  const h=todayISO();
-  if(Number(h.slice(0,4))!==jahrJahr){ jahrJahr=Number(h.slice(0,4)); zeichneJahr(); }
-  setTimeout(()=>fokusZelle(jahrWer,h,true),20);
-};
-document.getElementById("jahrPrev").onclick=()=>{
-  jahrJahr--; zeichneJahr(); setTimeout(()=>fokusZelle(jahrWer,jahrJahr+"-01-01",true),20);
-};
-document.getElementById("jahrNext").onclick=()=>{
-  jahrJahr++; zeichneJahr(); setTimeout(()=>fokusZelle(jahrWer,jahrJahr+"-01-01",true),20);
-};
-document.getElementById("jahrHeute").onclick=()=>{
-  const h=todayISO();
-  if(Number(h.slice(0,4))!==jahrJahr){ jahrJahr=Number(h.slice(0,4)); zeichneJahr(); }
-  setTimeout(()=>fokusZelle(jahrWer,h,true),20);
-};
-
-/* ---- Eine Notiz ---- */
-let nzModus="person", nzWer=null, nzTag=null;
-function openNotiz(modus,wer,ds){
-  nzModus=modus; nzWer=wer; nzTag=ds;
-  const istTeam=modus==="team";
-  const name = istTeam ? (teamById(wer)?teamById(wer).name:"Team") : wer;
-  document.getElementById("nzTitel").textContent=`${name} · ${wunschText(ds)}`;
-  document.getElementById("nzWertLabel").textContent = istTeam ? "Gefahrene Kilometer" : "Arbeitsstunden";
-  const e=eintrag(modus,wer,ds);
-  const w=document.getElementById("nzWert");
-  w.step = istTeam ? "1" : "0.25";
-  w.value = e&&e.w!==undefined ? e.w : "";
-  document.getElementById("nzText").value = e&&e.n ? e.n : "";
-  document.getElementById("nzWert").disabled = !darfPlanen();
-  document.getElementById("nzText").disabled = !darfPlanen();
-  document.getElementById("nzSave").style.display = darfPlanen() ? "" : "none";
-  document.getElementById("nzAlle").textContent = istTeam
-    ? "Alle Notizen zu diesem Team" : "Alle Notizen zu dieser Person";
-  dlgNotiz.showModal();
-}
-document.getElementById("nzSave").onclick=()=>{
-  if(!darfPlanen()){ dlgNotiz.close(); return; }
-  eintragSetzen(nzModus,nzWer,nzTag,
-    document.getElementById("nzWert").value,
-    document.getElementById("nzText").value);
-  dlgNotiz.close();
-  if(dlgJahr.open){ zeichneJahr(); setTimeout(()=>fokusZelle(nzWer,nzTag,false),10); }
-  if(nzModus==="team") render();
-};
-document.getElementById("nzAlle").onclick=()=>openNotizen(nzModus,nzWer);
-
-/* ---- Alle Notizen zu einer Person oder einem Team ---- */
-function openNotizen(modus,wer){
-  const istTeam=modus==="team";
-  const name = istTeam ? (teamById(wer)?teamById(wer).name:"Team") : wer;
-  document.getElementById("nlTitel").textContent=`Notizen zu ${name}`;
-  const topf=eintraege(modus), vor=wer+"|";
-  const liste=[];
-  for(const k in topf){
-    if(!k.startsWith(vor)) continue;
-    if(!topf[k].n) continue;
-    liste.push({tag:k.slice(vor.length), w:topf[k].w, n:topf[k].n});
-  }
-  liste.sort((a,b)=>b.tag.localeCompare(a.tag));
-  const einheit=istTeam?"km":"h";
-  document.getElementById("nlHint").textContent = liste.length
-    ? `${liste.length} Notiz${liste.length===1?"":"en"}, neueste zuerst. Ein Klick öffnet den Tag.`
-    : "Zu diesem Eintrag gibt es noch keine Notizen.";
-  const box=document.getElementById("nlListe"); box.replaceChildren();
-  liste.forEach(e=>{
-    const d=document.createElement("div"); d.className="notizpost";
-    d.innerHTML=`<b>${esc(wunschText(e.tag))}${e.w!==undefined?` <span class="wert">· ${e.w} ${einheit}</span>`:""}</b>
-      <p>${esc(e.n)}</p>`;
-    d.onclick=()=>{
-      dlgNotizen.close();
-      if(!dlgJahr.open || Number(e.tag.slice(0,4))!==jahrJahr || jahrModus!==modus){
-        openJahr(modus,wer,e.tag);
-      }else setTimeout(()=>fokusZelle(wer,e.tag,true),10);
-    };
-    box.appendChild(d);
-  });
-  dlgNotizen.showModal();
-}
-
 /* ---- Teams ---- */
 function openTeams(){
   const list=document.getElementById("teamList"); list.replaceChildren();
   state.teams.forEach(t=>list.appendChild(teamRow(t)));
-  document.getElementById("tmExtra").value=(state.extraLeute||[]).join(", ");
   dlgTeams.showModal();
 }
 function teamRow(t){
@@ -5076,20 +3242,9 @@ document.getElementById("teamsSave").onclick=()=>{
     members:r.querySelector(".mb").value.split(",").map(s=>s.trim()).filter(Boolean)
   }));
   state.assignments=state.assignments.filter(a=>keep.has(a.teamId));
-  state.teams=next;
-  state.extraLeute=document.getElementById("tmExtra").value.split(",").map(s=>s.trim()).filter(Boolean);
-  save(); dlgTeams.close(); render();
+  state.teams=next; save(); dlgTeams.close(); render();
 };
 document.getElementById("btnTeams").onclick=openTeams;
-document.getElementById("tmStunden").onclick=()=>{
-  dlgTeams.close();
-  const p=alleLeute()[0]; setTimeout(()=>openJahr("person",p?p.name:"",todayISO()),80);
-};
-document.getElementById("tmKm").onclick=()=>{
-  dlgTeams.close();
-  const t=state.teams[0]; setTimeout(()=>openJahr("team",t?t.id:"",todayISO()),80);
-};
-
 
 /* ---- Einstellungen ---- */
 document.getElementById("btnSettings").onclick=()=>{
@@ -5097,11 +3252,6 @@ document.getElementById("btnSettings").onclick=()=>{
   stCompany.value=s.company; stAmS.value=s.amStart; stAmE.value=s.amEnd; stPmS.value=s.pmStart; stPmE.value=s.pmEnd;
   try{ stApiKey.value=localStorage.getItem(API_KEY)||""; }catch(e){}
   stModel.value=(s.model||MODELL_STANDARD);
-  stZweit.value=(s.zweitpool||"Irina");
-  stListePin.value="";
-  document.getElementById("stListeHint").textContent = listeGesperrt()
-    ? "Die Liste ist mit einem Passwort geschützt. Ein neues Passwort hier eintragen ersetzt das alte; das Wort „weg“ hebt den Schutz auf."
-    : "Solange das Feld leer bleibt, ist die Liste für jeden offen, der vor dem Bildschirm sitzt.";
   dlgSettings.showModal();
 };
 document.getElementById("stTest").onclick=async()=>{
@@ -5129,34 +3279,8 @@ document.getElementById("stTest").onclick=async()=>{
   }
 };
 
-document.getElementById("stSave").onclick=async()=>{
-  /* Passwort der Auftragsliste: setzen, ändern oder aufheben.
-     Wer das alte nicht kennt, kann es auch nicht ersetzen. */
-  const pin=stListePin.value.trim();
-  if(pin){
-    if(listeGesperrt() && !listeOffen){
-      const alt=prompt("Zum Ändern zuerst das bisherige Passwort der Auftragsliste:");
-      if(alt===null){ stListePin.value=""; return; }
-      if(await fingerabdruck(alt) !== state.settings.listeSchluessel){
-        alert("Das bisherige Passwort stimmt nicht. Das Passwort bleibt unverändert.");
-        stListePin.value=""; return;
-      }
-      listeOffen=true;
-    }
-    if(pin.toLowerCase()==="weg"){
-      delete state.settings.listeSchluessel; listeOffen=false;
-      alert("Der Passwortschutz der Auftragsliste ist aufgehoben.");
-    }else if(pin.length<4){
-      alert("Das Passwort sollte mindestens vier Zeichen haben."); return;
-    }else{
-      state.settings.listeSchluessel=await fingerabdruck(pin);
-      listeOffen=true;
-      alert("Passwort gesetzt. Die Auftragsliste fragt ab jetzt danach.");
-    }
-    stListePin.value="";
-  }
+document.getElementById("stSave").onclick=()=>{
   Object.assign(state.settings,{company:stCompany.value.trim()||"Betrieb",amStart:stAmS.value,amEnd:stAmE.value,pmStart:stPmS.value,pmEnd:stPmE.value,
-    zweitpool:(stZweit.value.trim()||"Irina"),
     model:(stModel.value.trim()||MODELL_STANDARD)});
   try{
     const k=stApiKey.value.trim();
@@ -5252,7 +3376,7 @@ document.getElementById("dtZip").onclick=async()=>{
     const blob=zipBauen(eintraege);
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
-    a.download="kubik-fotos-"+todayISO()+".zip"; a.click();
+    a.download="einsatzplaner-fotos-"+todayISO()+".zip"; a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),6000);
   }catch(e){
     alert("Der Ordner konnte nicht gepackt werden: "+e.message);
@@ -5278,13 +3402,13 @@ function textZuBlob(b64,type){
   return new Blob([arr],{type:type||"application/octet-stream"});
 }
 document.getElementById("dtExport").onclick=()=>{
-  ladeJSON(state,"kubik-planung-"+todayISO()+".json");
+  ladeJSON(state,"einsatzplanung-"+todayISO()+".json");
 };
 
 document.getElementById("dtExportAll").onclick=async()=>{
   const btn=document.getElementById("dtExportAll");
   const alle=await Files.all();
-  if(!alle.length){ ladeJSON(state,"kubik-planung-"+todayISO()+".json"); return; }
+  if(!alle.length){ ladeJSON(state,"einsatzplanung-"+todayISO()+".json"); return; }
   const bytes=alle.reduce((n,f)=>n+(f.size||0),0);
   if(!confirm(`${alle.length} Foto(s) und Datei(en) mit ${groesse(bytes)} werden in die Sicherung gepackt. Das dauert einen Moment. Fortfahren?`)) return;
   btn.disabled=true; const alt=btn.textContent;
@@ -5300,7 +3424,7 @@ document.getElementById("dtExportAll").onclick=async()=>{
                     type:f.type,size:f.size,added:f.added,
                     inhalt:await blobZuText(blob)});
     }
-    ladeJSON({...state,_dateien:dateien},"kubik-planung-mit-fotos-"+todayISO()+".json");
+    ladeJSON({...state,_dateien:dateien},"einsatzplanung-mit-fotos-"+todayISO()+".json");
   }catch(e){
     alert("Die Sicherung konnte nicht erstellt werden. Bei sehr vielen Fotos hilft es, einzelne Aufträge zu bereinigen.");
   }
@@ -5368,10 +3492,6 @@ dlgMenu.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{
   setTimeout(()=>{
     if(m==="kunden") openKunden();
     else if(m==="teams") openTeams();
-    else if(m==="chat") openChat();
-    else if(m==="liste") openListe();
-    else if(m==="stunden"){ const p=alleLeute()[0]; openJahr("person",p?p.name:"",todayISO()); }
-    else if(m==="km"){ const t=state.teams[0]; openJahr("team",t?t.id:"",todayISO()); }
     else if(m==="scan") openScan();
     else if(m==="konto") document.getElementById("btnKonto").click();
     else if(m==="einst") document.getElementById("btnSettings").click();
@@ -5616,7 +3736,7 @@ document.getElementById("erSave").onclick=async()=>{
 /* =========================================================
    Anmeldung und Start
    ========================================================= */
-const mailVon = (u,i=0) => u.includes("@") ? u.trim() : u.trim().toLowerCase()+"@"+MAIL_DOMAINS[i];
+const mailVon = u => u.includes("@") ? u.trim() : u.trim().toLowerCase()+"@"+MAIL_DOMAIN;
 const nameVon = m => String(m||"").split("@")[0];
 
 function zeigeLogin(txt,art){
@@ -5630,14 +3750,8 @@ async function anmelden(user,pass){
   const btn=document.getElementById("lgGo");
   btn.disabled=true; m.className="lgmsg"; m.textContent="Wird geprüft …";
   try{
-    let data=null, letzterFehler=null;
-    // Benutzername ohne @: beide Kurzadressen probieren
-    for(let i=0; i<(user.includes("@")?1:MAIL_DOMAINS.length); i++){
-      const r = await sb.auth.signInWithPassword({ email:mailVon(user,i), password:pass });
-      if(!r.error){ data=r.data; break; }
-      letzterFehler=r.error;
-    }
-    if(!data) throw letzterFehler;
+    const { data, error } = await sb.auth.signInWithPassword({ email:mailVon(user), password:pass });
+    if(error) throw error;
     await nachAnmeldung(data.user);
   }catch(e){
     const t=String(e.message||"");
@@ -5650,14 +3764,12 @@ async function anmelden(user,pass){
 }
 
 async function nachAnmeldung(user){
-  meineId=user.id;
   meinName=nameVon(user.email);
   // Rolle aus der Tabelle profiles
   try{
-    const { data } = await sb.from("profiles").select("rolle,customer_id,name,team_id").eq("id",user.id).single();
+    const { data } = await sb.from("profiles").select("rolle,customer_id,name").eq("id",user.id).single();
     rolle=(data&&data.rolle)||"kunde";
     meinKunde=(data&&data.customer_id)||null;
-    meinTeam=(data&&data.team_id)||null;
     if(data&&data.name) meinName=data.name;
   }catch(e){ rolle="kunde"; }
 
@@ -5665,7 +3777,7 @@ async function nachAnmeldung(user){
   document.body.classList.toggle("alsKunde",istKunde());
 
   if(istKunde()) await kundenWeltStarten();
-  else { await planungStarten(); await chatStarten(); }
+  else await planungStarten();
 }
 
 async function planungStarten(){
@@ -5690,18 +3802,12 @@ async function planungStarten(){
 
 /* Bedienelemente abschalten, die die Rolle nicht darf */
 function rollenRechte(){
-  const nurPlaner=["btnNewJob","btnScan","btnKunden","btnTeams","btnData","btnIrinaSpalte"];
+  const nurPlaner=["btnNewJob","btnScan","btnKunden","btnTeams","btnData"];
   if(rolle==="monteur"){
     nurPlaner.forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display="none"; });
   }
   const ko=document.getElementById("koAdmin");
   if(ko) ko.hidden = rolle!=="admin";
-  const ch=document.getElementById("btnChat");           // Nachrichten: alle außer Kunden
-  if(ch) ch.style.display = istKunde() ? "none" : "";
-  const bl=document.getElementById("btnListe");          // Auftragsliste: nur der Chef
-  if(bl) bl.style.display = rolle==="admin" ? "" : "none";
-  const ml=document.querySelector('#dlgMenu [data-m="liste"]');
-  if(ml) ml.style.display = rolle==="admin" ? "" : "none";
 }
 
 document.getElementById("loginForm").onsubmit=e=>{
@@ -5738,14 +3844,13 @@ document.getElementById("koLogout").onclick=async()=>{
 async function zugaengeLaden(){
   const box=document.getElementById("koListe"); box.replaceChildren();
   try{
-    const { data, error } = await sb.from("profiles").select("id,name,rolle,customer_id,team_id").order("rolle");
+    const { data, error } = await sb.from("profiles").select("id,name,rolle,customer_id").order("rolle");
     if(error) throw error;
     (data||[]).forEach(pr=>{
       const kunde=pr.customer_id?kundeById(pr.customer_id):null;
-      const team=pr.team_id?teamById(pr.team_id):null;
       const row=document.createElement("div"); row.className="kdrow";
       row.innerHTML=`<div><b>${esc(pr.name||"(ohne Namen)")}</b>
-        <small>${({admin:"Chef",buero:"Büro",monteur:"Monteur",kunde:"Kunde"})[pr.rolle]||pr.rolle}${kunde?" · "+esc(kunde.company):""}${team?" · "+esc(team.name):""}</small></div>`;
+        <small>${({admin:"Chef",buero:"Büro",monteur:"Monteur",kunde:"Kunde"})[pr.rolle]||pr.rolle}${kunde?" · "+esc(kunde.company):""}</small></div>`;
       const sel=document.createElement("select");
       sel.style.cssText="flex:0 0 150px;background:rgba(0,0,0,.26);border:1px solid var(--line-soft);border-radius:10px;padding:7px 9px;color:var(--ink);font-size:12px";
       [["admin","Chef"],["buero","Büro"],["monteur","Monteur"],["kunde","Kunde"]].forEach(([v,t])=>{
@@ -5764,19 +3869,6 @@ async function zugaengeLaden(){
         zugaengeLaden();
       };
       row.appendChild(sel);
-
-      /* Team zuweisen – entscheidet, welchen Verlauf ein Monteur sieht */
-      const tsel=document.createElement("select");
-      tsel.title="Zu welchem Team gehört dieser Zugang?";
-      tsel.style.cssText="flex:0 0 130px;background:rgba(0,0,0,.26);border:1px solid var(--line-soft);border-radius:10px;padding:7px 9px;color:var(--ink);font-size:12px";
-      const o0=document.createElement("option"); o0.value=""; o0.textContent="kein Team"; tsel.appendChild(o0);
-      state.teams.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.name;tsel.appendChild(o);});
-      tsel.value=pr.team_id||"";
-      tsel.onchange=async()=>{
-        await sb.from("profiles").update({team_id:tsel.value||null}).eq("id",pr.id);
-        zugaengeLaden();
-      };
-      row.appendChild(tsel);
       box.appendChild(row);
     });
     if(!data||!data.length){
