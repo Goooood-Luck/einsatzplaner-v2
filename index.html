@@ -842,6 +842,30 @@ table.liste tr.imPool td.tat button.pool{background:#DFF0DC;border-color:#A9D3A2
 dialog.hell .btn.danger{color:#A82C36;border-color:#E0BFC2;background:#FBEFF0}
 
 
+/* ---------- Ansicht für den Monteur ---------- */
+body.alsMonteur > header,
+body.alsMonteur > main,
+body.alsMonteur > .tabbar,
+body.alsMonteur > nav{display:none !important}
+#monteurWelt{display:flex;flex-direction:column;height:100dvh;height:100vh}
+#monteurWelt[hidden]{display:none !important}
+.mkopf{
+  display:flex;align-items:center;gap:12px;padding:11px 15px;
+  border-bottom:1px solid var(--line-soft);background:var(--panel);
+  backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);
+}
+.mkopf .mteam{font-family:"Barlow Condensed",sans-serif;font-size:17px;color:var(--ink-dim)}
+.mhalter{flex:1;min-height:0;padding:12px 14px 14px;display:flex}
+.mhalter .chatraum{flex:1;height:auto;min-height:0}
+body.alsMonteur .chatliste{display:none}
+body.alsMonteur .chatkopf{display:none}
+body.alsMonteur #chZurueck{display:none}
+@media (max-width:760px){
+  .mhalter{padding:0}
+  .mhalter .chatraum{border:0;border-radius:0}
+  .mhalter .chatverlauf{max-height:none}
+}
+
 /* ---------- Messenger ---------- */
 dialog.chatfenster{width:min(1120px,96vw)}
 .chatraum{display:flex;gap:0;height:min(64vh,620px);min-height:380px;
@@ -1492,11 +1516,22 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <div class="dlg-foot"><button class="btn" data-close>Schließen</button></div>
 </dialog>
 
+<!-- Die Welt des Monteurs: nur der Chat, sonst nichts -->
+<div id="monteurWelt" hidden>
+  <div class="mkopf">
+    <div class="brand"><b>KUBIK</b></div>
+    <div class="mteam" id="mTeam"></div>
+    <div class="spacer"></div>
+    <button class="ghost" id="mKonto">Konto</button>
+  </div>
+  <div class="mhalter" id="mHalter"></div>
+</div>
+
 <!-- Messenger -->
 <dialog id="dlgChat" class="chatfenster">
   <h3>Nachrichten</h3>
   <div class="dlg-body">
-    <div class="chatraum">
+    <div class="chatraum" id="chatRaum">
       <div class="chatliste" id="chListe"></div>
       <div class="chatseite">
         <div class="chatkopf">
@@ -5665,6 +5700,7 @@ async function nachAnmeldung(user){
   document.body.classList.toggle("alsKunde",istKunde());
 
   if(istKunde()) await kundenWeltStarten();
+  else if(rolle==="monteur") await monteurWeltStarten();
   else { await planungStarten(); await chatStarten(); }
 }
 
@@ -5689,6 +5725,25 @@ async function planungStarten(){
 }
 
 /* Bedienelemente abschalten, die die Rolle nicht darf */
+/* Ein Monteur sieht ausschließlich seinen Verlauf – kein Kalender,
+   keine Aufträge, keine Kunden. */
+async function monteurWeltStarten(){
+  document.body.classList.add("alsMonteur");
+  document.getElementById("monteurWelt").hidden=false;
+  const frisch=await serverStandHolen();        // nur für Teamnamen und Besetzung
+  if(frisch){ state=frisch.data; version=frisch.version; }
+  await chatStarten();
+  const team=state.teams.find(t=>t.id===meinTeam);
+  document.getElementById("mTeam").textContent = team
+    ? team.name+(team.members.length?" · "+team.members.join(", "):"")
+    : "Dir ist noch kein Team zugewiesen";
+  document.getElementById("mHalter").appendChild(document.getElementById("chatRaum"));
+  chatListeZeichnen();
+  if(team) await chatOeffnen(team);
+  else verlaufZeichnen();
+}
+document.getElementById("mKonto").onclick=()=>dlgKonto.showModal();
+
 function rollenRechte(){
   const nurPlaner=["btnNewJob","btnScan","btnKunden","btnTeams","btnData","btnIrinaSpalte"];
   if(rolle==="monteur"){
@@ -5731,8 +5786,19 @@ document.getElementById("koSave").onclick=async()=>{
   document.getElementById("koNeu").value=""; document.getElementById("koNeu2").value="";
 };
 document.getElementById("koLogout").onclick=async()=>{
-  await sb.auth.signOut();
-  location.reload();
+  const b=document.getElementById("koLogout");
+  b.disabled=true; b.textContent="Wird abgemeldet …";
+  /* Erst sauber abmelden, dann notfalls den Schlüssel selbst aus dem
+     Browser werfen – sonst ist man nach dem Neuladen wieder angemeldet. */
+  try{ await sb.auth.signOut(); }catch(e){}
+  try{ await sb.auth.signOut({scope:"local"}); }catch(e){}
+  try{
+    Object.keys(localStorage)
+      .filter(k=>/^sb-.*-auth-token/.test(k) || k.startsWith("supabase.auth"))
+      .forEach(k=>localStorage.removeItem(k));
+  }catch(e){}
+  try{ sessionStorage.clear(); }catch(e){}
+  location.replace(location.pathname.replace(/[^/]*$/,"")+"index.html?ab="+Date.now());
 };
 
 async function zugaengeLaden(){
