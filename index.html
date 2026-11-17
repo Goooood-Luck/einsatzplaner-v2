@@ -609,6 +609,16 @@ dialog h3{
 .poolcol[data-pool="irina"] h2 .marke{background:#C9A6FF}
 .poolcol[data-pool="irina"]{background:rgba(201,166,255,.045)}
 .jobcard.irina{border-left-color:#C9A6FF}
+.naviknopf{
+  background:rgba(127,212,255,.12);border:1px solid rgba(127,212,255,.3);border-radius:var(--pille);
+  color:var(--focus);font-size:10.5px;padding:2px 9px;margin-left:7px;cursor:pointer;vertical-align:1px;
+}
+.naviknopf:hover{background:rgba(127,212,255,.2)}
+.aufnr{
+  font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;
+  color:var(--ink-faint);background:rgba(255,255,255,.07);border-radius:5px;padding:1px 5px;
+  vertical-align:1px;margin-right:2px;
+}
 .spaltenschalter{
   background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:var(--pille);
   color:var(--ink-faint);font-size:11px;line-height:1;padding:4px 7px;cursor:pointer;flex:0 0 auto;
@@ -864,6 +874,71 @@ body.alsMonteur #chZurueck{display:none}
   .mhalter{padding:0}
   .mhalter .chatraum{border:0;border-radius:0}
   .mhalter .chatverlauf{max-height:none}
+}
+
+/* ---------- Notizen und Mängel ---------- */
+.notizen{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+.notizen .leer{color:var(--ink-faint);font-size:12.5px;padding:10px 0}
+.nz-eintrag{
+  background:var(--panel-2);border:1px solid var(--line-soft);border-radius:15px;padding:10px 13px;
+  border-left:3px solid var(--line);
+}
+.nz-eintrag.mangel{border-left-color:#FF6B6B;background:rgba(255,107,107,.07)}
+.nz-eintrag.erledigt{opacity:.62;border-left-color:#7FD39B;background:rgba(127,211,155,.06)}
+.nz-eintrag .kopf{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.nz-eintrag .art{
+  font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--ink-dim);
+}
+.nz-eintrag.mangel .art{background:rgba(255,107,107,.2);color:#FF9D9D}
+.nz-eintrag.erledigt .art{background:rgba(127,211,155,.18);color:#9BDCA0}
+.nz-eintrag .wann{margin-left:auto;font-size:10.5px;color:var(--ink-faint);white-space:nowrap}
+.nz-eintrag p{margin:0;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.nz-eintrag .unten{display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap}
+.nz-eintrag .unten button{
+  background:rgba(255,255,255,.06);border:1px solid var(--line-soft);border-radius:var(--pille);
+  color:var(--ink-dim);font-size:11px;padding:4px 11px;cursor:pointer;
+}
+.nz-eintrag .unten button:hover{color:var(--ink);border-color:var(--focus)}
+.nz-eintrag .unten button.weg{color:#D98A90;border-color:rgba(217,138,144,.3)}
+.nz-eintrag .erl{font-size:11px;color:#9BDCA0}
+.neuenotiz{display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--line-soft);padding-top:14px}
+.neuenotiz textarea{
+  background:rgba(0,0,0,.28);border:1px solid var(--line-soft);border-radius:15px;
+  padding:10px 13px;color:var(--ink);font:inherit;font-size:13px;resize:vertical;
+}
+.neuenotiz textarea:focus{outline:2px solid var(--focus);outline-offset:-1px}
+.artwahl{display:flex;gap:3px;background:rgba(0,0,0,.26);border:1px solid var(--line-soft);
+  border-radius:var(--pille);padding:3px;align-self:flex-start}
+.artwahl button{border:0;background:none;border-radius:var(--pille);padding:6px 16px;
+  font-size:12px;color:var(--ink-dim);cursor:pointer}
+.artwahl button[aria-pressed="true"]{background:var(--focus);color:#07121A;font-weight:650}
+.artwahl button#jnArtMangel[aria-pressed="true"]{background:#FF6B6B;color:#2A0A0C}
+
+/* Mangelzeichen am Balken im Kalender */
+.bar .mangel{
+  display:inline-block;width:8px;height:8px;border-radius:50%;background:#FF4D4D;
+  box-shadow:0 0 0 2px rgba(255,77,77,.28);margin-right:5px;flex:0 0 auto;vertical-align:1px;
+}
+table.month .bar .mangel{width:7px;height:7px;margin-right:4px}
+
+/* Notizknopf auf der Auftragskarte */
+.jobcard .nzknopf{
+  background:rgba(255,255,255,.06);border:1px solid var(--line-soft);border-radius:var(--pille);
+  color:var(--ink-dim);font-size:11px;padding:4px 9px;cursor:pointer;white-space:nowrap;
+}
+.jobcard .nzknopf.hatmangel{color:#FF9D9D;border-color:rgba(255,107,107,.4);background:rgba(255,107,107,.12)}
+.nzblase{
+  position:fixed;z-index:120;max-width:380px;min-width:240px;max-height:52vh;overflow:auto;
+  background:rgba(18,24,33,.97);border:1px solid var(--line);border-radius:15px;
+  box-shadow:var(--schatten);padding:12px 14px;
+  backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);
+}
+.nzblase h4{margin:0 0 9px;font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:600}
+.nzblase .nz-eintrag{padding:8px 11px}
+.nzblase .mehr{
+  margin-top:10px;width:100%;background:rgba(255,255,255,.06);border:1px solid var(--line-soft);
+  border-radius:var(--pille);color:var(--ink-dim);font-size:11.5px;padding:6px;cursor:pointer;
 }
 
 /* ---------- Messenger ---------- */
@@ -1196,6 +1271,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
   </div>
   <div class="dlg-foot">
     <button class="btn warn" id="asDelete" style="margin-right:auto">Aus Kalender nehmen</button>
+    <button class="btn" id="asNotizen">Notizen</button>
     <button class="btn warn" id="asUnlock" hidden>Datum trotzdem ändern</button>
     <button class="btn" id="asMap">Auf Karte zeigen</button>
     <button class="btn" data-close>Abbrechen</button>
@@ -1207,8 +1283,15 @@ dialog.chatfenster{width:min(1120px,96vw)}
 <dialog id="dlgJob">
   <h3 id="jobTitle">Auftrag anlegen</h3>
   <div class="dlg-body">
+    <p class="hint" id="jbHerkunft" style="margin-top:0" hidden></p>
     <div class="field"><label for="jbName">Bezeichnung</label><input type="text" id="jbName" placeholder="z.B. Neubau Zählerschrank"></div>
-    <div class="field"><label for="jbAdr">Adresse</label><input type="text" id="jbAdr" placeholder="Straße Hausnummer, PLZ Ort"></div>
+    <div class="field">
+      <label for="jbAdr">Adresse</label>
+      <div class="pair">
+        <input type="text" id="jbAdr" placeholder="Straße Hausnummer, PLZ Ort">
+        <button type="button" class="btn" id="jbNavi" style="flex:0 0 auto" title="Route in Google Maps öffnen">Navigieren</button>
+      </div>
+    </div>
     <div class="two">
       <div class="field"><label for="jbLat">Breitengrad</label><input type="text" id="jbLat" placeholder="51.4700"></div>
       <div class="field"><label for="jbLng">Längengrad</label><input type="text" id="jbLng" placeholder="6.8520"></div>
@@ -1346,10 +1429,13 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <div class="dlg-body">
     <p class="hint" style="margin-top:0" id="koWer"></p>
 
-    <h4 style="margin:18px 0 10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600">Passwort ändern</h4>
-    <div class="field"><label for="koNeu">Neues Passwort</label><input type="password" id="koNeu" autocomplete="new-password" placeholder="mindestens 8 Zeichen"></div>
-    <div class="field"><label for="koNeu2">Noch einmal</label><input type="password" id="koNeu2" autocomplete="new-password"></div>
-    <div class="pruefzeile"><button type="button" class="btn" id="koSave">Passwort ändern</button><span class="hint" id="koMsg" style="margin:0"></span></div>
+    <div id="koPasswort" hidden>
+      <h4 style="margin:18px 0 10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600">Passwort ändern</h4>
+      <div class="field"><label for="koNeu">Neues Passwort</label><input type="password" id="koNeu" autocomplete="new-password" placeholder="mindestens 8 Zeichen"></div>
+      <div class="field"><label for="koNeu2">Noch einmal</label><input type="password" id="koNeu2" autocomplete="new-password"></div>
+      <div class="pruefzeile"><button type="button" class="btn" id="koSave">Passwort ändern</button><span class="hint" id="koMsg" style="margin:0"></span></div>
+    </div>
+    <p class="hint" id="koKeinPw" hidden>Passwörter vergibt der Chef. Wenn du ein neues brauchst, sag ihm Bescheid.</p>
 
     <div id="koAdmin" hidden>
       <h4 style="margin:22px 0 10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600">Zugänge</h4>
@@ -1526,6 +1612,23 @@ dialog.chatfenster{width:min(1120px,96vw)}
   </div>
   <div class="mhalter" id="mHalter"></div>
 </div>
+
+<!-- Notizen und Mängel zu einem Auftrag -->
+<dialog id="dlgJobNotiz">
+  <h3 id="jnTitel">Notizen</h3>
+  <div class="dlg-body">
+    <div class="notizen" id="jnListe"></div>
+    <div class="neuenotiz">
+      <div class="artwahl" role="group" aria-label="Art der Notiz">
+        <button type="button" id="jnArtInfo"  aria-pressed="true">Notiz</button>
+        <button type="button" id="jnArtMangel" aria-pressed="false">Mangel</button>
+      </div>
+      <textarea id="jnText" rows="3" placeholder="Was ist zu wissen? Bei einem Mangel: was fehlt oder ist falsch?"></textarea>
+      <button class="btn primary" id="jnAdd">Hinzufügen</button>
+    </div>
+  </div>
+  <div class="dlg-foot"><button class="btn primary" data-close>Fertig</button></div>
+</dialog>
 
 <!-- Messenger -->
 <dialog id="dlgChat" class="chatfenster">
@@ -1722,6 +1825,23 @@ async function dateiURL(f){
 
 /* Jede abgelegte Datei bekommt eine eigene laufende Nummer,
    damit sich Namen vom Handy (IMG_0001.jpg) nie überschreiben. */
+/* Fortlaufende Auftragsnummer, wird nie wiederverwendet */
+function naechsteAuftragsNr(){
+  state.settings.auftragNr=(state.settings.auftragNr||0)+1;
+  return state.settings.auftragNr;
+}
+const nrText = n => n ? String(n).padStart(4,"0") : "";
+
+/* Jeder neue Auftrag bekommt Nummer, Urheber und Zeitpunkt */
+function neuerAuftrag(felder){
+  return Object.assign({
+    id:uid(), nr:naechsteAuftragsNr(),
+    erstelltVon:(typeof meinName!=="undefined" && meinName) ? meinName : "",
+    erstelltAm:new Date().toISOString(),
+    name:"", address:"", lat:null, lng:null, contact:"", note:""
+  }, felder||{});
+}
+
 function naechsteNummer(){
   const n=(state.settings.fileCounter||0)+1;
   state.settings.fileCounter=n;
@@ -1828,6 +1948,7 @@ let version = 0;                 // Stand, den dieses Fenster zuletzt gesehen ha
 let rolle = null;                // "admin" | "buero" | "monteur" | "kunde"
 let meinKunde = null;            // bei Rolle "kunde": zugehörige Kunden-ID
 let meineId   = null;            // eigene Benutzerkennung
+let meineMail = "";              // für Rückfragen beim Löschen
 let meinName = "";
 let storageOK = true;
 let speicherLaeuft = false, nochmalSpeichern = false;
@@ -1856,6 +1977,10 @@ function zustandPruefen(d){
   if(!d.km || typeof d.km!=="object") d.km={};
   if(!Array.isArray(d.extraLeute)) d.extraLeute=[];
   if(!Array.isArray(d.blaetter)) d.blaetter=[];
+  /* Auftragsnummern: vorhandene Aufträge einmalig durchnummerieren */
+  if(!d.settings.auftragNr) d.settings.auftragNr=0;
+  (d.jobs||[]).forEach(j=>{ if(!j.nr){ d.settings.auftragNr++; j.nr=d.settings.auftragNr; } });
+  d.settings.auftragNr=Math.max(d.settings.auftragNr, ...(d.jobs||[]).map(j=>j.nr||0), 0);
   if(!d.settings.zweitpool) d.settings.zweitpool="Irina";
   if(d.settings.zweitpoolAn===undefined) d.settings.zweitpoolAn=true;
   return d;
@@ -2167,11 +2292,12 @@ function renderPhoneJobs(){
     const k=kundeById(j.customerId);
     const c=document.createElement("div"); c.className="jobcard";
     c.style.borderLeftColor=j.billed?"#6B7585":(planned.has(j.id)?"#3D4A5C":"var(--ink-faint)");
-    c.innerHTML=`<b>${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
+    c.innerHTML=`<b>${j.nr?`<span class="aufnr">${nrText(j.nr)}</span> `:""}${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
       ${k?`<small style="margin-top:3px;color:var(--ink-dim)">${esc(k.company)}</small>`:""}
       ${j.wishDate?`<small style="margin-top:3px;color:#FFC978">Wunschbeginn ${esc(wunschText(j.wishDate))}</small>`:""}
       <small style="margin-top:3px;color:var(--ink-faint)">${planned.has(j.id)?"eingeplant":"noch offen"}${j.billed?" · abgerechnet":""}${fileCounts[j.id]?` · ${fileCounts[j.id]} Anhang`:""}</small>
       <div class="row"><button data-e="${j.id}">Öffnen</button><button data-m="${j.id}">Karte</button
+        ><button class="nzknopf${offeneMaengel(j.id)?" hatmangel":""}" data-nz="${j.id}" title="Notizen und Mängel">${offeneMaengel(j.id)?"⚠ ":""}Notizen${notizAnzahl(j.id)?" "+notizAnzahl(j.id):""}</button
         >${darfPlanen()?`<button data-p="${j.id}">→ ${esc(istZweit(j)?"Pool":state.settings.zweitpool)}</button>`:""}</div>`;
     if(istZweit(j)) c.classList.add("irina");
     wrap.appendChild(c);
@@ -2179,6 +2305,11 @@ function renderPhoneJobs(){
   stage.replaceChildren(wrap);
   wrap.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>openJob(b.dataset.e));
   wrap.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>showOnMap(b.dataset.m,iso(anchor)));
+  wrap.querySelectorAll("[data-nz]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const r=b.getBoundingClientRect();
+    notizBlase(b.dataset.nz, Math.max(8,r.left-40), r.bottom+8);
+  });
   wrap.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
     const j=jobById(b.dataset.p); if(!j) return;
     spalteSetzen(j, istZweit(j)?"haupt":"irina"); render();
@@ -2252,8 +2383,9 @@ async function renderSearch(){
     const card=document.createElement("div"); card.className="hit";
     const tage=blocks.reduce((n,b)=>n+b.halbtage,0)/2;
     card.innerHTML=`<div class="top"><div>
-        <b>${esc(job.name)}</b>
-        <div class="adr">${esc(job.address||"keine Adresse hinterlegt")}</div>
+        <b>${job.nr?`<span class="aufnr">${nrText(job.nr)}</span> `:""}${esc(job.name)}</b>
+        <div class="adr">${esc(job.address||"keine Adresse hinterlegt")}
+          ${job.address?`<button class="naviknopf" data-navi="${job.id}" title="Route in Google Maps">Navigieren</button>`:""}</div>
         ${(()=>{const k=kundeById(job.customerId);
           return k?`<div class="meta">Kunde: ${esc(k.company)}${k.contact?" · "+esc(k.contact):""}</div>`:"";})()}
         ${job.contact?`<div class="meta">vor Ort: ${esc(job.contact)}</div>`:""}
@@ -2262,6 +2394,10 @@ async function renderSearch(){
         ${job.wishDate?`<br>Wunschbeginn ${esc(wunschText(job.wishDate))}`:""}
         ${job.value?`<br>${esc(job.value)}`:""}
         ${job.billed?`<br><span style="color:#8C96A5">abgerechnet</span>`:""}</div></div>`;
+
+    card.querySelectorAll("[data-navi]").forEach(b=>b.onclick=()=>{
+      const j=jobById(b.dataset.navi); if(j) naviOeffnen(j.address,j.lat,j.lng);
+    });
 
     if(blocks.length){
       const row=document.createElement("div"); row.className="runs";
@@ -2509,11 +2645,14 @@ function makeBar(team,jobId,firstU,lastU,span,isMonth){
   b.style.background=team.color;
   const halb = span===1 ? (firstU.s==="AM"?" · erste Tageshälfte":" · zweite Tageshälfte") : "";
   const schloss = (fix && !cl) ? `<span class="lock" aria-hidden="true">🔒</span>` : "";
+  const maengel = offeneMaengel(jobId);
+  const fahne = (maengel && !cl) ? `<span class="mangel" aria-hidden="true"></span>` : "";
   b.innerHTML = isMonth
-    ? `${schloss}<span class="nm">${esc(short(job.name, span<=1?6:span*7))}</span>`
-    : `${schloss}<span class="nm">${esc(job.name)}</span>`+(span>=2?`<span class="adr">${esc(job.address)}</span>`:"");
+    ? `${fahne}${schloss}<span class="nm">${esc(short(job.name, span<=1?6:span*7))}</span>`
+    : `${fahne}${schloss}<span class="nm">${esc(job.name)}</span>`+(span>=2?`<span class="adr">${esc(job.address)}</span>`:"");
   b.title=`${job.name}\n${job.address}\n${team.name}${halb}\n${span/2 % 1 ? (span/2).toFixed(1) : span/2} Tage`
     +(abger?"\n\nAbgerechnet.":"")
+    +(maengel?`\n\n${maengel} offene${maengel===1?"r":""} Mangel – anklicken und unter „Notizen“ abhaken.`:"")
     +(fix?`\n\nFestgehalten: ${fileCounts[jobId]} Anhang/Anhänge vorhanden.`:"");
   b.onclick=()=>openRun(team.id,jobId,firstU.ds,firstU.s);
   b.oncontextmenu=e=>{ e.preventDefault(); zeigeKontext(e.clientX,e.clientY,jobId,team.id,firstU.ds,firstU.s); };
@@ -2666,7 +2805,7 @@ function poolSpalte(ziel,zaehler,gehoert,mitEinreichungen){
   list.forEach(j=>{
     const c=document.createElement("div"); c.className="jobcard"+(istZweit(j)?" irina":""); c.draggable=true;
     if(planned.has(j.id)) c.style.borderLeftColor="#3D4A5C";
-    c.innerHTML=`<b>${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
+    c.innerHTML=`<b>${j.nr?`<span class="aufnr">${nrText(j.nr)}</span> `:""}${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
       ${(()=>{const k=kundeById(j.customerId);
         return k?`<small style="margin-top:3px;color:var(--ink-dim)">${esc(k.company)}</small>`:"";})()}
       ${j.wishDate?`<small style="margin-top:3px;color:#FFC978">Wunschbeginn ${esc(wunschText(j.wishDate))}</small>`:""}
@@ -2675,12 +2814,18 @@ function poolSpalte(ziel,zaehler,gehoert,mitEinreichungen){
       ${(j.address&&j.lat==null)?`<small style="margin-top:3px;color:#FFB65C">noch kein Pin – über „Bearbeiten“ Adresse suchen</small>`:""}
       ${fileCounts[j.id]?`<small style="margin-top:3px;color:var(--ink-dim)">${fileCounts[j.id]} Foto${fileCounts[j.id]===1?"":"s"} / Datei${fileCounts[j.id]===1?"":"en"}</small>`:""}
       <div class="row"><button data-e="${j.id}">Bearbeiten</button><button data-m="${j.id}">Karte</button
+        ><button class="nzknopf${offeneMaengel(j.id)?" hatmangel":""}" data-nz="${j.id}">${offeneMaengel(j.id)?"⚠ ":""}Notizen${notizAnzahl(j.id)?" "+notizAnzahl(j.id):""}</button
         ><button data-p="${j.id}" title="In die andere Spalte verschieben">→ ${esc(istZweit(j)?"Pool":state.settings.zweitpool)}</button></div>`;
     c.ondragstart=e=>e.dataTransfer.setData("text/plain",j.id);
     pool.appendChild(c);
   });
   pool.querySelectorAll("[data-e]").forEach(b=>b.onclick=e=>{e.stopPropagation();openJob(b.dataset.e);});
   pool.querySelectorAll("[data-m]").forEach(b=>b.onclick=e=>{e.stopPropagation();showOnMap(b.dataset.m,todayISO());});
+  pool.querySelectorAll("[data-nz]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const r=b.getBoundingClientRect();
+    notizBlase(b.dataset.nz, r.left-40, r.bottom+8);
+  });
   pool.querySelectorAll("[data-p]").forEach(b=>b.onclick=e=>{
     e.stopPropagation();
     const j=jobById(b.dataset.p); if(!j) return;
@@ -2800,7 +2945,7 @@ function fillAssignDialog(teamId,jobId,from,fromSlot,to,toSlot,titleTxt,hintTxt,
   document.getElementById("asJobName").value=cur?cur.name:"";
   document.getElementById("asJobAdr").value=cur?(cur.address||""):"";
   document.getElementById("asJobHint").className="hint";
-  document.getElementById("asJobHint").textContent="Einfach tippen. Bekannte Aufträge werden beim Schreiben vorgeschlagen, neue werden automatisch in den Auftragspool übernommen.";
+  document.getElementById("asJobHint").textContent="Vorhandenen Auftrag eintippen – es wird beim Schreiben vorgeschlagen. Neue Aufträge entstehen ausschließlich über „Auftrag anlegen“.";
   document.getElementById("asFrom").value=from;
   document.getElementById("asTo").value=to;
   document.getElementById("asFromSlot").value=fromSlot;
@@ -3022,13 +3167,13 @@ function ensureJob(){
   if(hit){
     if(adr && !hit.address) hit.address=adr;            // Adresse nachgetragen
     if(adr && hit.address.toLowerCase()!==adr.toLowerCase()){
-      const created={id:uid(),name,address:adr,lat:null,lng:null,contact:"",note:""};
+      const created=neuerAuftrag({name,address:adr});
       state.jobs.push(created); geocodeQuiet(created);   // gleicher Name, andere Adresse = eigenes Objekt
       return created;
     }
     return hit;
   }
-  const created={id:uid(),name,address:adr,lat:null,lng:null,contact:"",note:""};
+  const created=neuerAuftrag({name,address:adr});
   state.jobs.push(created); geocodeQuiet(created);
   return created;
 }
@@ -3051,12 +3196,26 @@ document.getElementById("asJobName").addEventListener("input",e=>{
   zeigeAssignAnhaenge();
 });
 
+document.getElementById("asNotizen").onclick=()=>{
+  const name=document.getElementById("asJobName").value.trim();
+  const j = (editing && editing.jobId) ? jobById(editing.jobId)
+           : state.jobs.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(!j){ alert("Erst einen Auftrag auswählen, dann lassen sich Notizen führen."); return; }
+  dlgAssign.close();
+  setTimeout(()=>openJobNotizen(j.id),80);
+};
+
 document.getElementById("asSave").onclick=()=>{
   const teamId=document.getElementById("asTeam").value;
-  const job=ensureJob();
+  /* Hier entstehen keine neuen Aufträge mehr – nur bekannte dürfen hinein. */
+  const gesucht=document.getElementById("asJobName").value.trim();
+  const job=gesucht ? state.jobs.find(j=>j.name.toLowerCase()===gesucht.toLowerCase()) : null;
   if(!job){
     const h=document.getElementById("asJobHint");
-    h.className="hint geo-no"; h.textContent="Bitte eine Bezeichnung für den Auftrag eintragen.";
+    h.className="hint geo-no";
+    h.textContent = gesucht
+      ? `„${gesucht}“ steht nicht im Auftragspool. Neue Aufträge legst du über „Auftrag anlegen“ an.`
+      : "Bitte einen vorhandenen Auftrag auswählen.";
     document.getElementById("asJobName").focus(); return;
   }
   const jobId=job.id;
@@ -3160,7 +3319,16 @@ function openJob(id){
   jobIsNew=!id;
   jobEditId=id||uid();
   const j=id?jobById(id):{name:"",address:"",lat:null,lng:null,contact:"",note:"",customerId:"",wishDate:"",value:""};
-  document.getElementById("jobTitle").textContent=id?"Auftrag bearbeiten":"Auftrag anlegen";
+  document.getElementById("jobTitle").textContent = id
+    ? `Auftrag ${nrText(j.nr)||""}`.trim() : "Auftrag anlegen";
+  const hk=document.getElementById("jbHerkunft");
+  if(id && (j.erstelltVon||j.erstelltAm)){
+    const d=j.erstelltAm?new Date(j.erstelltAm):null;
+    hk.textContent = "Angelegt"
+      + (j.erstelltVon?" von "+j.erstelltVon:"")
+      + (d?" am "+d.toLocaleDateString("de-DE")+" um "+d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}):"");
+    hk.hidden=false;
+  }else hk.hidden=true;
   zeigeAnhaenge(jobEditId);
   jbName.value=j.name; jbAdr.value=j.address||""; jbLat.value=j.lat??""; jbLng.value=j.lng??"";
   jbContact.value=j.contact||""; jbNote.value=j.note||"";
@@ -3175,6 +3343,16 @@ function openJob(id){
   document.getElementById("geoHint").textContent="Koordinaten werden für die Karte gebraucht. „Adresse suchen“ holt sie automatisch (braucht Internet).";
   dlgJob.showModal();
 }
+/* Route in Google Maps – nimmt die Koordinaten, sonst die Adresse */
+function naviOeffnen(adresse,lat,lng){
+  const ziel = (lat!=null && lng!=null && !isNaN(lat) && !isNaN(lng))
+    ? `${lat},${lng}` : String(adresse||"").trim();
+  if(!ziel){ alert("Für diesen Auftrag ist noch keine Adresse hinterlegt."); return; }
+  window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(ziel),"_blank");
+}
+document.getElementById("jbNavi").onclick=()=>naviOeffnen(
+  jbAdr.value, jbLat.value?parseFloat(jbLat.value):null, jbLng.value?parseFloat(jbLng.value):null);
+
 document.getElementById("jbSave").onclick=()=>{
   if(!jbName.value.trim()){alert("Bitte eine Bezeichnung eingeben.");return;}
   const data={name:jbName.value.trim(),address:jbAdr.value.trim(),
@@ -3184,7 +3362,7 @@ document.getElementById("jbSave").onclick=()=>{
     wishDate:jbWish.value||"", value:jbValue.value.trim(), billed:jbBilled.checked||undefined,
     pool: document.getElementById("jbPool").value==="irina" ? "irina" : undefined};
   if(data.pool==="irina") state.settings.zweitpoolAn=true;
-  if(jobIsNew) state.jobs.push(Object.assign({id:jobEditId},data));
+  if(jobIsNew) state.jobs.push(neuerAuftrag(Object.assign({id:jobEditId},data)));
   else Object.assign(jobById(jobEditId),data);
   jobIsNew=false;
   save(); dlgJob.close(); render();
@@ -3281,8 +3459,24 @@ document.getElementById("dlgView").addEventListener("close",()=>{
   document.getElementById("vwImg").src="";
   if(vwURL){ URL.revokeObjectURL(vwURL); vwURL=null; }
 });
+/* Prüft das Kennwort des angemeldeten Kontos noch einmal nach */
+async function adminBestaetigt(zweck){
+  if(typeof rolle!=="undefined" && rolle!=="admin"){
+    alert("Das darf nur der Chef.\n\n"+zweck);
+    return false;
+  }
+  if(!sb || !meineMail) return confirm(zweck+"\n\nWirklich?");
+  const pw=prompt(zweck+"\n\nZur Bestätigung dein eigenes Passwort:");
+  if(pw===null) return false;
+  const { error } = await sb.auth.signInWithPassword({email:meineMail,password:pw});
+  if(error){ alert("Das Passwort stimmt nicht. Es wird nichts gelöscht."); return false; }
+  return true;
+}
+
 document.getElementById("jbDelete").onclick=async()=>{
   if(!jobEditId) return;
+  const jj=jobById(jobEditId);
+  if(!await adminBestaetigt(`Auftrag ${nrText(jj&&jj.nr)} „${jj?jj.name:""}" endgültig löschen.`)) return;
   const n=state.assignments.filter(a=>a.jobId===jobEditId).length;
   const anz=(fileCounts[jobEditId]||0);
   let frage=[];
@@ -3797,9 +3991,9 @@ document.getElementById("scanSave").onclick=async()=>{
         address:"",phone:"",mobile:"",mail:"",tax:"",note:"aus Auftragsformular übernommen"});
     }
   }
-  const job={id:uid(),name:bez,address:adr,lat:null,lng:null,
+  const job=neuerAuftrag({name:bez,address:adr,
     contact:scContact.value.trim(),note:scWork.value.trim(),
-    customerId:kid||"", wishDate:scDate.value||"", value:scValue.value.trim()};
+    customerId:kid||"", wishDate:scDate.value||"", value:scValue.value.trim()});
   state.jobs.push(job);
   if(adr) geocodeQuiet(job);
   if(scanDatei){
@@ -4247,6 +4441,151 @@ async function listeFreigeben(){
 }
 
 /* =========================================================
+   Notizen und Mängel am Auftrag
+   Eine Notiz hängt am Objekt, nicht am einzelnen Halbtag.
+   Art "mangel" setzt ein rotes Zeichen in den Kalender,
+   bis jemand sie abhakt und sagt, wer sie erledigt hat.
+   ========================================================= */
+const notizenVon = j => (j && Array.isArray(j.notizen)) ? j.notizen : [];
+const offeneMaengel = jobId => notizenVon(jobById(jobId)).filter(n=>n.art==="mangel" && !n.erledigt).length;
+const notizAnzahl  = jobId => notizenVon(jobById(jobId)).length;
+
+let jnJobId=null, jnArt="info";
+
+function openJobNotizen(jobId){
+  jnJobId=jobId; jnArt="info";
+  const j=jobById(jobId); if(!j) return;
+  document.getElementById("jnTitel").textContent =
+    `Notizen · ${nrText(j.nr)} ${j.name}`.replace("  "," ").trim();
+  document.getElementById("jnText").value="";
+  artWahlZeigen();
+  zeichneNotizen();
+  dlgJobNotiz.showModal();
+}
+
+function artWahlZeigen(){
+  document.getElementById("jnArtInfo").setAttribute("aria-pressed", jnArt==="info"?"true":"false");
+  document.getElementById("jnArtMangel").setAttribute("aria-pressed", jnArt==="mangel"?"true":"false");
+}
+document.getElementById("jnArtInfo").onclick=()=>{jnArt="info";artWahlZeigen();};
+document.getElementById("jnArtMangel").onclick=()=>{jnArt="mangel";artWahlZeigen();};
+
+function notizZeile(j,n,knapp){
+  const d=document.createElement("div");
+  d.className="nz-eintrag"+(n.art==="mangel"?" mangel":"")+(n.erledigt?" erledigt":"");
+  const wann=n.am?new Date(n.am).toLocaleDateString("de-DE"):"";
+  d.innerHTML=`<div class="kopf">
+      <span class="art">${n.art==="mangel"?(n.erledigt?"Mangel erledigt":"Mangel"):"Notiz"}</span>
+      ${n.von?`<span style="font-size:11px;color:var(--ink-faint)">${esc(n.von)}</span>`:""}
+      <span class="wann">${wann}</span>
+    </div>
+    <p>${esc(n.text)}</p>
+    ${n.erledigt?`<div class="erl">✓ erledigt von ${esc(n.erledigtVon||"–")}${n.erledigtAm?" am "+new Date(n.erledigtAm).toLocaleDateString("de-DE"):""}</div>`:""}`;
+  if(knapp) return d;
+
+  const unten=document.createElement("div"); unten.className="unten";
+  if(n.art==="mangel" && !n.erledigt){
+    const ok=document.createElement("button"); ok.textContent="Als erledigt abhaken";
+    ok.onclick=()=>mangelAbhaken(j,n);
+    unten.appendChild(ok);
+  }
+  if(n.art==="mangel" && n.erledigt){
+    const auf=document.createElement("button"); auf.textContent="Doch nicht erledigt";
+    auf.onclick=()=>{ n.erledigt=false; n.erledigtVon=""; n.erledigtAm=""; save(); zeichneNotizen(); render(); };
+    unten.appendChild(auf);
+  }
+  const weg=document.createElement("button"); weg.className="weg"; weg.textContent="Löschen";
+  weg.onclick=()=>{
+    if(!confirm("Diese Notiz löschen?")) return;
+    j.notizen=notizenVon(j).filter(x=>x!==n);
+    save(); zeichneNotizen(); render(); renderPool();
+  };
+  unten.appendChild(weg);
+  d.appendChild(unten);
+  return d;
+}
+
+/* Ein Mangel gilt erst als erledigt, wenn jemand dafür geradesteht */
+function mangelAbhaken(j,n){
+  const liste=state.teams.map((t,i)=>`${i+1} = ${t.name}`).join("\n");
+  const ein=prompt(
+    "Wer hat den Mangel erledigt?\n\n"+liste+
+    "\n\nNummer eingeben – oder einen Namen schreiben:");
+  if(ein===null) return;
+  const txt=String(ein).trim();
+  if(!txt){ alert("Ohne Angabe bleibt der Mangel offen."); return; }
+  const nr=parseInt(txt,10);
+  const team=(!isNaN(nr) && String(nr)===txt) ? state.teams[nr-1] : null;
+  const wer = team ? team.name : txt;
+  n.erledigt=true; n.erledigtVon=wer; n.erledigtAm=new Date().toISOString();
+  save(); zeichneNotizen(); render(); renderPool();
+}
+
+function zeichneNotizen(){
+  const j=jobById(jnJobId); const box=document.getElementById("jnListe");
+  box.replaceChildren();
+  const liste=notizenVon(j).slice().sort((a,b)=>String(b.am||"").localeCompare(String(a.am||"")));
+  if(!liste.length){
+    const d=document.createElement("div"); d.className="leer";
+    d.textContent="Zu diesem Objekt gibt es noch keine Notizen.";
+    box.appendChild(d); return;
+  }
+  liste.forEach(n=>box.appendChild(notizZeile(j,n)));
+}
+
+document.getElementById("jnAdd").onclick=()=>{
+  const j=jobById(jnJobId); if(!j) return;
+  const t=document.getElementById("jnText").value.trim();
+  if(!t){ document.getElementById("jnText").focus(); return; }
+  if(!Array.isArray(j.notizen)) j.notizen=[];
+  j.notizen.push({id:uid(), art:jnArt, text:t,
+    von:(typeof meinName!=="undefined"&&meinName)?meinName:"", am:new Date().toISOString(),
+    erledigt:false, erledigtVon:"", erledigtAm:""});
+  document.getElementById("jnText").value="";
+  jnArt="info"; artWahlZeigen();
+  save(); zeichneNotizen(); render(); renderPool();
+};
+
+/* Kleines Aufklappfenster an der Auftragskarte */
+let nzBlase=null;
+function notizBlase(jobId,x,y){
+  blaseZu();
+  const j=jobById(jobId); if(!j) return;
+  const liste=notizenVon(j).slice().sort((a,b)=>
+    (a.erledigt?1:0)-(b.erledigt?1:0) || String(b.am||"").localeCompare(String(a.am||"")));
+  const d=document.createElement("div"); d.className="nzblase";
+  const h=document.createElement("h4");
+  h.textContent=`${nrText(j.nr)} ${j.name}`.trim();
+  d.appendChild(h);
+  if(!liste.length){
+    const p=document.createElement("div"); p.className="leer";
+    p.style.cssText="color:var(--ink-faint);font-size:12.5px"; p.textContent="Noch keine Notizen.";
+    d.appendChild(p);
+  }else liste.forEach(n=>d.appendChild(notizZeile(j,n,true)));
+  const mehr=document.createElement("button"); mehr.className="mehr";
+  mehr.textContent="Öffnen und bearbeiten";
+  mehr.onclick=()=>{ blaseZu(); openJobNotizen(jobId); };
+  d.appendChild(mehr);
+  document.body.appendChild(d);
+  const b=d.getBoundingClientRect();
+  d.style.left=Math.max(10, Math.min(x, innerWidth-b.width-10))+"px";
+  d.style.top =Math.max(10, Math.min(y, innerHeight-b.height-10))+"px";
+  nzBlase=d;
+  setTimeout(()=>document.addEventListener("pointerdown",blaseWeg,{capture:true}),0);
+}
+function blaseWeg(e){
+  if(!nzBlase || nzBlase.contains(e.target)) return;
+  /* Der Klick daneben schließt nur – er löst nichts darunter aus */
+  e.preventDefault(); e.stopPropagation();
+  blaseZu();
+}
+function blaseZu(){
+  if(!nzBlase) return;
+  document.removeEventListener("pointerdown",blaseWeg,{capture:true});
+  nzBlase.remove(); nzBlase=null;
+}
+
+/* =========================================================
    Auftragsliste – eine Mappe aus Blättern
    Ein Blatt je Auftraggeber, jedes mit eigenen Spalten.
    ========================================================= */
@@ -4356,7 +4695,7 @@ function zeichneListe(){
   const th=document.createElement("thead"), trk=document.createElement("tr");
   b.spalten.forEach(c=>{
     const h=document.createElement("th");
-    h.textContent=c.t||" "; h.title=(c.t||"ohne Namen")+(c.rolle?" · "+(ROLLEN.find(r=>r[0]===c.rolle)||["",""])[1]:"");
+    h.textContent=c.t||" "; h.title=(c.t||"ohne Namen")+(c.rolle?" · "+(ROLLEN.find(r=>r[0]===c.rolle)||["",""])[1]:"");
     if(c.rolle) h.classList.add("rolle");
     const g=document.createElement("span"); g.className="griff"; g.title="Breite ziehen";
     g.onpointerdown=e=>breiteZiehen(e,c);
@@ -4495,14 +4834,14 @@ function auftragAusZeile(b,z){
   const kname=String(hol("kunde")||b.name||"").trim();
   const k=state.customers.find(c=>(c.company||"").toLowerCase().trim()===kname.toLowerCase());
   const betrag=hol("betrag"), termin=hol("datum");
-  const job={
-    id:uid(), name:short(name,60),
+  const job=neuerAuftrag({
+    name:short(name,60),
     address:[name,String(hol("stadt")||"")].filter(Boolean).join(", ").slice(0,160),
     lat:null,lng:null,contact:"",customerId:k?k.id:"",
     wishDate: istISO(termin)?termin:"",
     value: (betrag!==""&&betrag!=null&&!isNaN(betrag)) ? geldText(betrag)+" €" : "",
     note:`Aus der Auftragsliste, Blatt ${b.name}`
-  };
+  });
   state.jobs.push(job); z.jobId=job.id;
   save(); zeichneListe(); renderPool();
 }
@@ -5515,9 +5854,9 @@ function liveEingereichte(){
 /* Der Planer übernimmt einen eingereichten Auftrag in den eigenen Pool */
 async function einreichungUebernehmen(e){
   if(state.jobs.some(j=>j.herkunft===e.id)) return;
-  const job={id:uid(),name:e.titel||"Auftrag",address:e.adresse||"",lat:null,lng:null,
+  const job=neuerAuftrag({name:e.titel||"Auftrag",address:e.adresse||"",
     contact:e.ansprechpartner||"", note:e.beschreibung||"",
-    customerId:e.customer_id||"", wishDate:e.wunschdatum||"", value:"", herkunft:e.id};
+    customerId:e.customer_id||"", wishDate:e.wunschdatum||"", value:"", herkunft:e.id});
   state.jobs.push(job);
   if(job.address) geocodeQuiet(job);
   save();
@@ -5685,7 +6024,7 @@ async function anmelden(user,pass){
 }
 
 async function nachAnmeldung(user){
-  meineId=user.id;
+  meineId=user.id; meineMail=user.email||"";
   meinName=nameVon(user.email);
   // Rolle aus der Tabelle profiles
   try{
@@ -5751,6 +6090,10 @@ function rollenRechte(){
   }
   const ko=document.getElementById("koAdmin");
   if(ko) ko.hidden = rolle!=="admin";
+  const kp=document.getElementById("koPasswort");          // Passwort ändern: nur der Chef
+  if(kp) kp.hidden = rolle!=="admin";
+  const kk=document.getElementById("koKeinPw");
+  if(kk) kk.hidden = rolle==="admin";
   const ch=document.getElementById("btnChat");           // Nachrichten: alle außer Kunden
   if(ch) ch.style.display = istKunde() ? "none" : "";
   const bl=document.getElementById("btnListe");          // Auftragsliste: nur der Chef
