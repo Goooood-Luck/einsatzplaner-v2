@@ -90,6 +90,58 @@ header{
 
 /* ---------- Layout ---------- */
 main{flex:1;display:flex;min-height:0}
+.buehne{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.buehne #stage{margin-bottom:0}
+
+/* Die eigene Spur unter dem Kalender – ohne Kalendertage */
+.adminspur{
+  flex:0 0 auto;margin:10px 0 14px 14px;border-radius:20px;overflow:hidden;
+  background:var(--panel);border:1px solid var(--line);
+  backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);box-shadow:var(--schatten);
+}
+.adminspur[hidden]{display:none}
+.spurkopf{
+  display:flex;align-items:center;gap:11px;padding:8px 13px;
+  border-bottom:1px solid var(--line-soft);background:rgba(255,255,255,.035);
+}
+.spurkopf b{font-family:"Barlow Condensed",sans-serif;font-size:16px;font-weight:600;letter-spacing:.02em}
+.spurkopf .btn{margin-left:auto;padding:5px 12px;font-size:11.5px}
+.bahn{
+  position:relative;height:104px;overflow-x:auto;overflow-y:hidden;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 80px),
+    rgba(0,0,0,.18);
+}
+.bahn.dragover{box-shadow:inset 0 0 0 2px var(--focus)}
+.bahn .leer{
+  position:absolute;left:16px;top:50%;transform:translateY(-50%);
+  color:var(--ink-faint);font-size:12px;pointer-events:none;
+}
+.spurkarte{
+  position:absolute;top:12px;height:78px;min-width:70px;
+  border-radius:15px;border:1px solid var(--line);border-left:4px solid var(--focus);
+  background:var(--panel-2);padding:7px 11px;cursor:grab;overflow:hidden;
+  display:flex;flex-direction:column;gap:2px;user-select:none;
+}
+.spurkarte:active{cursor:grabbing}
+.spurkarte.zieht{opacity:.75;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.spurkarte b{font-size:12.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spurkarte small{font-size:10.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spurkarte .nr{font-size:9.5px;color:var(--ink-faint);letter-spacing:.06em}
+.spurkarte .griff{
+  position:absolute;right:0;top:0;width:10px;height:100%;cursor:col-resize;
+}
+.spurkarte .griff:hover{background:rgba(127,212,255,.25)}
+.spurkarte .weg{
+  position:absolute;right:11px;top:5px;width:18px;height:18px;border:0;border-radius:6px;
+  background:rgba(0,0,0,.35);color:var(--ink-faint);font-size:10px;cursor:pointer;opacity:0;
+}
+.spurkarte:hover .weg{opacity:1}
+.spurkarte .weg:hover{color:#FF9D9D}
+@media (max-width:760px){
+  .adminspur{margin:8px 0 0;border-radius:0;border-left:0;border-right:0}
+  .bahn{height:96px}
+}
 #stage{flex:1;min-width:0;overflow:auto;position:relative;margin:14px 0 14px 14px;border-radius:20px;
   background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
   backdrop-filter:var(--glas);-webkit-backdrop-filter:var(--glas);
@@ -609,11 +661,31 @@ dialog h3{
 .poolcol[data-pool="irina"] h2 .marke{background:#C9A6FF}
 .poolcol[data-pool="irina"]{background:rgba(201,166,255,.045)}
 .jobcard.irina{border-left-color:#C9A6FF}
+.att .vonwem{
+  position:absolute;left:5px;bottom:5px;max-width:calc(100% - 10px);
+  background:rgba(8,12,18,.78);border-radius:6px;padding:1px 6px;
+  font-size:9.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  pointer-events:none;
+}
+.beteiligt{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:12px 0 8px}
+.beteiligt .lbl{font-size:11.5px;color:var(--ink-faint)}
+.beteiligt button{
+  background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:var(--pille);
+  color:var(--ink-dim);font-size:11px;padding:4px 11px;cursor:pointer;
+}
+.beteiligt button:hover{color:var(--ink);border-color:var(--focus)}
+.beteiligt button[aria-pressed="true"]{background:rgba(255,255,255,.12);color:var(--ink);border-color:var(--line)}
 .naviknopf{
   background:rgba(127,212,255,.12);border:1px solid rgba(127,212,255,.3);border-radius:var(--pille);
   color:var(--focus);font-size:10.5px;padding:2px 9px;margin-left:7px;cursor:pointer;vertical-align:1px;
 }
 .naviknopf:hover{background:rgba(127,212,255,.2)}
+.nrfeld{
+  flex:0 0 auto;display:inline-flex;align-items:center;
+  font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:600;letter-spacing:.07em;
+  color:var(--ink-dim);background:rgba(255,255,255,.07);border:1px solid var(--line-soft);
+  border-radius:11px;padding:0 12px;
+}
 .aufnr{
   font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;
   color:var(--ink-faint);background:rgba(255,255,255,.07);border-radius:5px;padding:1px 5px;
@@ -625,7 +697,38 @@ dialog h3{
 }
 .spaltenschalter:hover{color:var(--ink);border-color:var(--focus)}
 .spaltenschalter[aria-pressed="true"]{color:#C9A6FF;border-color:rgba(201,166,255,.45);background:rgba(201,166,255,.12)}
-aside.einspalte .poolcol[data-pool="irina"]{display:none}
+.poolcol[data-pool="admin"] h2 .marke{background:#7FD39B}
+.poolcol[data-pool="admin"]{background:rgba(127,211,155,.045)}
+.jobcard.admin{border-left-color:#7FD39B}
+.poolcol.aus{display:none}
+
+.poolschalter{
+  display:flex;gap:4px;padding:10px 11px 0;flex-wrap:wrap;
+}
+.poolschalter button{
+  flex:1 1 0;min-width:0;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);
+  border-radius:var(--pille);color:var(--ink-faint);font-size:11px;padding:5px 8px;cursor:pointer;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.poolschalter button[aria-pressed="true"]{color:var(--ink);background:rgba(255,255,255,.1);border-color:var(--line)}
+.poolschalter button[data-k="irina"][aria-pressed="true"]{color:#C9A6FF;border-color:rgba(201,166,255,.45);background:rgba(201,166,255,.12)}
+.poolschalter button[data-k="admin"][aria-pressed="true"]{color:#9BDCA0;border-color:rgba(127,211,155,.45);background:rgba(127,211,155,.12)}
+
+/* Vorabzuweisung an ein Team */
+.jobcard.vorab{border-left-width:4px}
+.jobcard .vorabzeile{display:flex;gap:5px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.jobcard select.spaltenwahl{flex:1 1 100%}
+.jobcard select.teamwahl,.jobcard select.spaltenwahl{
+  flex:1 1 0;min-width:0;background:rgba(0,0,0,.3);border:1px solid var(--line-soft);
+  border-radius:var(--pille);color:var(--ink-dim);font-size:10.5px;padding:4px 7px;cursor:pointer;
+}
+.jobcard select.teamwahl:hover,.jobcard select.spaltenwahl:hover{color:var(--ink);border-color:var(--focus)}
+.jobcard .sortknopf{
+  flex:0 0 auto;background:rgba(255,255,255,.06);border:1px solid var(--line-soft);
+  border-radius:7px;color:var(--ink-faint);font-size:9px;padding:4px 6px;cursor:pointer;line-height:1;
+}
+.jobcard .sortknopf:hover:not(:disabled){color:var(--ink);border-color:var(--focus)}
+.jobcard .sortknopf:disabled{opacity:.25;cursor:default}
 
 /* ---------- Jahrestabelle: Stunden und Kilometer ---------- */
 dialog.weit{width:min(1260px,96vw)}
@@ -721,7 +824,7 @@ table.jahr thead th.monatssumme{color:var(--focus);font-weight:600;text-align:ce
   .navdate .label{min-width:0}
 }
 /* Ab hier wandern die selteneren Knöpfe ins Menü, damit die Leiste einzeilig bleibt */
-@media (min-width:761px) and (max-width:1600px){
+@media (min-width:761px) and (max-width:2100px){
   #btnKunden,#btnTeams,#btnSettings,#btnData{display:none}
   #btnMenu.nurPhone{display:block}
 }
@@ -916,18 +1019,38 @@ body.alsMonteur #chZurueck{display:none}
 .artwahl button#jnArtMangel[aria-pressed="true"]{background:#FF6B6B;color:#2A0A0C}
 
 /* Mangelzeichen am Balken im Kalender */
-.bar .mangel{
-  display:inline-block;width:8px;height:8px;border-radius:50%;background:#FF4D4D;
-  box-shadow:0 0 0 2px rgba(255,77,77,.28);margin-right:5px;flex:0 0 auto;vertical-align:1px;
+.bar .bnr{
+  flex:0 0 auto;font-family:"Barlow Condensed",sans-serif;font-size:10.5px;font-weight:700;
+  letter-spacing:.05em;background:rgba(0,0,0,.26);border-radius:5px;padding:0 5px;
+  margin-right:5px;opacity:.85;
 }
-table.month .bar .mangel{width:7px;height:7px;margin-right:4px}
+table.month .bar .bnr{font-size:9.5px;padding:0 4px;margin-right:4px}
 
 /* Notizknopf auf der Auftragskarte */
 .jobcard .nzknopf{
   background:rgba(255,255,255,.06);border:1px solid var(--line-soft);border-radius:var(--pille);
   color:var(--ink-dim);font-size:11px;padding:4px 9px;cursor:pointer;white-space:nowrap;
 }
-.jobcard .nzknopf.hatmangel{color:#FF9D9D;border-color:rgba(255,107,107,.4);background:rgba(255,107,107,.12)}
+.jobcard .row button.nzknopf.notiz,.nzknopf.notiz{
+  color:#2A2008;background:#FFC04D;border-color:#FFC04D;font-weight:650
+}
+.jobcard .row button.nzknopf.mangel,.nzknopf.mangel{
+  color:#fff;background:#E03B3B;border-color:#E03B3B;font-weight:650
+}
+
+/* Rote beziehungsweise gelbe Ecke oben rechts */
+.ecke{position:relative}
+.ecke::after{
+  content:"";position:absolute;top:0;right:0;width:0;height:0;pointer-events:none;
+  border-style:solid;border-width:0 26px 26px 0;
+  border-color:transparent var(--eckfarbe) transparent transparent;
+  border-top-right-radius:14px;
+}
+.ecke.notiz{--eckfarbe:#FFC04D}
+.ecke.mangel{--eckfarbe:#E03B3B}
+.bar.ecke::after{border-width:0 15px 15px 0;border-top-right-radius:var(--pille)}
+table.month .bar.ecke::after{border-width:0 11px 11px 0}
+.spurkarte.ecke::after{border-width:0 18px 18px 0;border-top-right-radius:14px}
 .nzblase{
   position:fixed;z-index:120;max-width:380px;min-width:240px;max-height:52vh;overflow:auto;
   background:rgba(18,24,33,.97);border:1px solid var(--line);border-radius:15px;
@@ -936,6 +1059,21 @@ table.month .bar .mangel{width:7px;height:7px;margin-right:4px}
 }
 .nzblase h4{margin:0 0 9px;font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:600}
 .nzblase .nz-eintrag{padding:8px 11px}
+.spaltenblase{min-width:216px}
+.spaltenblase .hakzeile{
+  display:flex;align-items:center;gap:9px;padding:7px 4px;cursor:pointer;font-size:13px;
+}
+.spaltenblase .hakzeile:hover{color:var(--focus)}
+.spaltenblase input{width:16px;height:16px;accent-color:var(--focus);cursor:pointer}
+.spaltenblase .pkt{width:8px;height:8px;border-radius:50%;background:var(--focus);flex:0 0 auto}
+.spaltenblase .pkt.irina{background:#C9A6FF}
+.spaltenblase .pkt.admin{background:#7FD39B}
+.blasefuss{display:flex;gap:6px;margin-top:10px}
+.blasefuss button{
+  flex:1;background:rgba(255,255,255,.06);border:1px solid var(--line-soft);border-radius:var(--pille);
+  color:var(--ink-dim);font-size:11px;padding:6px 4px;cursor:pointer;
+}
+.blasefuss button:hover{color:var(--ink);border-color:var(--focus)}
 .nzblase .mehr{
   margin-top:10px;width:100%;background:rgba(255,255,255,.06);border:1px solid var(--line-soft);
   border-radius:var(--pille);color:var(--ink-dim);font-size:11.5px;padding:6px;cursor:pointer;
@@ -1020,6 +1158,13 @@ dialog.chatfenster{width:min(1120px,96vw)}
   .chatverlauf{max-height:44vh}
   .chatfuss textarea{font-size:16px}
   .blase{max-width:88%}
+}
+
+@media (min-width:761px) and (max-width:1360px){
+  .searchbox{flex:0 0 36px;min-width:36px;max-width:36px}
+  .searchbox input{padding-left:30px;padding-right:4px}
+  .ghost{padding:6px 7px;font-size:11px}
+  .views button{padding:4px 8px;font-size:13px}
 }
 
 /* Menüblatt */
@@ -1138,6 +1283,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <button class="ghost" id="zoomIn" title="Spalten breiter">+</button>
   <button class="ghost nurPhone" id="btnMenu" aria-label="Menü">☰</button>
   <button class="ghost" id="btnKonto">Konto</button>
+  <button class="ghost" id="btnSpalten" title="Welche Auftragsspalten sollen rechts stehen?">Spalten</button>
   <button class="ghost glocke" id="btnChat" title="Nachrichten an die Teams">Chat</button>
   <button class="ghost" id="btnListe" title="Auftragsliste mit Rechnungen und Zahlungseingängen">Liste</button>
   <button class="ghost" id="btnStunden" title="Arbeitsstunden je Mitarbeiter, Tag für Tag">Stunden</button>
@@ -1151,20 +1297,34 @@ dialog.chatfenster{width:min(1120px,96vw)}
 <div id="kontext" class="kontext" hidden></div>
 
 <main>
-  <div id="stage"></div>
+  <div class="buehne">
+    <div id="stage"></div>
+    <div class="adminspur" id="adminSpur" hidden>
+      <div class="spurkopf">
+        <b id="spurName">Admin</b>
+        <span class="hint" style="margin:0">eigene Spur · Karten frei verschieben und in der Breite ziehen</span>
+        <button class="btn" id="spurAufraeumen" title="Alle Karten bündig nebeneinander legen">Ordnen</button>
+      </div>
+      <div class="bahn" id="adminBahn"></div>
+    </div>
+  </div>
   <aside>
+    <div class="poolschalter" id="poolSchalter" role="group" aria-label="Sichtbare Auftragsspalten"></div>
     <div class="pools">
       <div class="poolcol" data-pool="haupt">
-        <h2><span class="marke"></span><span class="titel">Auftragspool</span>
-          <span class="count" id="poolCount"></span>
-          <button class="spaltenschalter" id="btnIrinaSpalte" aria-pressed="true"
-                  title="Zweite Auftragsspalte ein- oder ausblenden">⟩</button></h2>
+        <h2><span class="marke"></span><span class="titel" id="poolName0">Auftragspool</span>
+          <span class="count" id="poolCount"></span></h2>
         <div class="pool" id="pool"></div>
       </div>
       <div class="poolcol" data-pool="irina">
         <h2><span class="marke"></span><span class="titel" id="irinaName">Irina</span>
           <span class="count" id="poolCountIrina"></span></h2>
         <div class="pool" id="poolIrina"></div>
+      </div>
+      <div class="poolcol" data-pool="admin">
+        <h2><span class="marke"></span><span class="titel" id="adminName">Admin</span>
+          <span class="count" id="poolCountAdmin"></span></h2>
+        <div class="pool" id="poolAdmin"></div>
       </div>
     </div>
 
@@ -1284,7 +1444,13 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <h3 id="jobTitle">Auftrag anlegen</h3>
   <div class="dlg-body">
     <p class="hint" id="jbHerkunft" style="margin-top:0" hidden></p>
-    <div class="field"><label for="jbName">Bezeichnung</label><input type="text" id="jbName" placeholder="z.B. Neubau Zählerschrank"></div>
+    <div class="field">
+      <label for="jbName">Auftrag</label>
+      <div class="pair">
+        <span class="nrfeld" id="jbNr">0000</span>
+        <input type="text" id="jbName" placeholder="z.B. Neubau Zählerschrank">
+      </div>
+    </div>
     <div class="field">
       <label for="jbAdr">Adresse</label>
       <div class="pair">
@@ -1315,12 +1481,18 @@ dialog.chatfenster{width:min(1120px,96vw)}
       <select id="jbPool">
         <option value="haupt">Auftragspool</option>
         <option value="irina">zweite Spalte</option>
+        <option value="admin">dritte Spalte</option>
       </select>
     </div>
     <div class="field">
       <label><input type="checkbox" id="jbBilled" style="width:auto;margin-right:8px">Abgerechnet – im Kalender grau statt farbig</label>
     </div>
-    <div class="field"><label for="jbNote">Notiz</label><textarea id="jbNote" rows="3"></textarea></div>
+    <div class="field">
+      <label>Notizen und Mängel <span id="jbNzCount" class="cnt"></span></label>
+      <div class="notizen" id="jbNotizen" style="margin-bottom:10px"></div>
+      <button type="button" class="btn" id="jbNzOeffnen">Notiz oder Mangel hinzufügen</button>
+    </div>
+    <textarea id="jbNote" rows="1" hidden></textarea>
 
     <div class="field" style="margin-bottom:0">
       <label>Fotos und Dateien <span id="jbFileCount" class="cnt"></span></label>
@@ -1570,6 +1742,8 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <div class="field">
       <label for="stZweit">Name der zweiten Auftragsspalte</label>
       <input type="text" id="stZweit" placeholder="Irina">
+      <label for="stDritt" style="margin-top:11px">Name der dritten Auftragsspalte</label>
+      <input type="text" id="stDritt" placeholder="Admin">
       <p class="hint" style="margin-top:7px">Neben dem gemeinsamen Auftragspool steht eine zweite Spalte. Aufträge lassen sich zwischen beiden hin- und herziehen und aus beiden in den Kalender.</p>
     </div>
     <div class="field">
@@ -1770,13 +1944,13 @@ const STORE_KEY = "einsatzplaner.v1";
    ========================================================= */
 const Files = (() => {
   return {
-    async add(jobId,file){
+    async add(jobId,file,von){
       if(!sb) throw new Error("Keine Verbindung zum Server.");
       const nr=naechsteNummer();
       const storedName=dateinameBauen(nr,jobId,file);
       const { error } = await sb.storage.from(BUCKET).upload(storedName,file,{upsert:false});
       if(error) throw error;
-      const rec={id:uid()+uid(),jobId,nr,name:file.name||"Datei",storedName,
+      const rec={id:uid()+uid(),jobId,nr,name:file.name||"Datei",storedName,von:von||"",
                  type:file.type||"",size:file.size||0,added:new Date().toISOString()};
       if(!state.fileRegistry) state.fileRegistry=[];
       state.fileRegistry.push(rec);
@@ -1977,12 +2151,27 @@ function zustandPruefen(d){
   if(!d.km || typeof d.km!=="object") d.km={};
   if(!Array.isArray(d.extraLeute)) d.extraLeute=[];
   if(!Array.isArray(d.blaetter)) d.blaetter=[];
+  if(!Array.isArray(d.adminSpur)) d.adminSpur=[];
+  /* Frühere freie Notiz am Auftrag wird eine richtige Notiz */
+  (d.jobs||[]).forEach(j=>{
+    if(!Array.isArray(j.notizen)) j.notizen=[];
+    if(j.note && String(j.note).trim() && !j.noteUebernommen){
+      j.notizen.push({id:uid(), art:"info", text:String(j.note).trim(),
+        von:"", am:j.erstelltAm||new Date().toISOString(),
+        erledigt:false, erledigtVon:"", erledigtAm:""});
+      j.noteUebernommen=true; j.note="";
+    }
+  });
   /* Auftragsnummern: vorhandene Aufträge einmalig durchnummerieren */
   if(!d.settings.auftragNr) d.settings.auftragNr=0;
   (d.jobs||[]).forEach(j=>{ if(!j.nr){ d.settings.auftragNr++; j.nr=d.settings.auftragNr; } });
   d.settings.auftragNr=Math.max(d.settings.auftragNr, ...(d.jobs||[]).map(j=>j.nr||0), 0);
   if(!d.settings.zweitpool) d.settings.zweitpool="Irina";
+  if(!d.settings.drittpool) d.settings.drittpool="Admin";
   if(d.settings.zweitpoolAn===undefined) d.settings.zweitpoolAn=true;
+  if(!d.settings.poolsAn) d.settings.poolsAn={haupt:true, irina:d.settings.zweitpoolAn!==false, admin:true};
+  ["haupt","irina","admin"].forEach(k=>{ if(d.settings.poolsAn[k]===undefined) d.settings.poolsAn[k]=true; });
+  if(!Object.values(d.settings.poolsAn).some(Boolean)) d.settings.poolsAn.haupt=true;
   return d;
 }
 
@@ -2115,7 +2304,12 @@ const telLink = raw => raw ? "tel:"+String(raw).replace(/[^\d+]/g,"") : "";
 const jobById=id=>state.jobs.find(j=>j.id===id);
 const assignAt=(teamId,date,slot)=>state.assignments.find(a=>a.teamId===teamId&&a.date===date&&a.slot===slot);
 const assignsOn=date=>state.assignments.filter(a=>a.date===date);
-function plannedJobIds(){return new Set(state.assignments.map(a=>a.jobId));}
+function plannedJobIds(){
+  /* Verplant ist auch, was auf der eigenen Spur liegt */
+  const s=new Set(state.assignments.map(a=>a.jobId));
+  (state.adminSpur||[]).forEach(k=>s.add(k.jobId));
+  return s;
+}
 function slotTimes(){const s=state.settings;return{AM:[s.amStart,s.amEnd],PM:[s.pmStart,s.pmEnd]};}
 function atTime(dateStr,hm){const d=parse(dateStr);const[h,m]=hm.split(":").map(Number);d.setHours(h,m,0,0);return d;}
 function currentSlot(now=new Date()){
@@ -2178,6 +2372,7 @@ function render(){
   else if(view==="month") renderMonth();
   else renderMap();
   renderPool();
+  zeichneSpur();
 }
 
 function renderPeriodLabel(){
@@ -2290,16 +2485,29 @@ function renderPhoneJobs(){
   }
   list.forEach(j=>{
     const k=kundeById(j.customerId);
-    const c=document.createElement("div"); c.className="jobcard";
+    const stufeP=notizStufe(j.id);
+    const c=document.createElement("div");
+    c.className="jobcard"+(stufeP?" ecke "+stufeP:"");
+    c.onclick=e=>{ if(e.target.closest("button,select,input")) return; openJob(j.id); };
+    c.style.cursor="pointer";
     c.style.borderLeftColor=j.billed?"#6B7585":(planned.has(j.id)?"#3D4A5C":"var(--ink-faint)");
     c.innerHTML=`<b>${j.nr?`<span class="aufnr">${nrText(j.nr)}</span> `:""}${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
       ${k?`<small style="margin-top:3px;color:var(--ink-dim)">${esc(k.company)}</small>`:""}
       ${j.wishDate?`<small style="margin-top:3px;color:#FFC978">Wunschbeginn ${esc(wunschText(j.wishDate))}</small>`:""}
       <small style="margin-top:3px;color:var(--ink-faint)">${planned.has(j.id)?"eingeplant":"noch offen"}${j.billed?" · abgerechnet":""}${fileCounts[j.id]?` · ${fileCounts[j.id]} Anhang`:""}</small>
-      <div class="row"><button data-e="${j.id}">Öffnen</button><button data-m="${j.id}">Karte</button
-        ><button class="nzknopf${offeneMaengel(j.id)?" hatmangel":""}" data-nz="${j.id}" title="Notizen und Mängel">${offeneMaengel(j.id)?"⚠ ":""}Notizen${notizAnzahl(j.id)?" "+notizAnzahl(j.id):""}</button
-        >${darfPlanen()?`<button data-p="${j.id}">→ ${esc(istZweit(j)?"Pool":state.settings.zweitpool)}</button>`:""}</div>`;
-    if(istZweit(j)) c.classList.add("irina");
+      <div class="row"><button data-m="${j.id}">Karte</button
+        ><button class="nzknopf ${notizStufe(j.id)}" data-nz="${j.id}" title="Notizen und Mängel">Notizen</button></div>
+      ${darfPlanen()?`<div class="vorabzeile">
+        <select class="spaltenwahl" data-sp="${j.id}" title="In welcher Spalte steht der Auftrag?">
+          ${POOLS.map(k=>`<option value="${k}"${k===spalte?" selected":""}>${esc(poolName(k))}</option>`).join("")}
+        </select>
+        <select class="teamwahl" data-tw="${j.id}" title="Vorgesehen für welches Team?">
+          <option value=""${!j.planTeam?" selected":""}>noch offen</option>
+          ${state.teams.map(t=>`<option value="${t.id}"${t.id===j.planTeam?" selected":""}>${esc(t.name)}</option>`).join("")}
+        </select>
+        <button class="sortknopf" data-up="${j.id}" title="nach oben">▲</button>
+        <button class="sortknopf" data-dn="${j.id}" title="nach unten">▼</button>
+      </div>`:""}`;
     wrap.appendChild(c);
   });
   stage.replaceChildren(wrap);
@@ -2310,9 +2518,13 @@ function renderPhoneJobs(){
     const r=b.getBoundingClientRect();
     notizBlase(b.dataset.nz, Math.max(8,r.left-40), r.bottom+8);
   });
-  wrap.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
-    const j=jobById(b.dataset.p); if(!j) return;
-    spalteSetzen(j, istZweit(j)?"haupt":"irina"); render();
+  wrap.querySelectorAll("[data-sp]").forEach(sel=>sel.onchange=()=>{
+    const j=jobById(sel.dataset.sp); if(j){ spalteSetzen(j, sel.value); render(); }
+  });
+  wrap.querySelectorAll("[data-tw]").forEach(sel=>sel.onchange=()=>{
+    const j=jobById(sel.dataset.tw); if(!j) return;
+    if(sel.value) j.planTeam=sel.value; else delete j.planTeam;
+    save(); render();
   });
 }
 
@@ -2424,8 +2636,38 @@ async function renderSearch(){
 
     const dateien=await Files.forJob(job.id);
     if(dateien.length){
+      /* Wer hat zu diesem Objekt etwas beigesteuert? */
+      const leute=[...new Set(dateien.map(f=>(f.von||"").trim()).filter(Boolean))];
       const fb=document.createElement("div"); fb.className="files";
-      dateien.forEach(f=>fb.appendChild(kachel(f,true)));
+      const zeichne=filter=>{
+        fb.replaceChildren();
+        dateien.filter(f=>!filter || (f.von||"").trim()===filter)
+               .forEach(f=>fb.appendChild(kachel(f,true)));
+      };
+      if(leute.length){
+        const wer=document.createElement("div"); wer.className="beteiligt";
+        const titel=document.createElement("span"); titel.className="lbl";
+        titel.textContent="Fotos von:"; wer.appendChild(titel);
+        const knoepfe=[];
+        const setze=v=>{
+          zeichne(v);
+          knoepfe.forEach(k=>k.setAttribute("aria-pressed",(k.dataset.v||"")===(v||"")?"true":"false"));
+        };
+        const alle=document.createElement("button");
+        alle.dataset.v=""; alle.textContent=`alle ${dateien.length}`;
+        alle.onclick=()=>setze(null); knoepfe.push(alle); wer.appendChild(alle);
+        leute.forEach(n=>{
+          const t=state.teams.find(x=>x.name===n);
+          const b=document.createElement("button"); b.dataset.v=n;
+          const anz=dateien.filter(f=>(f.von||"").trim()===n).length;
+          b.textContent=`${n} · ${anz}`;
+          if(t){ b.style.borderColor=blass(t.color,.5); b.style.color=t.color; }
+          b.onclick=()=>setze(n);
+          knoepfe.push(b); wer.appendChild(b);
+        });
+        card.appendChild(wer);
+        setze(null);
+      }else zeichne(null);
       card.appendChild(fb);
     }
 
@@ -2640,17 +2882,19 @@ function makeBar(team,jobId,firstU,lastU,span,isMonth){
   const fix=istFixiert(jobId);
   const abger=!!job.billed;
   const b=document.createElement("div");
-  b.className="bar"+(cl?" cl":"")+(cr?" cr":"")+(fix?" fix":"")+(abger?" abger":"");
+  const stufe=notizStufe(jobId);
+  b.className="bar"+(cl?" cl":"")+(cr?" cr":"")+(fix?" fix":"")+(abger?" abger":"")
+    +((stufe && !cr)?" ecke "+stufe:"");
   b.style.gridColumn="span "+span;
   b.style.background=team.color;
   const halb = span===1 ? (firstU.s==="AM"?" · erste Tageshälfte":" · zweite Tageshälfte") : "";
   const schloss = (fix && !cl) ? `<span class="lock" aria-hidden="true">🔒</span>` : "";
   const maengel = offeneMaengel(jobId);
-  const fahne = (maengel && !cl) ? `<span class="mangel" aria-hidden="true"></span>` : "";
+  const nummer = (job.nr && !cl) ? `<span class="bnr">${nrText(job.nr)}</span>` : "";
   b.innerHTML = isMonth
-    ? `${fahne}${schloss}<span class="nm">${esc(short(job.name, span<=1?6:span*7))}</span>`
-    : `${fahne}${schloss}<span class="nm">${esc(job.name)}</span>`+(span>=2?`<span class="adr">${esc(job.address)}</span>`:"");
-  b.title=`${job.name}\n${job.address}\n${team.name}${halb}\n${span/2 % 1 ? (span/2).toFixed(1) : span/2} Tage`
+    ? `${nummer}${schloss}<span class="nm">${esc(short(job.name, span<=1?6:span*7))}</span>`
+    : `${nummer}${schloss}<span class="nm">${esc(job.name)}</span>`+(span>=2?`<span class="adr">${esc(job.address)}</span>`:"");
+  b.title=`${nrText(job.nr)} ${job.name}\n${job.address}\n${team.name}${halb}\n${span/2 % 1 ? (span/2).toFixed(1) : span/2} Tage`
     +(abger?"\n\nAbgerechnet.":"")
     +(maengel?`\n\n${maengel} offene${maengel===1?"r":""} Mangel – anklicken und unter „Notizen“ abhaken.`:"")
     +(fix?`\n\nFestgehalten: ${fileCounts[jobId]} Anhang/Anhänge vorhanden.`:"");
@@ -2741,32 +2985,129 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 /* ---- Auftragspool ---- */
 /* Zwei Spalten: der gemeinsame Pool und die Spalte von Irina.
    Ein Auftrag gehört zu einer Spalte, Ziehen verschiebt ihn. */
-const istZweit = j => j.pool==="irina";
+const POOLS=["haupt","irina","admin"];
+const poolName = k => k==="haupt" ? "Auftragspool"
+                 : k==="irina" ? (state.settings.zweitpool||"Irina")
+                 : (state.settings.drittpool||"Admin");
+const poolVon  = j => (j && POOLS.includes(j.pool)) ? j.pool : "haupt";
+const istZweit = j => poolVon(j)==="irina";
+const poolSichtbar = k => state.settings.poolsAn && state.settings.poolsAn[k]!==false;
+
+/* Blasse Teamfarbe für vorab zugewiesene Aufträge */
+function blass(hex,a){
+  const m=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex||""));
+  if(!m) return "";
+  return `rgba(${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)},${a})`;
+}
 
 function renderPool(){
   document.getElementById("btnAllJobs").textContent = poolShowAll ? "Nur offene" : "Alle";
-  document.getElementById("irinaName").textContent = state.settings.zweitpool;
-  const an=state.settings.zweitpoolAn!==false;
-  document.querySelector("aside").classList.toggle("einspalte",!an);
-  const sch=document.getElementById("btnIrinaSpalte");
-  sch.setAttribute("aria-pressed",an?"true":"false");
-  sch.textContent = an ? "⟩" : "⟨";
-  sch.title = an ? `Spalte „${state.settings.zweitpool}" ausblenden` : `Spalte „${state.settings.zweitpool}" einblenden`;
-  poolSpalte("pool","poolCount",j=>!istZweit(j),true);
-  poolSpalte("poolIrina","poolCountIrina",istZweit,false);
+  document.getElementById("poolName0").textContent = poolName("haupt");
+  document.getElementById("irinaName").textContent = poolName("irina");
+  document.getElementById("adminName").textContent = poolName("admin");
+  spaltenSchalterZeichnen();
+  const sichtbar=POOLS.filter(poolSichtbar);
+  document.querySelectorAll(".poolcol").forEach(c=>c.classList.toggle("aus",!poolSichtbar(c.dataset.pool)));
+  const as=document.querySelector("aside");
+  as.style.display = sichtbar.length ? "" : "none";
+  as.style.flex = `0 0 ${Math.max(1,sichtbar.length)*246}px`;
+  const ks=document.getElementById("btnSpalten");
+  if(ks) ks.textContent = sichtbar.length ? "Spalten" : "Spalten einblenden";
+  poolSpalte("pool","poolCount","haupt",true);
+  poolSpalte("poolIrina","poolCountIrina","irina",false);
+  poolSpalte("poolAdmin","poolCountAdmin","admin",false);
 }
 
-/* Auftrag in die andere Spalte legen */
+/* Welche Spalten stehen gerade da */
+function spaltenSchalterZeichnen(){
+  const box=document.getElementById("poolSchalter"); box.replaceChildren();
+  POOLS.forEach(k=>{
+    const b=document.createElement("button");
+    b.dataset.k=k; b.textContent=poolName(k);
+    b.setAttribute("aria-pressed", poolSichtbar(k)?"true":"false");
+    b.title = poolSichtbar(k) ? `„${poolName(k)}“ ausblenden` : `„${poolName(k)}“ einblenden`;
+    b.onclick=()=>spalteUmschalten(k);
+    box.appendChild(b);
+  });
+}
+
+function spalteUmschalten(k){
+  state.settings.poolsAn[k]=!poolSichtbar(k);
+  state.settings.zweitpoolAn=state.settings.poolsAn.irina;
+  save(); renderPool(); render();
+}
+
+/* Kleines Fenster an der Kopfleiste: Haken setzen, fertig */
+let spaltenBlase=null;
+function spaltenWaehler(x,y){
+  spaltenBlaseZu();
+  const d=document.createElement("div"); d.className="nzblase spaltenblase";
+  const h=document.createElement("h4"); h.textContent="Auftragsspalten";
+  d.appendChild(h);
+  POOLS.forEach(k=>{
+    const z=document.createElement("label"); z.className="hakzeile";
+    const c=document.createElement("input"); c.type="checkbox"; c.checked=poolSichtbar(k);
+    c.onchange=()=>{ spalteUmschalten(k); };
+    const t=document.createElement("span"); t.textContent=poolName(k);
+    const p=document.createElement("i"); p.className="pkt "+k;
+    z.append(c,p,t); d.appendChild(z);
+  });
+  const reihe=document.createElement("div"); reihe.className="blasefuss";
+  const alle=document.createElement("button"); alle.textContent="alle zeigen";
+  alle.onclick=()=>{ POOLS.forEach(k=>state.settings.poolsAn[k]=true);
+    state.settings.zweitpoolAn=true; save(); renderPool(); render();
+    d.querySelectorAll("input").forEach(i=>i.checked=true); };
+  const keine=document.createElement("button"); keine.textContent="alle ausblenden";
+  keine.onclick=()=>{ POOLS.forEach(k=>state.settings.poolsAn[k]=false);
+    state.settings.zweitpoolAn=false; save(); renderPool(); render();
+    d.querySelectorAll("input").forEach(i=>i.checked=false); };
+  reihe.append(alle,keine); d.appendChild(reihe);
+  document.body.appendChild(d);
+  const b=d.getBoundingClientRect();
+  d.style.left=Math.max(10, Math.min(x-b.width/2, innerWidth-b.width-10))+"px";
+  d.style.top =Math.min(y, innerHeight-b.height-10)+"px";
+  spaltenBlase=d;
+  setTimeout(()=>document.addEventListener("pointerdown",spaltenBlaseWeg,{capture:true}),0);
+}
+function spaltenBlaseWeg(e){
+  if(!spaltenBlase || spaltenBlase.contains(e.target)) return;
+  e.preventDefault(); e.stopPropagation(); spaltenBlaseZu();
+}
+function spaltenBlaseZu(){
+  if(!spaltenBlase) return;
+  document.removeEventListener("pointerdown",spaltenBlaseWeg,{capture:true});
+  spaltenBlase.remove(); spaltenBlase=null;
+}
+document.getElementById("btnSpalten").onclick=e=>{
+  if(spaltenBlase){ spaltenBlaseZu(); return; }
+  const r=e.currentTarget.getBoundingClientRect();
+  spaltenWaehler(r.left+r.width/2, r.bottom+8);
+};
+
+/* Auftrag in eine andere Spalte legen */
 function spalteSetzen(job,spalte){
-  if(spalte==="irina") job.pool="irina"; else delete job.pool;
-  if(spalte==="irina") state.settings.zweitpoolAn=true;
+  if(POOLS.includes(spalte) && spalte!=="haupt") job.pool=spalte; else delete job.pool;
+  if(spalte!=="haupt") state.settings.poolsAn[spalte]=true;
+  state.settings.zweitpoolAn=state.settings.poolsAn.irina;
   save(); renderPool();
 }
 
-function poolSpalte(ziel,zaehler,gehoert,mitEinreichungen){
+/* Reihenfolge innerhalb einer Spalte */
+function auftragSchieben(job,richtung){
+  const k=poolVon(job);
+  const gleiche=state.jobs.filter(j=>poolVon(j)===k);
+  const i=gleiche.indexOf(job), nachbar=gleiche[i+richtung];
+  if(!nachbar) return;
+  const a=state.jobs.indexOf(job), b=state.jobs.indexOf(nachbar);
+  state.jobs[a]=nachbar; state.jobs[b]=job;
+  save(); renderPool();
+}
+
+function poolSpalte(ziel,zaehler,spalte,mitEinreichungen){
   const pool=document.getElementById(ziel);
+  if(!poolSichtbar(spalte)){ pool.replaceChildren(); return; }
   const planned=plannedJobIds();
-  const eigene=state.jobs.filter(gehoert);
+  const eigene=state.jobs.filter(j=>poolVon(j)===spalte);
   const list = poolShowAll ? eigene : eigene.filter(j=>!planned.has(j.id));
   document.getElementById(zaehler).textContent = poolShowAll ? `alle ${eigene.length}` : `${list.length} offen`;
   pool.replaceChildren();
@@ -2803,19 +3144,41 @@ function poolSpalte(ziel,zaehler,gehoert,mitEinreichungen){
     pool.appendChild(p); return;
   }
   list.forEach(j=>{
-    const c=document.createElement("div"); c.className="jobcard"+(istZweit(j)?" irina":""); c.draggable=true;
+    const stufe=notizStufe(j.id);
+    const c=document.createElement("div");
+    c.className="jobcard"+(spalte!=="haupt"?" "+spalte:"")+(stufe?" ecke "+stufe:"");
+    c.draggable=true;
+    c.onclick=e=>{ if(e.target.closest("button,select,input")) return; openJob(j.id); };
+    c.style.cursor="pointer";
     if(planned.has(j.id)) c.style.borderLeftColor="#3D4A5C";
+    const vorab = j.planTeam ? teamById(j.planTeam) : null;
+    if(vorab){
+      c.classList.add("vorab");
+      c.style.borderLeftColor=vorab.color;
+      c.style.background=blass(vorab.color,.13);
+    }
     c.innerHTML=`<b>${j.nr?`<span class="aufnr">${nrText(j.nr)}</span> `:""}${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
       ${(()=>{const k=kundeById(j.customerId);
         return k?`<small style="margin-top:3px;color:var(--ink-dim)">${esc(k.company)}</small>`:"";})()}
       ${j.wishDate?`<small style="margin-top:3px;color:#FFC978">Wunschbeginn ${esc(wunschText(j.wishDate))}</small>`:""}
       ${j.billed?`<small style="margin-top:3px;color:#8C96A5">abgerechnet</small>`:""}
       ${j.contact?`<small style="margin-top:3px;color:var(--ink-faint)">${esc(j.contact)}</small>`:""}
-      ${(j.address&&j.lat==null)?`<small style="margin-top:3px;color:#FFB65C">noch kein Pin – über „Bearbeiten“ Adresse suchen</small>`:""}
+      ${(j.address&&j.lat==null)?`<small style="margin-top:3px;color:#FFB65C">noch kein Pin – Auftrag anklicken, dann „Adresse suchen“</small>`:""}
       ${fileCounts[j.id]?`<small style="margin-top:3px;color:var(--ink-dim)">${fileCounts[j.id]} Foto${fileCounts[j.id]===1?"":"s"} / Datei${fileCounts[j.id]===1?"":"en"}</small>`:""}
-      <div class="row"><button data-e="${j.id}">Bearbeiten</button><button data-m="${j.id}">Karte</button
-        ><button class="nzknopf${offeneMaengel(j.id)?" hatmangel":""}" data-nz="${j.id}">${offeneMaengel(j.id)?"⚠ ":""}Notizen${notizAnzahl(j.id)?" "+notizAnzahl(j.id):""}</button
-        ><button data-p="${j.id}" title="In die andere Spalte verschieben">→ ${esc(istZweit(j)?"Pool":state.settings.zweitpool)}</button></div>`;
+      <div class="row"><button data-m="${j.id}">Karte</button
+        ><button class="nzknopf ${notizStufe(j.id)}" data-nz="${j.id}">Notizen</button
+        ></div>
+      ${darfPlanen()?`<div class="vorabzeile">
+        <select class="spaltenwahl" data-sp="${j.id}" title="In welcher Spalte steht der Auftrag?">
+          ${POOLS.map(k=>`<option value="${k}"${k===spalte?" selected":""}>${esc(poolName(k))}</option>`).join("")}
+        </select>
+        <select class="teamwahl" data-tw="${j.id}" title="Vorgesehen für welches Team?">
+          <option value=""${!j.planTeam?" selected":""}>noch offen</option>
+          ${state.teams.map(t=>`<option value="${t.id}"${t.id===j.planTeam?" selected":""}>${esc(t.name)}</option>`).join("")}
+        </select>
+        <button class="sortknopf" data-up="${j.id}" title="nach oben">▲</button>
+        <button class="sortknopf" data-dn="${j.id}" title="nach unten">▼</button>
+      </div>`:""}`;
     c.ondragstart=e=>e.dataTransfer.setData("text/plain",j.id);
     pool.appendChild(c);
   });
@@ -2826,12 +3189,28 @@ function poolSpalte(ziel,zaehler,gehoert,mitEinreichungen){
     const r=b.getBoundingClientRect();
     notizBlase(b.dataset.nz, r.left-40, r.bottom+8);
   });
-  pool.querySelectorAll("[data-p]").forEach(b=>b.onclick=e=>{
+  pool.querySelectorAll("[data-sp]").forEach(sel=>sel.onchange=e=>{
     e.stopPropagation();
-    const j=jobById(b.dataset.p); if(!j) return;
-    if(!darfPlanen()) return;
-    spalteSetzen(j, istZweit(j)?"haupt":"irina");
+    const j=jobById(sel.dataset.sp); if(j) spalteSetzen(j, sel.value);
   });
+  pool.querySelectorAll("[data-tw]").forEach(sel=>sel.onchange=e=>{
+    e.stopPropagation();
+    const j=jobById(sel.dataset.tw); if(!j) return;
+    if(sel.value) j.planTeam=sel.value; else delete j.planTeam;
+    save(); renderPool();
+  });
+  pool.querySelectorAll("[data-up]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation(); const j=jobById(b.dataset.up); if(j) auftragSchieben(j,-1);
+  });
+  pool.querySelectorAll("[data-dn]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation(); const j=jobById(b.dataset.dn); if(j) auftragSchieben(j,1);
+  });
+  /* Pfeile am Rand abschalten */
+  const karten=[...pool.querySelectorAll(".jobcard")];
+  if(karten.length){
+    const ersterUp=karten[0].querySelector("[data-up]"); if(ersterUp) ersterUp.disabled=true;
+    const letzterDn=karten[karten.length-1].querySelector("[data-dn]"); if(letzterDn) letzterDn.disabled=true;
+  }
 }
 let poolShowAll=false;
 
@@ -2954,7 +3333,8 @@ function fillAssignDialog(teamId,jobId,from,fromSlot,to,toSlot,titleTxt,hintTxt,
   document.getElementById("asDelete").style.display=canDelete?"":"none";
   document.getElementById("asDelete").textContent=delTxt||"Einsatz löschen";
   document.getElementById("asMap").style.display="";
-  document.getElementById("assignTitle").textContent=titleTxt;
+  document.getElementById("assignTitle").textContent =
+    (cur && cur.nr) ? `${titleTxt} · ${nrText(cur.nr)}` : titleTxt;
   document.getElementById("assignHint").textContent=hintTxt;
   entsperrt=false;
   const bRow=document.getElementById("assignBilledRow");
@@ -3075,7 +3455,11 @@ function kachelAssign(f){
     b.onclick=()=>ladeDatei(f);
     d.appendChild(b);
   }
-  d.title=`${anzeigeName(f)}\n${groesse(f.size)}`;
+  d.title=`${anzeigeName(f)}\n${groesse(f.size)}`+(f.von?`\nvon ${f.von}`:"");
+  if(f.von){
+    const v=document.createElement("span"); v.className="vonwem"; v.textContent=f.von;
+    d.appendChild(v);
+  }
   const x=document.createElement("button"); x.className="del"; x.type="button";
   x.textContent="✕"; x.title="Entfernen";
   x.onclick=async e=>{
@@ -3092,7 +3476,9 @@ async function nimmDateienAssign(fileList){
   if(!assignJobId) return;
   const files=[...fileList].filter(f=>f.size>0);
   if(!files.length) return;
-  try{ for(const f of files) await Files.add(assignJobId,f); }
+  const von=absenderFragen(files.length);
+  if(von===null){ alert("Ohne Absender wird nichts gespeichert."); return; }
+  try{ for(const f of files) await Files.add(assignJobId,f,von); }
   catch(e){ alert("Die Datei konnte nicht gespeichert werden. Vermutlich ist der Speicher des Browsers voll."); }
   await refreshCounts(); zeigeAssignAnhaenge(); renderPool();
   sperreSetzen(editing && editing.mode==="run" ? editing.jobId : null); render();
@@ -3321,6 +3707,9 @@ function openJob(id){
   const j=id?jobById(id):{name:"",address:"",lat:null,lng:null,contact:"",note:"",customerId:"",wishDate:"",value:""};
   document.getElementById("jobTitle").textContent = id
     ? `Auftrag ${nrText(j.nr)||""}`.trim() : "Auftrag anlegen";
+  /* Nummer: beim Bearbeiten die eigene, beim Anlegen die nächste */
+  document.getElementById("jbNr").textContent =
+    id ? (nrText(j.nr)||"—") : nrText((state.settings.auftragNr||0)+1);
   const hk=document.getElementById("jbHerkunft");
   if(id && (j.erstelltVon||j.erstelltAm)){
     const d=j.erstelltAm?new Date(j.erstelltAm):null;
@@ -3330,14 +3719,17 @@ function openJob(id){
     hk.hidden=false;
   }else hk.hidden=true;
   zeigeAnhaenge(jobEditId);
+  zeigeJobNotizen(id?jobEditId:null);
   jbName.value=j.name; jbAdr.value=j.address||""; jbLat.value=j.lat??""; jbLng.value=j.lng??"";
   jbContact.value=j.contact||""; jbNote.value=j.note||"";
   fuelleKundenAuswahl(j.customerId||"");
   jbWish.value=j.wishDate||""; jbValue.value=j.value||"";
   jbBilled.checked=!!j.billed;
   const ps=document.getElementById("jbPool");
-  ps.options[1].textContent=state.settings.zweitpool;
-  ps.value = j.pool==="irina" ? "irina" : "haupt";
+  ps.options[0].textContent=poolName("haupt");
+  ps.options[1].textContent=poolName("irina");
+  ps.options[2].textContent=poolName("admin");
+  ps.value = poolVon(j);
   document.getElementById("jbDelete").style.display=id?"":"none";
   document.getElementById("geoHint").className="hint";
   document.getElementById("geoHint").textContent="Koordinaten werden für die Karte gebraucht. „Adresse suchen“ holt sie automatisch (braucht Internet).";
@@ -3360,8 +3752,8 @@ document.getElementById("jbSave").onclick=()=>{
     contact:jbContact.value.trim(), note:jbNote.value.trim(),
     customerId:document.getElementById("jbCustomer").value||"",
     wishDate:jbWish.value||"", value:jbValue.value.trim(), billed:jbBilled.checked||undefined,
-    pool: document.getElementById("jbPool").value==="irina" ? "irina" : undefined};
-  if(data.pool==="irina") state.settings.zweitpoolAn=true;
+    pool: (document.getElementById("jbPool").value!=="haupt" ? document.getElementById("jbPool").value : undefined)};
+  if(data.pool) state.settings.poolsAn[data.pool]=true;
   if(jobIsNew) state.jobs.push(neuerAuftrag(Object.assign({id:jobEditId},data)));
   else Object.assign(jobById(jobEditId),data);
   jobIsNew=false;
@@ -3386,7 +3778,11 @@ function kachel(f,klein){
     b.onclick=()=>ladeDatei(f);
     d.appendChild(b);
   }
-  d.title=`${anzeigeName(f)}\n${groesse(f.size)}`;
+  d.title=`${anzeigeName(f)}\n${groesse(f.size)}`+(f.von?`\nvon ${f.von}`:"");
+  if(f.von){
+    const v=document.createElement("span"); v.className="vonwem"; v.textContent=f.von;
+    d.appendChild(v);
+  }
   if(!klein){
     const x=document.createElement("button"); x.className="del"; x.type="button";
     x.textContent="✕"; x.title="Entfernen";
@@ -3408,13 +3804,31 @@ async function zeigeAnhaenge(jobId){
   list.forEach(f=>box.appendChild(kachel(f,false)));
 }
 
+/* Vor jedem Hochladen: von wem kommen die Bilder?
+   Teams zur Auswahl, sonst freier Text wie „Kunde“. */
+function absenderFragen(anzahl){
+  const liste=state.teams.map((t,i)=>`${i+1} = ${t.name}`).join("\n");
+  const ein=prompt(
+    `Von wem ${anzahl===1?"kommt die Datei":"kommen die "+anzahl+" Dateien"}?\n\n`+
+    (liste?liste+"\n\n":"")+
+    "Nummer eingeben – oder einen Namen schreiben, zum Beispiel „Kunde“:");
+  if(ein===null) return null;
+  const txt=String(ein).trim();
+  if(!txt) return null;
+  const nr=parseInt(txt,10);
+  const team=(!isNaN(nr) && String(nr)===txt) ? state.teams[nr-1] : null;
+  return team ? team.name : txt;
+}
+
 async function nimmDateien(fileList){
   const files=[...fileList].filter(f=>f.size>0);
   if(!files.length) return;
   const gross=files.filter(f=>f.size>25*1024*1024);
   if(gross.length && !confirm(`${gross.length} Datei(en) sind größer als 25 MB. Viele große Dateien können den Browserspeicher füllen. Trotzdem hinzufügen?`)) return;
+  const von=absenderFragen(files.length);
+  if(von===null){ alert("Ohne Absender wird nichts gespeichert."); return; }
   try{
-    for(const f of files) await Files.add(jobEditId,f);
+    for(const f of files) await Files.add(jobEditId,f,von);
   }catch(e){
     alert("Die Datei konnte nicht gespeichert werden. Vermutlich ist der Speicher des Browsers voll. Bitte über „Sichern / Laden“ eine Sicherung anlegen und ältere Fotos entfernen.");
   }
@@ -3538,10 +3952,7 @@ document.getElementById("jbGeo").onclick=async()=>{
 })();
 
 /* Zweite Spalte ein- und ausblenden */
-document.getElementById("btnIrinaSpalte").onclick=()=>{
-  state.settings.zweitpoolAn = state.settings.zweitpoolAn===false;
-  save(); renderPool(); render();
-};
+
 
 document.getElementById("btnNewJob").onclick=()=>openJob(null);
 document.getElementById("btnAllJobs").onclick=()=>{poolShowAll=!poolShowAll;renderPool();};
@@ -3997,7 +4408,7 @@ document.getElementById("scanSave").onclick=async()=>{
   state.jobs.push(job);
   if(adr) geocodeQuiet(job);
   if(scanDatei){
-    try{ await Files.add(job.id,scanDatei); await refreshCounts(); }catch(e){}
+    try{ await Files.add(job.id,scanDatei,(typeof meinName!=="undefined"&&meinName)||"Büro"); await refreshCounts(); }catch(e){}
   }
   save(); dlgScan.close();
   poolShowAll=false; render();
@@ -4441,6 +4852,130 @@ async function listeFreigeben(){
 }
 
 /* =========================================================
+   Die eigene Spur unter dem Kalender
+   Eine durchgehende Bahn ohne Kalendertage. Karten liegen
+   dort, wo man sie hinschiebt, und sind so breit, wie man
+   sie zieht.
+   ========================================================= */
+const SPUR_H=78;
+function spurListe(){
+  if(!Array.isArray(state.adminSpur)) state.adminSpur=[];
+  return state.adminSpur;
+}
+
+function zeichneSpur(){
+  const box=document.getElementById("adminSpur");
+  if(!box) return;
+  const zeigen = darfPlanen() && !isPhone();
+  box.hidden=!zeigen;
+  if(!zeigen) return;
+  document.getElementById("spurName").textContent=poolName("admin");
+  const bahn=document.getElementById("adminBahn");
+  bahn.replaceChildren();
+  const liste=spurListe().filter(k=>jobById(k.jobId));
+  if(!liste.length){
+    const d=document.createElement("div"); d.className="leer";
+    d.textContent="Aus dem Auftragspool hierher ziehen. Danach die Karte verschieben oder am rechten Rand breiter ziehen.";
+    bahn.appendChild(d);
+  }
+  let rechts=0;
+  liste.forEach(k=>{
+    const j=jobById(k.jobId);
+    const stufe=notizStufe(j.id);
+    const d=document.createElement("div"); d.className="spurkarte"+(stufe?" ecke "+stufe:"");
+    d.style.left=(k.x||0)+"px";
+    d.style.width=(k.w||190)+"px";
+    const team=j.planTeam?teamById(j.planTeam):null;
+    if(team){ d.style.borderLeftColor=team.color; d.style.background=blass(team.color,.14); }
+    d.innerHTML=`${j.nr?`<span class="nr">${nrText(j.nr)}</span>`:""}
+      <b>${esc(j.name)}</b>
+      <small>${esc(j.address||"")}</small>
+      ${offeneMaengel(j.id)?`<small style="color:#FF9D9D">offener Mangel</small>`:""}`;
+    d.title=`${j.name}\n${j.address||""}\n\nZiehen zum Verschieben · rechter Rand zum Verbreitern · Doppelklick öffnet den Auftrag`;
+    d.ondblclick=()=>openJob(j.id);
+
+    const weg=document.createElement("button"); weg.className="weg"; weg.textContent="✕";
+    weg.title="Von der Spur nehmen";
+    weg.onclick=e=>{
+      e.stopPropagation();
+      state.adminSpur=spurListe().filter(x=>x!==k);
+      save(); zeichneSpur(); renderPool();
+    };
+    d.appendChild(weg);
+
+    const griff=document.createElement("span"); griff.className="griff"; griff.title="Breite ziehen";
+    griff.onpointerdown=e=>spurZiehen(e,k,d,"breite");
+    d.appendChild(griff);
+
+    d.onpointerdown=e=>{
+      if(e.target===griff || e.target===weg) return;
+      spurZiehen(e,k,d,"schieben");
+    };
+    bahn.appendChild(d);
+    rechts=Math.max(rechts,(k.x||0)+(k.w||190));
+  });
+  /* Platz zum Wegschieben nach rechts */
+  const platz=document.createElement("div");
+  platz.style.cssText=`position:absolute;left:0;top:0;height:1px;width:${rechts+600}px`;
+  bahn.appendChild(platz);
+}
+
+function spurZiehen(ev,k,el,was){
+  ev.preventDefault();
+  const startX=ev.clientX, x0=k.x||0, w0=k.w||190;
+  el.classList.add("zieht");
+  const zieh=e=>{
+    const d=e.clientX-startX;
+    if(was==="schieben") k.x=Math.max(0, Math.round((x0+d)/5)*5);
+    else k.w=Math.max(70, Math.min(1400, Math.round((w0+d)/5)*5));
+    el.style.left=(k.x||0)+"px"; el.style.width=(k.w||190)+"px";
+  };
+  const los=()=>{
+    window.removeEventListener("pointermove",zieh);
+    window.removeEventListener("pointerup",los);
+    el.classList.remove("zieht");
+    save(); zeichneSpur();
+  };
+  window.addEventListener("pointermove",zieh);
+  window.addEventListener("pointerup",los);
+}
+
+/* Aufträge aus dem Pool hineinziehen */
+(function(){
+  const bahn=document.getElementById("adminBahn");
+  if(!bahn) return;
+  bahn.addEventListener("dragover",e=>{
+    if(!darfPlanen()) return;
+    const t=[...e.dataTransfer.types];
+    if(!t.includes("text/plain") && !t.includes("application/json")) return;
+    e.preventDefault(); e.dataTransfer.dropEffect="copy"; bahn.classList.add("dragover");
+  });
+  bahn.addEventListener("dragleave",e=>{ if(!bahn.contains(e.relatedTarget)) bahn.classList.remove("dragover"); });
+  bahn.addEventListener("drop",e=>{
+    bahn.classList.remove("dragover");
+    if(!darfPlanen()) return;
+    e.preventDefault();
+    let jid=e.dataTransfer.getData("text/plain");
+    if(!jid){
+      const raw=e.dataTransfer.getData("application/json");
+      try{ const r=JSON.parse(raw); if(r&&r.jobId) jid=r.jobId; }catch(_){}
+    }
+    const j=jid?jobById(jid):null; if(!j) return;
+    if(spurListe().some(k=>k.jobId===j.id)){ alert("Dieser Auftrag liegt schon auf der Spur."); return; }
+    const r=bahn.getBoundingClientRect();
+    const x=Math.max(0, Math.round((e.clientX-r.left+bahn.scrollLeft-60)/5)*5);
+    spurListe().push({id:uid(), jobId:j.id, x, w:190});
+    save(); zeichneSpur(); renderPool();
+  });
+  const ord=document.getElementById("spurAufraeumen");
+  if(ord) ord.onclick=()=>{
+    let x=10;
+    spurListe().forEach(k=>{ k.x=x; x+=(k.w||190)+8; });
+    save(); zeichneSpur();
+  };
+})();
+
+/* =========================================================
    Notizen und Mängel am Auftrag
    Eine Notiz hängt am Objekt, nicht am einzelnen Halbtag.
    Art "mangel" setzt ein rotes Zeichen in den Kalender,
@@ -4449,6 +4984,12 @@ async function listeFreigeben(){
 const notizenVon = j => (j && Array.isArray(j.notizen)) ? j.notizen : [];
 const offeneMaengel = jobId => notizenVon(jobById(jobId)).filter(n=>n.art==="mangel" && !n.erledigt).length;
 const notizAnzahl  = jobId => notizenVon(jobById(jobId)).length;
+/* "" = nichts, "notiz" = gelb, "mangel" = rot */
+function notizStufe(jobId){
+  const n=notizenVon(jobById(jobId));
+  if(!n.length) return "";
+  return n.some(x=>x.art==="mangel" && !x.erledigt) ? "mangel" : "notiz";
+}
 
 let jnJobId=null, jnArt="info";
 
@@ -4491,7 +5032,9 @@ function notizZeile(j,n,knapp){
   }
   if(n.art==="mangel" && n.erledigt){
     const auf=document.createElement("button"); auf.textContent="Doch nicht erledigt";
-    auf.onclick=()=>{ n.erledigt=false; n.erledigtVon=""; n.erledigtAm=""; save(); zeichneNotizen(); render(); };
+    auf.onclick=()=>{ n.erledigt=false; n.erledigtVon=""; n.erledigtAm="";
+      save(); zeichneNotizen(); render(); renderPool();
+      if(dlgJob.open) zeigeJobNotizen(jobEditId); };
     unten.appendChild(auf);
   }
   const weg=document.createElement("button"); weg.className="weg"; weg.textContent="Löschen";
@@ -4499,6 +5042,7 @@ function notizZeile(j,n,knapp){
     if(!confirm("Diese Notiz löschen?")) return;
     j.notizen=notizenVon(j).filter(x=>x!==n);
     save(); zeichneNotizen(); render(); renderPool();
+    if(dlgJob.open) zeigeJobNotizen(jobEditId);
   };
   unten.appendChild(weg);
   d.appendChild(unten);
@@ -4519,6 +5063,7 @@ function mangelAbhaken(j,n){
   const wer = team ? team.name : txt;
   n.erledigt=true; n.erledigtVon=wer; n.erledigtAm=new Date().toISOString();
   save(); zeichneNotizen(); render(); renderPool();
+  if(dlgJob.open) zeigeJobNotizen(jobEditId);
 }
 
 function zeichneNotizen(){
@@ -4533,6 +5078,31 @@ function zeichneNotizen(){
   liste.forEach(n=>box.appendChild(notizZeile(j,n)));
 }
 
+/* Dieselben Notizen auch im Auftragsfenster */
+function zeigeJobNotizen(jobId){
+  const box=document.getElementById("jbNotizen"); if(!box) return;
+  box.replaceChildren();
+  const j=jobId?jobById(jobId):null;
+  const liste=notizenVon(j).slice().sort((a,b)=>
+    (a.erledigt?1:0)-(b.erledigt?1:0) || String(b.am||"").localeCompare(String(a.am||"")));
+  document.getElementById("jbNzCount").textContent = liste.length ? `· ${liste.length}` : "";
+  const knopf=document.getElementById("jbNzOeffnen");
+  knopf.disabled=!jobId;
+  knopf.title = jobId ? "" : "Erst speichern, dann lassen sich Notizen führen.";
+  if(!liste.length){
+    const d=document.createElement("div"); d.className="leer";
+    d.textContent = jobId ? "Noch keine Notizen zu diesem Auftrag."
+                          : "Nach dem Speichern lassen sich hier Notizen und Mängel führen.";
+    box.appendChild(d); return;
+  }
+  liste.forEach(n=>box.appendChild(notizZeile(j,n)));
+}
+document.getElementById("jbNzOeffnen").onclick=()=>{
+  if(!jobEditId || jobIsNew) return;
+  dlgJob.close();
+  setTimeout(()=>openJobNotizen(jobEditId),80);
+};
+
 document.getElementById("jnAdd").onclick=()=>{
   const j=jobById(jnJobId); if(!j) return;
   const t=document.getElementById("jnText").value.trim();
@@ -4544,6 +5114,7 @@ document.getElementById("jnAdd").onclick=()=>{
   document.getElementById("jnText").value="";
   jnArt="info"; artWahlZeigen();
   save(); zeichneNotizen(); render(); renderPool();
+  if(dlgJob.open) zeigeJobNotizen(jobEditId);
 };
 
 /* Kleines Aufklappfenster an der Auftragskarte */
@@ -5472,6 +6043,7 @@ document.getElementById("btnSettings").onclick=()=>{
   try{ stApiKey.value=localStorage.getItem(API_KEY)||""; }catch(e){}
   stModel.value=(s.model||MODELL_STANDARD);
   stZweit.value=(s.zweitpool||"Irina");
+  stDritt.value=(s.drittpool||"Admin");
   stListePin.value="";
   document.getElementById("stListeHint").textContent = listeGesperrt()
     ? "Die Liste ist mit einem Passwort geschützt. Ein neues Passwort hier eintragen ersetzt das alte; das Wort „weg“ hebt den Schutz auf."
@@ -5531,6 +6103,7 @@ document.getElementById("stSave").onclick=async()=>{
   }
   Object.assign(state.settings,{company:stCompany.value.trim()||"Betrieb",amStart:stAmS.value,amEnd:stAmE.value,pmStart:stPmS.value,pmEnd:stPmE.value,
     zweitpool:(stZweit.value.trim()||"Irina"),
+    drittpool:(stDritt.value.trim()||"Admin"),
     model:(stModel.value.trim()||MODELL_STANDARD)});
   try{
     const k=stApiKey.value.trim();
@@ -6084,7 +6657,7 @@ async function monteurWeltStarten(){
 document.getElementById("mKonto").onclick=()=>dlgKonto.showModal();
 
 function rollenRechte(){
-  const nurPlaner=["btnNewJob","btnScan","btnKunden","btnTeams","btnData","btnIrinaSpalte"];
+  const nurPlaner=["btnNewJob","btnScan","btnKunden","btnTeams","btnData"];
   if(rolle==="monteur"){
     nurPlaner.forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display="none"; });
   }
