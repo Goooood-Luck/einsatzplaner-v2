@@ -979,6 +979,31 @@ body.alsMonteur #chZurueck{display:none}
   .mhalter .chatverlauf{max-height:none}
 }
 
+/* ---------- Überblick über alle Mängel ---------- */
+.ubliste{display:flex;flex-direction:column;gap:7px;max-height:58vh;overflow:auto;padding-right:3px}
+.ubzeile{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--panel-2);border:1px solid var(--line-soft);border-radius:15px;
+  padding:10px 13px;border-left:3px solid var(--line);
+}
+.ubzeile.mangel{border-left-color:#E03B3B}
+.ubzeile.notiz{border-left-color:#FFC04D}
+.ubzeile.erledigt{opacity:.6;border-left-color:#7FD39B}
+.ubzeile .obj{flex:0 0 32%;min-width:0;cursor:pointer}
+.ubzeile .obj b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ubzeile .obj:hover b{color:var(--focus)}
+.ubzeile .obj small{display:block;color:var(--ink-faint);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ubzeile .txt{flex:1;min-width:0;font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.ubzeile .txt .wer{display:block;color:var(--ink-faint);font-size:10.5px;margin-top:3px}
+.ubzeile .tat{flex:0 0 auto;display:flex;gap:6px;align-items:center}
+.ubzeile .tat button{
+  background:rgba(255,255,255,.06);border:1px solid var(--line-soft);border-radius:var(--pille);
+  color:var(--ink-dim);font-size:11px;padding:5px 12px;cursor:pointer;white-space:nowrap;
+}
+.ubzeile .tat button:hover{color:var(--ink);border-color:var(--focus)}
+.ubzeile.mangel .tat button.ok{color:#9BDCA0;border-color:rgba(127,211,155,.4)}
+.ubliste .leer{color:var(--ink-faint);font-size:12.5px;padding:24px;text-align:center}
+
 /* ---------- Notizen und Mängel ---------- */
 .notizen{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
 .notizen .leer{color:var(--ink-faint);font-size:12.5px;padding:10px 0}
@@ -1042,15 +1067,16 @@ table.month .bar .bnr{font-size:9.5px;padding:0 4px;margin-right:4px}
 .ecke{position:relative}
 .ecke::after{
   content:"";position:absolute;top:0;right:0;width:0;height:0;pointer-events:none;
-  border-style:solid;border-width:0 26px 26px 0;
+  border-style:solid;border-width:0 34px 34px 0;
   border-color:transparent var(--eckfarbe) transparent transparent;
   border-top-right-radius:14px;
 }
 .ecke.notiz{--eckfarbe:#FFC04D}
 .ecke.mangel{--eckfarbe:#E03B3B}
-.bar.ecke::after{border-width:0 15px 15px 0;border-top-right-radius:var(--pille)}
-table.month .bar.ecke::after{border-width:0 11px 11px 0}
-.spurkarte.ecke::after{border-width:0 18px 18px 0;border-top-right-radius:14px}
+.bar{overflow:hidden}
+.bar.ecke::after{border-width:0 30px 30px 0;border-top-right-radius:var(--pille)}
+table.month .bar.ecke::after{border-width:0 19px 19px 0}
+.spurkarte.ecke::after{border-width:0 26px 26px 0;border-top-right-radius:14px}
 .nzblase{
   position:fixed;z-index:120;max-width:380px;min-width:240px;max-height:52vh;overflow:auto;
   background:rgba(18,24,33,.97);border:1px solid var(--line);border-radius:15px;
@@ -1283,6 +1309,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <button class="ghost" id="zoomIn" title="Spalten breiter">+</button>
   <button class="ghost nurPhone" id="btnMenu" aria-label="Menü">☰</button>
   <button class="ghost" id="btnKonto">Konto</button>
+  <button class="ghost glocke" id="btnMaengel" title="Alle Mängel und Notizen auf einen Blick">Mängel</button>
   <button class="ghost" id="btnSpalten" title="Welche Auftragsspalten sollen rechts stehen?">Spalten</button>
   <button class="ghost glocke" id="btnChat" title="Nachrichten an die Teams">Chat</button>
   <button class="ghost" id="btnListe" title="Auftragsliste mit Rechnungen und Zahlungseingängen">Liste</button>
@@ -1786,6 +1813,25 @@ dialog.chatfenster{width:min(1120px,96vw)}
   </div>
   <div class="mhalter" id="mHalter"></div>
 </div>
+
+<!-- Alle Mängel und Notizen über alle Objekte -->
+<dialog id="dlgUeberblick" class="weit">
+  <h3 id="ubTitel">Mängel und Notizen</h3>
+  <div class="dlg-body">
+    <div class="jahrkopf">
+      <div class="umschalter" role="group" aria-label="Auswahl">
+        <button id="ubOffen"  aria-pressed="true">offene Mängel</button>
+        <button id="ubAlleM"  aria-pressed="false">alle Mängel</button>
+        <button id="ubNotiz"  aria-pressed="false">Notizen</button>
+      </div>
+      <input type="search" id="ubSuche" placeholder="Objekt oder Text …"
+             style="background:rgba(0,0,0,.28);border:1px solid var(--line-soft);border-radius:999px;padding:7px 14px;color:var(--ink);font-size:12.5px;min-width:200px">
+      <span class="hint" id="ubZahl" style="margin:0;margin-left:auto"></span>
+    </div>
+    <div class="ubliste" id="ubListe"></div>
+  </div>
+  <div class="dlg-foot"><button class="btn primary" data-close>Fertig</button></div>
+</dialog>
 
 <!-- Notizen und Mängel zu einem Auftrag -->
 <dialog id="dlgJobNotiz">
@@ -2373,6 +2419,7 @@ function render(){
   else renderMap();
   renderPool();
   zeichneSpur();
+  maengelZaehler();
 }
 
 function renderPeriodLabel(){
@@ -5116,6 +5163,100 @@ document.getElementById("jnAdd").onclick=()=>{
   save(); zeichneNotizen(); render(); renderPool();
   if(dlgJob.open) zeigeJobNotizen(jobEditId);
 };
+
+/* ---- Alle Mängel und Notizen über alle Objekte ---- */
+let ubModus="offen", ubSuche="";
+
+function alleNotizen(){
+  const raus=[];
+  state.jobs.forEach(j=>notizenVon(j).forEach(n=>raus.push({job:j,n})));
+  return raus;
+}
+function ubGefiltert(){
+  const t=ubSuche.trim().toLowerCase();
+  return alleNotizen().filter(({job,n})=>{
+    if(ubModus==="offen"  && !(n.art==="mangel" && !n.erledigt)) return false;
+    if(ubModus==="mangel" && n.art!=="mangel") return false;
+    if(ubModus==="notiz"  && n.art!=="info")   return false;
+    if(!t) return true;
+    return ((job.name||"")+" "+(job.address||"")+" "+nrText(job.nr)+" "+(n.text||"")).toLowerCase().includes(t);
+  }).sort((a,b)=>
+    (a.n.erledigt?1:0)-(b.n.erledigt?1:0) ||
+    String(b.n.am||"").localeCompare(String(a.n.am||"")));
+}
+
+function openUeberblick(modus){
+  ubModus=modus||"offen"; ubSuche="";
+  document.getElementById("ubSuche").value="";
+  zeichneUeberblick();
+  dlgUeberblick.showModal();
+}
+
+function zeichneUeberblick(){
+  ["ubOffen","ubAlleM","ubNotiz"].forEach((id,i)=>{
+    const m=["offen","mangel","notiz"][i];
+    document.getElementById(id).setAttribute("aria-pressed", ubModus===m?"true":"false");
+  });
+  const liste=ubGefiltert();
+  const offen=alleNotizen().filter(x=>x.n.art==="mangel" && !x.n.erledigt).length;
+  document.getElementById("ubTitel").textContent =
+    offen ? `Mängel und Notizen · ${offen} offen` : "Mängel und Notizen";
+  document.getElementById("ubZahl").textContent =
+    `${liste.length} ${liste.length===1?"Eintrag":"Einträge"}`;
+
+  const box=document.getElementById("ubListe"); box.replaceChildren();
+  if(!liste.length){
+    const d=document.createElement("div"); d.className="leer";
+    d.textContent = ubModus==="offen"
+      ? "Kein offener Mangel. Alles abgearbeitet."
+      : "Nichts gefunden.";
+    box.appendChild(d); return;
+  }
+  liste.forEach(({job,n})=>{
+    const z=document.createElement("div");
+    z.className="ubzeile "+(n.art==="mangel"?"mangel":"notiz")+(n.erledigt?" erledigt":"");
+    const obj=document.createElement("div"); obj.className="obj";
+    obj.innerHTML=`<b><span class="aufnr">${nrText(job.nr)}</span> ${esc(job.name)}</b>
+      <small>${esc(job.address||"keine Adresse")}</small>`;
+    obj.title="Auftrag öffnen";
+    obj.onclick=()=>{ dlgUeberblick.close(); setTimeout(()=>openJob(job.id),80); };
+
+    const txt=document.createElement("div"); txt.className="txt";
+    txt.innerHTML=`${esc(n.text)}
+      <span class="wer">${n.art==="mangel"?"Mangel":"Notiz"}${n.von?" · "+esc(n.von):""}${n.am?" · "+new Date(n.am).toLocaleDateString("de-DE"):""}${
+        n.erledigt?` · ✓ erledigt von ${esc(n.erledigtVon||"–")}`:""}</span>`;
+
+    const tat=document.createElement("div"); tat.className="tat";
+    if(n.art==="mangel" && !n.erledigt){
+      const ok=document.createElement("button"); ok.className="ok"; ok.textContent="erledigt";
+      ok.onclick=()=>{ mangelAbhaken(job,n); zeichneUeberblick(); };
+      tat.appendChild(ok);
+    }
+    const auf=document.createElement("button"); auf.textContent="Notizen";
+    auf.onclick=()=>{ dlgUeberblick.close(); setTimeout(()=>openJobNotizen(job.id),80); };
+    tat.appendChild(auf);
+
+    z.append(obj,txt,tat); box.appendChild(z);
+  });
+}
+
+document.getElementById("ubOffen").onclick=()=>{ubModus="offen";zeichneUeberblick();};
+document.getElementById("ubAlleM").onclick=()=>{ubModus="mangel";zeichneUeberblick();};
+document.getElementById("ubNotiz").onclick=()=>{ubModus="notiz";zeichneUeberblick();};
+document.getElementById("ubSuche").oninput=e=>{ubSuche=e.target.value;zeichneUeberblick();};
+document.getElementById("btnMaengel").onclick=()=>openUeberblick("offen");
+
+/* Zähler am Knopf */
+function maengelZaehler(){
+  const k=document.getElementById("btnMaengel"); if(!k) return;
+  const n=alleNotizen().filter(x=>x.n.art==="mangel" && !x.n.erledigt).length;
+  let p=k.querySelector(".punkt");
+  if(n>0){
+    if(!p){ p=document.createElement("span"); p.className="punkt"; k.appendChild(p); }
+    p.textContent=n>99?"99+":n;
+  }else if(p) p.remove();
+  if(dlgUeberblick.open) zeichneUeberblick();
+}
 
 /* Kleines Aufklappfenster an der Auftragskarte */
 let nzBlase=null;
