@@ -380,7 +380,15 @@ dialog h3{
   font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:600;letter-spacing:.02em;
 }
 .dlg-body{padding:16px 18px;max-height:72vh;overflow:auto}
-.dlg-foot{padding:13px 20px 17px;border-top:1px solid var(--line-soft);display:flex;gap:8px;justify-content:flex-end}
+.dlg-foot{
+  padding:13px 20px 17px;border-top:1px solid var(--line-soft);
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:flex-end;
+}
+/* Beschriftungen bleiben einzeilig – lieber bricht die Reihe um,
+   als dass ein Knopf aus dem Fenster rutscht */
+.dlg-foot .btn{white-space:nowrap}
+/* Viele Knöpfe: etwas schmaler, damit möglichst wenig umbricht */
+.dlg-foot.voll .btn{padding-left:14px;padding-right:14px;font-size:13px}
 .field{margin-bottom:13px}
 .field label{display:block;font-size:11.5px;color:var(--ink-dim);margin-bottom:5px}
 .field input,.field select,.field textarea{
@@ -1109,8 +1117,10 @@ table.month .bar .bnr{font-size:9.5px;padding:0 4px;margin-right:4px}
 table.month .bar.ecke{padding-right:16px}
 table.month .bar.ecke::after{width:13px}
 
-/* Spurkarte behält die Ecke */
-.spurkarte.ecke{position:relative}
+/* Spurkarte behält die Ecke.
+   Kein position:relative hier – die Karte ist absolut in der Bahn
+   positioniert, und relative würde sie zurück in den Textfluss holen.
+   Sie rutschte dann unter die Nachbarkarte und war kaum zu sehen. */
 .spurkarte.ecke::after{
   content:"";position:absolute;top:0;right:0;width:0;height:0;pointer-events:none;
   border-style:solid;border-width:0 26px 26px 0;
@@ -1252,6 +1262,10 @@ dialog.chatfenster{width:min(1120px,96vw)}
     var(--bg);
 }
 .login.weg{display:none}
+.lgfuss{margin:13px 0 0;text-align:center}
+.lgfuss .linky{font-size:12.5px;color:var(--ink-dim)}
+.lgfuss .linky:hover{color:var(--ink)}
+.loginbox.laedt label,.loginbox.laedt input{opacity:.45;pointer-events:none}
 .loginbox{
   width:min(380px,100%);border-radius:26px;padding:28px 28px 26px;
   background:linear-gradient(180deg,rgba(28,34,45,.9),rgba(16,21,29,.93));
@@ -1323,6 +1337,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <input type="password" id="lgPass" autocomplete="current-password" required>
     <p class="lgmsg" id="lgMsg"></p>
     <button class="btn primary" type="submit" id="lgGo">Anmelden</button>
+    <p class="lgfuss"><button type="button" class="linky" id="lgVergessen">Passwort vergessen?</button></p>
   </form>
 </div>
 
@@ -1343,7 +1358,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <div class="spacer"></div>
   <span id="syncState" class="sync">Verbinden …</span>
   <div class="searchbox">
-    <input type="search" id="qSearch" placeholder="Objekt oder Straße suchen …" autocomplete="off">
+    <input type="search" id="qSearch" placeholder="Nummer, Objekt oder Straße …" autocomplete="off">
   </div>
   <button class="ghost" id="zoomOut" title="Spalten schmaler">–</button>
   <button class="ghost" id="zoomIn" title="Spalten breiter">+</button>
@@ -1499,12 +1514,12 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <p class="hint" id="assignHint"></p>
 
   </div>
-  <div class="dlg-foot">
+  <div class="dlg-foot voll">
     <button class="btn warn" id="asDelete" style="margin-right:auto">Aus Kalender nehmen</button>
     <button class="btn" id="asNotizen">Notizen</button>
     <button class="btn warn" id="asUnlock" hidden>Datum trotzdem ändern</button>
     <button class="btn" id="asNavi">Navigieren</button>
-    <button class="btn" id="asMap">Auf Karte zeigen</button>
+    <button class="btn" id="asMap">Auf der Karte</button>
     <button class="btn" data-close>Abbrechen</button>
     <button class="btn primary" id="asSave">Eintragen</button>
   </div>
@@ -1679,6 +1694,13 @@ dialog.chatfenster{width:min(1120px,96vw)}
       <div class="pruefzeile"><button type="button" class="btn" id="koSave">Passwort ändern</button><span class="hint" id="koMsg" style="margin:0"></span></div>
     </div>
     <p class="hint" id="koKeinPw" hidden>Passwörter vergibt der Chef. Wenn du ein neues brauchst, sag ihm Bescheid.</p>
+
+    <div id="koMailBox">
+      <h4 style="margin:22px 0 10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600">E-Mail für vergessene Passwörter</h4>
+      <p class="hint" id="koMailStand" style="margin:0 0 11px"></p>
+      <div class="field"><label for="koMail">E-Mail-Adresse</label><input type="email" id="koMail" autocomplete="email" placeholder="name@firma.de"></div>
+      <div class="pruefzeile"><button type="button" class="btn" id="koMailSave">Adresse hinterlegen</button><span class="hint" id="koMailMsg" style="margin:0"></span></div>
+    </div>
 
     <div id="koAdmin" hidden>
       <h4 style="margin:22px 0 10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600">Zugänge</h4>
@@ -1930,6 +1952,47 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <button class="btn" id="ztLeeren" style="margin-right:auto">Tag leeren</button>
     <button class="btn" data-close>Abbrechen</button>
     <button class="btn primary" id="ztSpeichern">Übernehmen</button>
+  </div>
+</dialog>
+
+<dialog id="dlgReset">
+  <h3>Passwort vergessen</h3>
+  <div class="dlg-body">
+    <p class="hint" style="margin-top:0">KUBIK schickt einen Link zum Zurücksetzen – aber nur an eine
+      echte E-Mail-Adresse. Kurze Benutzernamen wie <b>admin</b> haben kein Postfach dahinter.</p>
+    <div class="field">
+      <label for="rsMail">E-Mail-Adresse des Zugangs</label>
+      <input type="email" id="rsMail" autocomplete="email" placeholder="name@firma.de">
+    </div>
+    <p class="hint" id="rsMsg" style="margin:0"></p>
+    <div id="rsOhne" hidden>
+      <hr style="border:0;border-top:1px solid var(--line);margin:16px 0 13px">
+      <p class="hint" style="margin:0 0 7px"><b>Für diesen Zugang ist keine E-Mail hinterlegt.</b> Zwei Wege:</p>
+      <ol class="hint" style="margin:0;padding-left:18px;line-height:1.75">
+        <li>Der Chef setzt das Passwort in der Supabase-Oberfläche neu:
+          <b>Authentication → Users</b>, den Benutzer anklicken, <b>Reset password</b>.</li>
+        <li>Damit es beim nächsten Mal von selbst geht: nach dem Anmelden unter
+          <b>Konto</b> eine echte E-Mail-Adresse hinterlegen.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" data-close>Schließen</button>
+    <button class="btn primary" id="rsSenden">Link senden</button>
+  </div>
+</dialog>
+
+<dialog id="dlgNeuesPw">
+  <h3>Neues Passwort setzen</h3>
+  <div class="dlg-body">
+    <p class="hint" style="margin-top:0">Du bist über den Link aus der E-Mail hier gelandet.
+      Vergib jetzt ein neues Passwort – danach bist du angemeldet.</p>
+    <div class="field"><label for="npNeu">Neues Passwort</label><input type="password" id="npNeu" autocomplete="new-password" placeholder="mindestens 8 Zeichen"></div>
+    <div class="field"><label for="npNeu2">Noch einmal</label><input type="password" id="npNeu2" autocomplete="new-password"></div>
+    <p class="hint" id="npMsg" style="margin:0"></p>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn primary" id="npSpeichern">Passwort setzen</button>
   </div>
 </dialog>
 
@@ -2690,17 +2753,25 @@ async function renderSearch(){
   const q=suchText.trim().toLowerCase();
   const wrap=document.createElement("div"); wrap.className="srch";
 
-  if(q.length<2){
+  /* Eine einzelne Ziffer reicht, wenn nach einer Auftragsnummer gesucht wird */
+  if(q.length<2 && !/^\d$/.test(q)){
     wrap.innerHTML=`<h2>Objekte durchsuchen</h2>
-      <div class="none">Straße, Ort oder Auftragsbezeichnung eingeben – mindestens zwei Zeichen.<br>
-      Gesucht wird in Bezeichnung, Adresse, Notiz und Kundendaten. Die Suche findet auch alte Aufträge, ohne dass du im Kalender zurückblättern musst, und zeigt die zugehörigen Fotos.</div>`;
+      <div class="none">Auftragsnummer, Straße, Ort oder Bezeichnung eingeben.<br>
+      Die Nummer geht am schnellsten: <b>0027</b> oder einfach <b>27</b> führt direkt zu diesem Auftrag.<br>
+      Sonst wird in Bezeichnung, Adresse, Notiz und Kundendaten gesucht. Die Suche findet auch alte Aufträge, ohne dass du im Kalender zurückblättern musst, und zeigt die zugehörigen Fotos.</div>`;
     stage.replaceChildren(wrap); return;
   }
 
+  /* Reine Ziffern deuten auf eine Auftragsnummer – "0027", "27" und "#27" meinen dasselbe */
+  const nurZiffern=q.replace(/^#/,"").trim();
+  const gesuchteNr = /^\d{1,6}$/.test(nurZiffern) ? parseInt(nurZiffern,10) : null;
+
   const woerter=q.split(/\s+/).filter(Boolean);
   const treffer=state.jobs.filter(j=>{
+    if(gesuchteNr!==null && Number(j.nr)===gesuchteNr) return true;
     const k=kundeById(j.customerId);
-    const heu=((j.name||"")+" "+(j.address||"")+" "+(j.contact||"")+" "+(j.note||"")+" "+
+    const heu=((j.nr?nrText(j.nr)+" "+j.nr:"")+" "+
+               (j.name||"")+" "+(j.address||"")+" "+(j.contact||"")+" "+(j.note||"")+" "+
                (k?(k.company+" "+(k.contact||"")+" "+(k.address||"")):"")).toLowerCase();
     return woerter.every(w=>heu.includes(w));
   });
@@ -2710,15 +2781,18 @@ async function renderSearch(){
 
   if(!treffer.length){
     const d=document.createElement("div"); d.className="none";
-    d.textContent="Nichts gefunden. Versuche einen kürzeren Suchbegriff, zum Beispiel nur den Straßennamen.";
+    d.textContent = gesuchteNr!==null
+      ? `Keinen Auftrag mit der Nummer ${nrText(gesuchteNr)} gefunden.`
+      : "Nichts gefunden. Versuche einen kürzeren Suchbegriff, zum Beispiel nur den Straßennamen.";
     wrap.appendChild(d); stage.replaceChildren(wrap); return;
   }
 
   // Treffer mit jüngstem Einsatz zuerst
   const mitZeit=treffer.map(j=>{
     const bl=einsaetzeZu(j.id);
-    return {job:j, blocks:bl, letzte: bl.length?bl[bl.length-1].last[0]:""};
-  }).sort((a,b)=>b.letzte.localeCompare(a.letzte));
+    return {job:j, blocks:bl, letzte: bl.length?bl[bl.length-1].last[0]:"",
+            nrTreffer: (gesuchteNr!==null && Number(j.nr)===gesuchteNr) ? 1 : 0};
+  }).sort((a,b)=> (b.nrTreffer-a.nrTreffer) || b.letzte.localeCompare(a.letzte));
 
   freiURLs();
   for(const {job,blocks} of mitZeit){
@@ -7198,10 +7272,84 @@ const mailVon = (u,i=0) => u.includes("@") ? u.trim() : u.trim().toLowerCase()+"
 const nameVon = m => String(m||"").split("@")[0];
 
 function zeigeLogin(txt,art){
+  ladeHinweis("");
   document.getElementById("login").classList.remove("weg");
   const m=document.getElementById("lgMsg");
   m.textContent=txt||""; m.className="lgmsg"+(art?" "+art:"");
 }
+
+/* =========================================================
+   Vergessenes Passwort
+   Die Zugänge heißen admin@kubik.local und ähnlich – dahinter
+   steckt kein Postfach. Ein Link lässt sich nur an eine echte
+   Adresse schicken, darum die Unterscheidung hier.
+   ========================================================= */
+const echteMail = m => {
+  const t=String(m||"").trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/.test(t)) return false;
+  return !MAIL_DOMAINS.some(d=>t.endsWith("@"+d));
+};
+
+document.getElementById("lgVergessen").onclick=()=>{
+  const eingabe=document.getElementById("lgUser").value.trim();
+  const feld=document.getElementById("rsMail");
+  feld.value = eingabe.includes("@") ? eingabe : "";
+  document.getElementById("rsMsg").textContent="";
+  document.getElementById("rsMsg").className="hint";
+  document.getElementById("rsOhne").hidden = echteMail(eingabe);
+  dlgReset.showModal();
+  setTimeout(()=>feld.focus(),40);
+};
+
+document.getElementById("rsSenden").onclick=async()=>{
+  const m=document.getElementById("rsMsg");
+  const mail=document.getElementById("rsMail").value.trim();
+  if(!echteMail(mail)){
+    m.className="hint geo-no";
+    m.textContent="Das ist keine Adresse, an die eine E-Mail ankommen kann.";
+    document.getElementById("rsOhne").hidden=false;
+    return;
+  }
+  m.className="hint"; m.textContent="Wird gesendet …";
+  const ziel=location.href.split("#")[0];
+  const { error } = await sb.auth.resetPasswordForEmail(mail,{ redirectTo:ziel });
+  if(error){
+    m.className="hint geo-no";
+    m.textContent="Konnte nicht gesendet werden: "+error.message;
+    return;
+  }
+  m.className="hint geo-ok";
+  m.textContent="Falls es diesen Zugang gibt, ist die E-Mail unterwegs. Der Link führt zurück hierher.";
+  document.getElementById("rsOhne").hidden=true;
+};
+
+/* Rückkehr über den Link aus der E-Mail */
+let imZuruecksetzen=false;
+function neuesPasswortFenster(){
+  imZuruecksetzen=true;
+  document.getElementById("npNeu").value="";
+  document.getElementById("npNeu2").value="";
+  document.getElementById("npMsg").textContent="";
+  if(!dlgNeuesPw.open) dlgNeuesPw.showModal();
+}
+document.getElementById("npSpeichern").onclick=async()=>{
+  const a=document.getElementById("npNeu").value, b=document.getElementById("npNeu2").value;
+  const m=document.getElementById("npMsg");
+  if(a.length<8){ m.className="hint geo-no"; m.textContent="Mindestens 8 Zeichen."; return; }
+  if(a!==b){ m.className="hint geo-no"; m.textContent="Die beiden Eingaben stimmen nicht überein."; return; }
+  m.className="hint"; m.textContent="Wird gesetzt …";
+  const { error } = await sb.auth.updateUser({ password:a });
+  if(error){ m.className="hint geo-no"; m.textContent="Fehlgeschlagen: "+error.message; return; }
+  m.className="hint geo-ok"; m.textContent="Passwort gesetzt.";
+  history.replaceState(null,"",location.pathname+location.search);
+  imZuruecksetzen=false;
+  setTimeout(async()=>{
+    dlgNeuesPw.close();
+    const { data } = await sb.auth.getSession();
+    if(data && data.session) await nachAnmeldung(data.session.user);
+    else zeigeLogin("Passwort gesetzt. Jetzt bitte damit anmelden.","geo-ok");
+  },700);
+};
 
 async function anmelden(user,pass){
   const m=document.getElementById("lgMsg");
@@ -7240,12 +7388,30 @@ async function nachAnmeldung(user){
     if(data&&data.name) meinName=data.name;
   }catch(e){ rolle="kunde"; }
 
-  document.getElementById("login").classList.add("weg");
   document.body.classList.toggle("alsKunde",istKunde());
 
-  if(istKunde()) await kundenWeltStarten();
-  else if(rolle==="monteur") await monteurWeltStarten();
-  else { await planungStarten(); await chatStarten(); }
+  /* Das Anmeldefenster bleibt stehen, bis die echten Daten auf dem
+     Schirm sind – sonst blitzt für einen Moment die Beispielplanung auf. */
+  ladeHinweis("Planung wird geladen …");
+  try{
+    if(istKunde()) await kundenWeltStarten();
+    else if(rolle==="monteur") await monteurWeltStarten();
+    else { await planungStarten(); await chatStarten(); }
+  } finally {
+    ladeHinweis("");
+    document.getElementById("login").classList.add("weg");
+  }
+}
+
+/* Beschriftung im Anmeldefenster, solange geladen wird */
+function ladeHinweis(txt){
+  const f=document.getElementById("loginForm");
+  const g=document.getElementById("lgGo");
+  const m=document.getElementById("lgMsg");
+  if(!f) return;
+  f.classList.toggle("laedt", !!txt);
+  if(g){ g.disabled=!!txt; g.textContent = txt ? "Einen Moment …" : "Anmelden"; }
+  if(m && txt){ m.textContent=txt; m.className="lgmsg"; }
 }
 
 async function planungStarten(){
@@ -7319,6 +7485,20 @@ document.getElementById("btnKonto").onclick=async()=>{
   document.getElementById("koNeu").value=""; document.getElementById("koNeu2").value="";
   document.getElementById("koMsg").textContent="";
   document.getElementById("koAdmin").hidden = rolle!=="admin";
+  const stand=document.getElementById("koMailStand");
+  const feld=document.getElementById("koMail");
+  document.getElementById("koMailMsg").textContent="";
+  if(echteMail(meineMail)){
+    stand.className="hint geo-ok";
+    stand.textContent=`Hinterlegt ist ${meineMail}. Ein vergessenes Passwort kannst du dir dorthin schicken lassen.`;
+    feld.value=meineMail;
+  }else{
+    stand.className="hint";
+    stand.textContent=`Dein Zugang heißt ${meineMail} – dahinter steckt kein Postfach. `
+      + "Hinterlege eine echte Adresse, dann kannst du ein vergessenes Passwort selbst zurücksetzen. "
+      + "Angemeldet wird sich danach mit dieser Adresse statt mit dem kurzen Namen.";
+    feld.value="";
+  }
   if(rolle==="admin") await zugaengeLaden();
   document.getElementById("dlgKonto").showModal();
 };
@@ -7333,6 +7513,20 @@ document.getElementById("koSave").onclick=async()=>{
   m.className="hint geo-ok"; m.textContent="Passwort geändert. Es gilt ab sofort.";
   document.getElementById("koNeu").value=""; document.getElementById("koNeu2").value="";
 };
+document.getElementById("koMailSave").onclick=async()=>{
+  const m=document.getElementById("koMailMsg");
+  const mail=document.getElementById("koMail").value.trim();
+  if(!echteMail(mail)){ m.className="hint geo-no"; m.textContent="Bitte eine richtige E-Mail-Adresse."; return; }
+  if(mail.toLowerCase()===String(meineMail).toLowerCase()){
+    m.className="hint"; m.textContent="Diese Adresse ist schon hinterlegt."; return;
+  }
+  m.className="hint"; m.textContent="Wird hinterlegt …";
+  const { error } = await sb.auth.updateUser({ email:mail });
+  if(error){ m.className="hint geo-no"; m.textContent="Fehlgeschlagen: "+error.message; return; }
+  m.className="hint geo-ok";
+  m.textContent="Fast fertig: In dieser E-Mail steht ein Bestätigungslink. Erst nach dem Klick gilt die neue Adresse.";
+};
+
 document.getElementById("koLogout").onclick=async()=>{
   const b=document.getElementById("koLogout");
   b.disabled=true; b.textContent="Wird abgemeldet …";
@@ -7410,6 +7604,17 @@ async function zugaengeLaden(){
     return;
   }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  /* Abgesichert: fehlt die Funktion, startet KUBIK trotzdem */
+  try{
+    if(typeof sb.auth.onAuthStateChange==="function"){
+      sb.auth.onAuthStateChange((ereignis)=>{
+        if(ereignis==="PASSWORD_RECOVERY") neuesPasswortFenster();
+      });
+    }
+  }catch(e){}
+  /* Der Link aus der E-Mail bringt ein #type=recovery mit */
+  const ausMail=/type=recovery/.test(location.hash||"");
+  if(ausMail){ zeigeLogin(""); neuesPasswortFenster(); return; }
   const { data } = await sb.auth.getSession();
   if(data && data.session) await nachAnmeldung(data.session.user);
   else zeigeLogin("");
