@@ -71,7 +71,18 @@ header{
   font-family:"Barlow Condensed",sans-serif;font-size:15px;letter-spacing:.03em;
   color:var(--ink-dim);
 }
-.views button[aria-pressed="true"]{background:rgba(255,255,255,.93);color:#0B0F16;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.views button{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.93);color:#0B0F16;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.views button i{font-style:normal;font-size:11px;opacity:.6}
+.views button:hover{background:#fff}
+header button[hidden]{display:none!important}
+.hakenliste{display:flex;flex-direction:column;gap:2px}
+.hakenliste label{
+  display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--radius);
+  font-size:13.5px;cursor:pointer;border:1px solid transparent;
+}
+.hakenliste label:hover{background:var(--panel-2);border-color:var(--line-soft)}
+.hakenliste input{width:16px;height:16px;accent-color:var(--focus)}
+.hakenliste .wo{margin-left:auto;font-size:11px;color:var(--ink-faint)}
 
 .navdate{display:flex;align-items:center;gap:8px}
 .navdate .label{
@@ -808,6 +819,16 @@ table.jahr thead th.monatssumme{color:var(--focus);font-weight:600;text-align:ce
 .zelle input::-webkit-outer-spin-button,.zelle input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .zelle input:focus{outline:2px solid var(--focus);outline-offset:-2px;background:rgba(127,212,255,.12);border-radius:4px}
 .zelle input.hat{font-weight:650}
+.zelle input.auszeit{color:#9BD7FF}
+.zelle .uhr{
+  position:absolute;left:1px;bottom:0;font-size:8px;line-height:1;
+  color:#7FD4FF;opacity:.85;pointer-events:none;
+}
+.zeitergebnis{
+  display:flex;align-items:center;min-height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2);
+  font-family:"Barlow Condensed",sans-serif;font-size:19px;letter-spacing:.02em;
+}
 .zelle .nz{
   position:absolute;right:1px;top:2px;width:15px;height:15px;border:0;border-radius:4px;
   background:none;color:rgba(238,243,250,.22);font-size:9px;line-height:15px;padding:0;cursor:pointer;
@@ -832,11 +853,7 @@ table.jahr thead th.monatssumme{color:var(--focus);font-weight:600;text-align:ce
   .views button{padding:5px 11px;font-size:14px}
   .navdate .label{min-width:0}
 }
-/* Ab hier wandern die selteneren Knöpfe ins Menü, damit die Leiste einzeilig bleibt */
-@media (min-width:761px) and (max-width:2100px){
-  #btnKunden,#btnTeams,#btnSettings,#btnData{display:none}
-  #btnMenu.nurPhone{display:block}
-}
+/* Was nicht mehr in eine Zeile passt, wandert automatisch ins Menü (siehe leiste.js-Teil) */
 @media (min-width:761px) and (max-width:1560px){
   header{gap:5px;padding:9px}
   .brand b{font-size:19px}
@@ -1312,11 +1329,8 @@ dialog.chatfenster{width:min(1120px,96vw)}
 <header>
   <div class="brand"><b>KUBIK</b><span id="companyName">Elektro Meisterbetrieb</span></div>
 
-  <div class="views" role="group" aria-label="Ansicht">
-    <button data-view="now">Jetzt</button>
-    <button data-view="week">Woche</button>
-    <button data-view="month">Monat</button>
-    <button data-view="map">Karte</button>
+  <div class="views">
+    <button id="btnAnsicht" aria-haspopup="true" title="Ansicht wählen"><span id="ansichtName">Monat</span><i>▾</i></button>
   </div>
 
   <div class="navdate">
@@ -1333,7 +1347,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
   </div>
   <button class="ghost" id="zoomOut" title="Spalten schmaler">–</button>
   <button class="ghost" id="zoomIn" title="Spalten breiter">+</button>
-  <button class="ghost nurPhone" id="btnMenu" aria-label="Menü">☰</button>
+  <button class="ghost" id="btnMenu" aria-label="Menü" title="Menü · hier lässt sich auch die Leiste einrichten">☰</button>
   <button class="ghost" id="btnKonto">Konto</button>
   <button class="ghost glocke" id="btnMaengel" title="Alle Mängel und Notizen auf einen Blick">Mängel</button>
   <button class="ghost" id="btnSpalten" title="Welche Auftragsspalten sollen rechts stehen?">Spalten</button>
@@ -1401,6 +1415,9 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <h3>Menü</h3>
   <div class="dlg-body">
     <div class="menuliste">
+      <button type="button" data-m="leiste">Leiste einrichten – welche Knöpfe oben stehen</button>
+      <button type="button" data-m="maengel">Mängel und Notizen</button>
+      <button type="button" data-m="spalten">Auftragsspalten</button>
       <button type="button" data-m="kunden">Kunden</button>
       <button type="button" data-m="teams">Teams</button>
       <button type="button" data-m="chat">Nachrichten</button>
@@ -1768,6 +1785,10 @@ dialog.chatfenster{width:min(1120px,96vw)}
       <div class="field"><label for="stPmE">Nachmittag bis</label><input type="time" id="stPmE"></div>
     </div>
     <p class="hint">Diese Zeiten bestimmen, was in der Jetzt-Ansicht als „seit“ und „noch“ gerechnet wird.</p>
+    <div class="two">
+      <div class="field"><label for="stPause">Mittagspause in Minuten</label><input type="number" id="stPause" min="0" max="240" step="5"></div>
+      <div class="field"><label>&nbsp;</label><p class="hint" style="margin:0">Wird bei den Arbeitsstunden automatisch abgezogen, sobald Beginn und Ende eingetragen sind.</p></div>
+    </div>
     <hr style="border:0;border-top:1px solid var(--line);margin:20px 0 16px">
     <h4 style="margin:0 0 11px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:.02em">Formulare automatisch auslesen</h4>
     <div class="anleitung">
@@ -1875,6 +1896,41 @@ dialog.chatfenster{width:min(1120px,96vw)}
     </div>
   </div>
   <div class="dlg-foot"><button class="btn primary" data-close>Fertig</button></div>
+</dialog>
+
+<dialog id="dlgLeiste">
+  <h3>Knöpfe in der Kopfleiste</h3>
+  <div class="dlg-body">
+    <p class="hint">Angehakt heißt: der Knopf steht oben in der Leiste. Alles andere bleibt über das Menü ☰ erreichbar.
+      Die Auswahl gilt nur für dich – jeder richtet sich die Leiste so ein, wie er sie braucht.</p>
+    <div class="hakenliste" id="leisteListe"></div>
+    <p class="hint" id="leisteHinweis"></p>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" id="leisteStandard">Zurück auf Standard</button>
+    <button class="btn primary" data-close>Fertig</button>
+  </div>
+</dialog>
+
+<dialog id="dlgZeit">
+  <h3 id="zeitTitel">Arbeitszeit</h3>
+  <div class="dlg-body">
+    <div class="two">
+      <div class="field"><label for="ztVon">Beginn</label><input type="time" id="ztVon" step="300"></div>
+      <div class="field"><label for="ztBis">Ende</label><input type="time" id="ztBis" step="300"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="ztPause">Pause in Minuten</label><input type="number" id="ztPause" min="0" max="240" step="5"></div>
+      <div class="field"><label>Ergibt</label><div class="zeitergebnis" id="ztErgebnis">–</div></div>
+    </div>
+    <p class="hint">Die Stunden rechnet KUBIK selbst aus: Ende minus Beginn, abzüglich der Pause.
+      In der Tabelle geht das auch direkt – einfach <b>7:30-15:30</b> in das Feld tippen.</p>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" id="ztLeeren" style="margin-right:auto">Tag leeren</button>
+    <button class="btn" data-close>Abbrechen</button>
+    <button class="btn primary" id="ztSpeichern">Übernehmen</button>
+  </div>
 </dialog>
 
 <!-- Messenger -->
@@ -2432,7 +2488,8 @@ const isPhone = () => window.innerWidth < 760;
 function render(){
   if(isPhone() && (view==="week"||view==="month")) view="day";
   if(!isPhone() && (view==="day"||view==="jobs")) view="month";
-  document.querySelectorAll(".views button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.view===view));
+  const anz=document.getElementById("ansichtName");
+  if(anz) anz.textContent=ansichtName(view);
   document.querySelectorAll(".tabbar button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.pv===view));
   document.getElementById("companyName").textContent=state.settings.company;
   renderPeriodLabel();
@@ -5808,13 +5865,68 @@ const tagKey=(wer,ds)=>wer+"|"+ds;
 const eintraege = modus => modus==="team" ? state.km : state.stunden;
 
 function eintrag(modus,wer,ds){ return eintraege(modus)[tagKey(wer,ds)]||null; }
-function eintragSetzen(modus,wer,ds,wert,notiz){
+function eintragSetzen(modus,wer,ds,wert,notiz,zeit){
   const topf=eintraege(modus), k=tagKey(wer,ds);
   const hatWert = wert!==null && wert!==undefined && wert!=="" && !isNaN(wert);
   const hatNotiz = !!(notiz&&notiz.trim());
+  const hatZeit  = !!(zeit && zeit.v && zeit.b);
   if(!hatWert && !hatNotiz){ delete topf[k]; }
-  else topf[k]={ ...(hatWert?{w:Number(wert)}:{}) , ...(hatNotiz?{n:notiz.trim()}:{}) };
+  else topf[k]={
+    ...(hatWert?{w:Number(wert)}:{}),
+    ...(hatNotiz?{n:notiz.trim()}:{}),
+    ...(hatZeit?{v:zeit.v, b:zeit.b, p:zeit.p}:{})
+  };
   save();
+}
+
+/* ---------------------------------------------------------
+   Arbeitszeit: Beginn und Ende statt einer Stundenzahl.
+   KUBIK rechnet selbst – Ende minus Beginn, minus Pause.
+   --------------------------------------------------------- */
+const pauseStandard = () => {
+  const p=state.settings && state.settings.pause;
+  return (p===0 || p>0) ? p : 30;
+};
+/* "7:30" · "730" · "7.30" · "7" -> Minuten seit Mitternacht */
+function uhrMinuten(txt){
+  const t=String(txt==null?"":txt).trim().replace(/[.,]/g,":");
+  if(!t) return null;
+  let m=t.match(/^(\d{1,2}):(\d{1,2})$/);
+  if(m) return Math.min(23,+m[1])*60 + Math.min(59,+m[2]);
+  m=t.match(/^(\d{1,2})$/);
+  if(m) return Math.min(23,+m[1])*60;
+  m=t.match(/^(\d{3,4})$/);
+  if(m) return Math.min(23,+t.slice(0,-2))*60 + Math.min(59,+t.slice(-2));
+  return null;
+}
+const uhrText = min => min==null ? ""
+  : String(Math.floor(min/60)).padStart(2,"0")+":"+String(min%60).padStart(2,"0");
+
+/* Stunden aus Beginn, Ende und Pause – über Mitternacht wird mitgedacht */
+function zeitStunden(von,bis,pause){
+  const a=uhrMinuten(von), b=uhrMinuten(bis);
+  if(a==null || b==null) return null;
+  let d=b-a; if(d<0) d+=24*60;
+  d -= (pause==null ? pauseStandard() : pause);
+  return Math.max(0, Math.round(d/60*100)/100);
+}
+/* Was jemand in eine Stundenzelle tippt, deuten:
+   "8" oder "7,5" ist eine Stundenzahl, "7:30-15:30" eine Zeitspanne */
+function stundenDeuten(text){
+  const t=String(text||"").trim();
+  if(!t) return {leer:true};
+  const teile=t.split(/\s*(?:-|–|—|bis)\s*/i).filter(x=>x!=="");
+  if(teile.length===2){
+    const a=uhrMinuten(teile[0]), b=uhrMinuten(teile[1]);
+    if(a!=null && b!=null){
+      const p=pauseStandard();
+      return {zeit:{v:uhrText(a), b:uhrText(b), p}, w:zeitStunden(uhrText(a),uhrText(b),p)};
+    }
+    return {fehler:true};
+  }
+  const z=Number(t.replace(",","."));
+  if(isNaN(z) || z<0) return {fehler:true};
+  return {w:Math.round(z*100)/100};
 }
 
 /* Alle Mitarbeiter: in Teamreihenfolge, danach die ohne Team */
@@ -5861,10 +5973,11 @@ function zeichneJahr(){
   document.getElementById("jahrLabel").textContent = jahrJahr;
   document.getElementById("jahrHint").textContent = istTeam
     ? "Gefahrene Kilometer pro Tag. Über das Zeichen in der Ecke eine Notiz dazu."
-    : "Geleistete Stunden pro Tag. Über das Zeichen in der Ecke eine Notiz dazu.";
+    : "Stunden eintippen – oder gleich 7:30-15:30. Die Pause zieht KUBIK selbst ab.";
   document.getElementById("jahrFuss").textContent = istTeam
     ? "Pfeiltasten wechseln die Zelle, Enter springt zum nächsten Tag. Alles wird sofort gespeichert."
-    : "Pfeiltasten wechseln die Zelle, Enter springt zum nächsten Tag. Alles wird sofort gespeichert.";
+    : `Pfeiltasten wechseln die Zelle, Enter springt zum nächsten Tag. Doppelklick auf einen Tag öffnet Beginn und Ende; `
+      + `◷ heißt: die Stunden sind aus Uhrzeiten gerechnet, abzüglich ${pauseStandard()} Minuten Pause.`;
 
   const tage=jahresTage(jahrJahr);
   const zeilen = istTeam
@@ -5959,22 +6072,69 @@ function zeichneJahr(){
       zelle.dataset.wer=z.id; zelle.dataset.tag=ds;
 
       const inp=document.createElement("input");
-      inp.type="number"; inp.step=istTeam?"1":"0.25"; inp.min="0";
-      inp.inputMode="decimal"; inp.disabled=!darfPlanen();
-      inp.value = e&&e.w!==undefined ? e.w : "";
+      if(istTeam){ inp.type="number"; inp.step="1"; inp.min="0"; inp.inputMode="decimal"; }
+      else { inp.type="text"; inp.inputMode="decimal"; inp.autocomplete="off"; }
+      inp.disabled=!darfPlanen();
+      inp.value = e&&e.w!==undefined ? String(e.w).replace(".",",") : "";
       if(inp.value) inp.classList.add("hat");
-      inp.title=`${z.name} · ${wunschText(ds)}`;
-      inp.onchange=()=>{
-        const alt=eintrag(jahrModus,z.id,ds);
-        eintragSetzen(jahrModus,z.id,ds,inp.value,alt?alt.n:"");
-        inp.classList.toggle("hat",!!inp.value);
+
+      /* kleines Uhrzeichen, wenn die Stunden aus Beginn und Ende kommen */
+      const uhrZeichen=document.createElement("span"); uhrZeichen.className="uhr";
+      const zeitZeigen=()=>{
+        const a=eintrag(jahrModus,z.id,ds);
+        const hat = !istTeam && a && a.v && a.b;
+        uhrZeichen.textContent = hat ? "◷" : "";
+        inp.classList.toggle("auszeit", !!hat);
+        inp.title = hat
+          ? `${z.name} · ${wunschText(ds)}\n${a.v}–${a.b}, abzüglich ${a.p==null?pauseStandard():a.p} Min Pause`
+          : (istTeam ? `${z.name} · ${wunschText(ds)}`
+                     : `${z.name} · ${wunschText(ds)}\nStunden eintippen, oder 7:30-15:30 für Beginn und Ende.\nDoppelklick öffnet das Zeitfenster.`);
+      };
+      zeitZeigen();
+
+      const zeileAuffrischen=()=>{
         summenAuffrischen(d.getMonth());
         nc.querySelector("small").textContent =
           `${z.unter}${summeJahr(jahrModus,z.id,jahrJahr)?` · ${summeJahr(jahrModus,z.id,jahrJahr).toLocaleString("de-DE")} ${istTeam?"km":"h"} ${jahrJahr}`:""}`;
         if(jahrModus==="team") render();
       };
+
+      inp.onchange=()=>{
+        const alt=eintrag(jahrModus,z.id,ds);
+        if(istTeam){
+          eintragSetzen(jahrModus,z.id,ds,inp.value,alt?alt.n:"");
+        }else{
+          const gedeutet=stundenDeuten(inp.value);
+          if(gedeutet.fehler){
+            alert("Das verstehe ich nicht.\n\nEntweder eine Stundenzahl wie 7,5 – oder Beginn und Ende wie 7:30-15:30.");
+            inp.value = alt&&alt.w!==undefined ? String(alt.w).replace(".",",") : "";
+            zeitZeigen(); return;
+          }
+          if(gedeutet.leer){
+            eintragSetzen(jahrModus,z.id,ds,"",alt?alt.n:"",null);
+            inp.value="";
+          }else{
+            eintragSetzen(jahrModus,z.id,ds,gedeutet.w,alt?alt.n:"",gedeutet.zeit||null);
+            inp.value=String(gedeutet.w).replace(".",",");
+          }
+        }
+        inp.classList.toggle("hat",!!inp.value);
+        zeitZeigen();
+        zeileAuffrischen();
+      };
       inp.onkeydown=ev=>tastenInJahr(ev,z.id,ds);
+      if(!istTeam) inp.ondblclick=ev=>{
+        ev.preventDefault();
+        if(!darfPlanen()) return;
+        zeitFenster(z.id,z.name,ds,()=>{
+          const a=eintrag(jahrModus,z.id,ds);
+          inp.value = a&&a.w!==undefined ? String(a.w).replace(".",",") : "";
+          inp.classList.toggle("hat",!!inp.value);
+          zeitZeigen(); zeileAuffrischen();
+        });
+      };
       zelle.appendChild(inp);
+      if(!istTeam) zelle.appendChild(uhrZeichen);
 
       const nz=document.createElement("button");
       nz.className="nz"+(e&&e.n?" da":""); nz.type="button";
@@ -6013,6 +6173,53 @@ function zeichneJahr(){
   document.getElementById("jahrAlleNotizen").onclick=()=>openNotizen(jahrModus,jahrWer);
   aktiveZeileZeigen();
 }
+
+/* ---------------------------------------------------------
+   Das kleine Fenster für Beginn, Ende und Pause
+   --------------------------------------------------------- */
+let zeitFertig=null;
+function zeitFenster(wer,name,ds,fertig){
+  zeitFertig=fertig||null;
+  const e=eintrag("person",wer,ds);
+  document.getElementById("zeitTitel").textContent=`${name} · ${wunschText(ds)}`;
+  ztVon.value   = e&&e.v ? e.v : "";
+  ztBis.value   = e&&e.b ? e.b : "";
+  ztPause.value = e&&e.p!=null ? e.p : pauseStandard();
+  dlgZeit.dataset.wer=wer; dlgZeit.dataset.tag=ds;
+  zeitRechnen();
+  dlgZeit.showModal();
+  setTimeout(()=>ztVon.focus(),40);
+}
+function zeitRechnen(){
+  const p=Math.max(0,Math.min(240, parseInt(ztPause.value,10)||0));
+  const st=zeitStunden(ztVon.value, ztBis.value, p);
+  const feld=document.getElementById("ztErgebnis");
+  if(st==null){ feld.textContent="–"; return null; }
+  feld.textContent=`${String(st).replace(".",",")} Stunden`;
+  return st;
+}
+["input","change"].forEach(ev=>{
+  ztVon.addEventListener(ev,zeitRechnen);
+  ztBis.addEventListener(ev,zeitRechnen);
+  ztPause.addEventListener(ev,zeitRechnen);
+});
+document.getElementById("ztSpeichern").onclick=()=>{
+  const wer=dlgZeit.dataset.wer, ds=dlgZeit.dataset.tag;
+  const p=Math.max(0,Math.min(240, parseInt(ztPause.value,10)||0));
+  const st=zeitStunden(ztVon.value, ztBis.value, p);
+  if(st==null){ alert("Bitte Beginn und Ende eintragen."); return; }
+  const alt=eintrag("person",wer,ds);
+  eintragSetzen("person",wer,ds,st,alt?alt.n:"",{v:ztVon.value,b:ztBis.value,p});
+  dlgZeit.close();
+  if(zeitFertig) zeitFertig();
+};
+document.getElementById("ztLeeren").onclick=()=>{
+  const wer=dlgZeit.dataset.wer, ds=dlgZeit.dataset.tag;
+  const alt=eintrag("person",wer,ds);
+  eintragSetzen("person",wer,ds,"",alt?alt.n:"",null);
+  dlgZeit.close();
+  if(zeitFertig) zeitFertig();
+};
 
 /* Welche Zeile gerade bearbeitet wird: Markierung und Beschriftung unten */
 function aktiveZeileZeigen(){
@@ -6300,6 +6507,7 @@ document.getElementById("tmKm").onclick=()=>{
 document.getElementById("btnSettings").onclick=()=>{
   const s=state.settings;
   stCompany.value=s.company; stAmS.value=s.amStart; stAmE.value=s.amEnd; stPmS.value=s.pmStart; stPmE.value=s.pmEnd;
+  stPause.value=pauseStandard();
   try{ stApiKey.value=localStorage.getItem(API_KEY)||""; }catch(e){}
   stModel.value=(s.model||MODELL_STANDARD);
   stZweit.value=(s.zweitpool||"Irina");
@@ -6362,6 +6570,7 @@ document.getElementById("stSave").onclick=async()=>{
     stListePin.value="";
   }
   Object.assign(state.settings,{company:stCompany.value.trim()||"Betrieb",amStart:stAmS.value,amEnd:stAmE.value,pmStart:stPmS.value,pmEnd:stPmE.value,
+    pause:Math.max(0,Math.min(240, parseInt(stPause.value,10)||0)),
     zweitpool:(stZweit.value.trim()||"Irina"),
     drittpool:(stDritt.value.trim()||"Admin"),
     model:(stModel.value.trim()||MODELL_STANDARD)});
@@ -6573,7 +6782,13 @@ document.getElementById("btnMenu").onclick=()=>dlgMenu.showModal();
 dlgMenu.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{
   const m=b.dataset.m; dlgMenu.close();
   setTimeout(()=>{
-    if(m==="kunden") openKunden();
+    if(m==="leiste") leisteFenster();
+    else if(m==="maengel") openUeberblick("offen");
+    else if(m==="spalten"){
+      const r=knopfOderMenue("btnSpalten").getBoundingClientRect();
+      spaltenWaehler(r.left+r.width/2, r.bottom+8);
+    }
+    else if(m==="kunden") openKunden();
     else if(m==="teams") openTeams();
     else if(m==="chat") openChat();
     else if(m==="liste") openListe();
@@ -6595,12 +6810,168 @@ window.addEventListener("resize",()=>{
   if(jetztPhone!==warPhone) render();
 });
 
-document.querySelectorAll(".views button").forEach(b=>b.onclick=()=>{
-  view=b.dataset.view;
-  suchText=""; document.getElementById("qSearch").value="";
-  if(view==="month") pendingScrollToday=true;
-  if(view!=="map") mapFocusJob=null;
+/* =========================================================
+   Ansicht: ein Knopf mit kleinem Menü statt vier Knöpfen
+   ========================================================= */
+const ANSICHTEN=[["now","Jetzt"],["week","Woche"],["month","Monat"],["map","Karte"]];
+const ANSICHT_NAME={now:"Jetzt",week:"Woche",month:"Monat",map:"Karte",day:"Tag",jobs:"Aufträge",search:"Suche"};
+const ansichtName = v => ANSICHT_NAME[v] || "Ansicht";
+
+function ansichtSetzen(v){
+  view=v;
+  suchText=""; const q=document.getElementById("qSearch"); if(q) q.value="";
+  if(v==="month") pendingScrollToday=true;
+  if(v==="map"){ mapDay=iso(anchor); mapFocusJob=null; } else mapFocusJob=null;
   render();
+}
+
+let ansichtBlase=null;
+function ansichtBlaseZu(){
+  if(!ansichtBlase) return;
+  document.removeEventListener("pointerdown",ansichtBlaseWeg,{capture:true});
+  ansichtBlase.remove(); ansichtBlase=null;
+}
+function ansichtBlaseWeg(e){
+  if(!ansichtBlase || ansichtBlase.contains(e.target)) return;
+  e.preventDefault(); e.stopPropagation(); ansichtBlaseZu();
+}
+function ansichtWaehler(x,y){
+  ansichtBlaseZu();
+  const d=document.createElement("div"); d.className="nzblase spaltenblase";
+  const h=document.createElement("h4"); h.textContent="Ansicht";
+  d.appendChild(h);
+  ANSICHTEN.forEach(([k,t])=>{
+    const z=document.createElement("label"); z.className="hakzeile";
+    const c=document.createElement("input"); c.type="radio"; c.name="ansichtwahl"; c.checked=(view===k);
+    const n=document.createElement("span"); n.textContent=t;
+    c.onchange=()=>{ ansichtBlaseZu(); ansichtSetzen(k); };
+    z.append(c,n); d.appendChild(z);
+  });
+  document.body.appendChild(d);
+  const b=d.getBoundingClientRect();
+  d.style.left=Math.max(10, Math.min(x-b.width/2, innerWidth-b.width-10))+"px";
+  d.style.top =Math.min(y, innerHeight-b.height-10)+"px";
+  ansichtBlase=d;
+  setTimeout(()=>document.addEventListener("pointerdown",ansichtBlaseWeg,{capture:true}),0);
+}
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape") return;
+  if(ansichtBlase) ansichtBlaseZu();
+  if(typeof spaltenBlase!=="undefined" && spaltenBlase) spaltenBlaseZu();
+});
+document.getElementById("btnAnsicht").onclick=e=>{
+  if(ansichtBlase){ ansichtBlaseZu(); return; }
+  const r=e.currentTarget.getBoundingClientRect();
+  ansichtWaehler(r.left+r.width/2, r.bottom+8);
+};
+
+/* =========================================================
+   Welche Knöpfe stehen oben in der Leiste?
+   Das entscheidet jeder für sich; die Auswahl liegt beim
+   eigenen Zugang auf dem eigenen Gerät. Was nicht angehakt
+   ist, bleibt über das Menü ☰ erreichbar. Und was nicht in
+   eine Zeile passt, wandert von selbst ins Menü.
+   ========================================================= */
+const LEISTE=[
+  {id:"konto",   btn:"btnKonto",    text:"Konto"},
+  {id:"maengel", btn:"btnMaengel",  text:"Mängel und Notizen"},
+  {id:"spalten", btn:"btnSpalten",  text:"Auftragsspalten"},
+  {id:"chat",    btn:"btnChat",     text:"Chat"},
+  {id:"liste",   btn:"btnListe",    text:"Auftragsliste"},
+  {id:"stunden", btn:"btnStunden",  text:"Stunden der Mitarbeiter"},
+  {id:"km",      btn:"btnKm",       text:"Kilometer der Teams"},
+  {id:"kunden",  btn:"btnKunden",   text:"Kunden"},
+  {id:"teams",   btn:"btnTeams",    text:"Teams"},
+  {id:"einst",   btn:"btnSettings", text:"Einstellungen"},
+  {id:"sichern", btn:"btnData",     text:"Sichern"}
+];
+const LEISTE_STANDARD=["konto","maengel","spalten","chat","liste","stunden","km"];
+const leisteSchluessel = () =>
+  "kubik.leiste."+((typeof meineMail!=="undefined" && meineMail) ? meineMail : "lokal");
+
+function leisteWahl(){
+  try{
+    const r=JSON.parse(localStorage.getItem(leisteSchluessel()));
+    if(Array.isArray(r)) return LEISTE.map(x=>x.id).filter(id=>r.includes(id));
+  }catch(_){}
+  return LEISTE_STANDARD.slice();
+}
+function leisteMerken(l){
+  try{ localStorage.setItem(leisteSchluessel(), JSON.stringify(l)); }catch(_){}
+}
+/* Eine Zeile ist so hoch wie der höchste Knopf plus Polster.
+   Ist die Leiste höher, hat sie umgebrochen. */
+function leisteZweizeilig(){
+  const h=document.querySelector("header");
+  if(!h) return false;
+  const st=getComputedStyle(h);
+  const polster=parseFloat(st.paddingTop||0)+parseFloat(st.paddingBottom||0);
+  let hoch=0;
+  for(const c of h.children){
+    if(c.offsetParent===null) continue;
+    hoch=Math.max(hoch, c.offsetHeight);
+  }
+  if(!hoch) return false;
+  return h.clientHeight > hoch+polster+4;
+}
+function leisteAnwenden(){
+  const an=new Set(leisteWahl());
+  LEISTE.forEach(it=>{ const b=document.getElementById(it.btn); if(b) b.hidden=!an.has(it.id); });
+  if(isPhone()) return;
+  /* Von hinten so lange wegnehmen, bis die Leiste wieder einzeilig ist */
+  for(let i=LEISTE.length-1; i>=0 && leisteZweizeilig(); i--){
+    const b=document.getElementById(LEISTE[i].btn);
+    if(b && !b.hidden) b.hidden=true;
+  }
+}
+function leisteSichtbar(){
+  return LEISTE.filter(it=>{ const b=document.getElementById(it.btn); return b && !b.hidden; }).length;
+}
+function leisteHinweis(){
+  const h=document.getElementById("leisteHinweis");
+  if(!h) return;
+  const n=leisteWahl().length, z=leisteSichtbar();
+  h.textContent = (z<n)
+    ? `${n} angehakt, ${z} passen gerade in die Zeile. Der Rest steht im Menü ☰ – ein breiteres Fenster oder weniger Haken schafft Platz.`
+    : `${n} von ${LEISTE.length} Knöpfen stehen oben in der Leiste.`;
+}
+function leisteFenster(){
+  const box=document.getElementById("leisteListe");
+  box.replaceChildren();
+  const an=new Set(leisteWahl());
+  LEISTE.forEach(it=>{
+    const l=document.createElement("label");
+    const c=document.createElement("input"); c.type="checkbox"; c.checked=an.has(it.id);
+    const t=document.createElement("span"); t.textContent=it.text;
+    const w=document.createElement("span"); w.className="wo";
+    const zeig=()=>{ w.textContent = c.checked ? "in der Leiste" : "nur im Menü"; };
+    zeig();
+    c.onchange=()=>{
+      const rest=leisteWahl().filter(x=>x!==it.id);
+      if(c.checked) rest.push(it.id);
+      leisteMerken(LEISTE.map(x=>x.id).filter(id=>rest.includes(id)));
+      zeig(); leisteAnwenden(); leisteHinweis();
+    };
+    l.append(c,t,w); box.appendChild(l);
+  });
+  leisteHinweis();
+  dlgLeiste.showModal();
+}
+document.getElementById("leisteStandard").onclick=()=>{
+  leisteMerken(LEISTE_STANDARD.slice());
+  leisteAnwenden(); leisteFenster();
+};
+/* Knopf anpeilen, auch wenn er gerade im Menü steckt */
+function knopfOderMenue(id){
+  const b=document.getElementById(id);
+  return (b && !b.hidden) ? b : document.getElementById("btnMenu");
+}
+leisteAnwenden();
+setTimeout(leisteAnwenden,400);   /* noch einmal, wenn die Schriften geladen sind */
+let leisteTimer=null;
+window.addEventListener("resize",()=>{
+  clearTimeout(leisteTimer);
+  leisteTimer=setTimeout(()=>{ leisteAnwenden(); leisteHinweis(); },120);
 });
 document.getElementById("zoomIn").onclick=()=>{
   if(view==="month") monthVisible=Math.max(5,monthVisible-2);
@@ -6858,6 +7229,7 @@ async function anmelden(user,pass){
 
 async function nachAnmeldung(user){
   meineId=user.id; meineMail=user.email||"";
+  if(typeof leisteAnwenden==="function") leisteAnwenden();
   meinName=nameVon(user.email);
   // Rolle aus der Tabelle profiles
   try{
