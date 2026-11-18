@@ -132,6 +132,15 @@ main{flex:1;display:flex;min-height:0}
   position:absolute;right:0;top:0;width:10px;height:100%;cursor:col-resize;
 }
 .spurkarte .griff:hover{background:rgba(127,212,255,.25)}
+.spurkarte{padding-left:17px}
+.spurkarte .ausgriff{
+  position:absolute;left:0;top:0;bottom:0;width:15px;cursor:grab;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;line-height:1;color:var(--ink-faint);
+  border-radius:9px 0 0 9px;background:rgba(255,255,255,.05);
+}
+.spurkarte .ausgriff:hover{background:rgba(127,212,255,.22);color:var(--ink)}
+.spurkarte .ausgriff:active{cursor:grabbing}
 .spurkarte .weg{
   position:absolute;right:11px;top:5px;width:18px;height:18px;border:0;border-radius:6px;
   background:rgba(0,0,0,.35);color:var(--ink-faint);font-size:10px;cursor:pointer;opacity:0;
@@ -1062,21 +1071,38 @@ table.month .bar .bnr{font-size:9.5px;padding:0 4px;margin-right:4px}
 .jobcard .row button.nzknopf.mangel,.nzknopf.mangel{
   color:#fff;background:#E03B3B;border-color:#E03B3B;font-weight:650
 }
+/* Notiz und Mangel zugleich: links gelb, rechts rot */
+.jobcard .row button.nzknopf.beide,.nzknopf.beide{
+  color:#fff;font-weight:650;border-color:#E03B3B;
+  background:linear-gradient(90deg,#FFC04D 0 50%,#E03B3B 50% 100%);
+  text-shadow:0 1px 2px rgba(0,0,0,.45);
+}
 
 /* Rote beziehungsweise gelbe Ecke oben rechts */
-.ecke{position:relative}
-.ecke::after{
+/* Farbband am rechten Ende des Balkens: oben Notiz, unten Mangel */
+.bar{overflow:hidden}
+.bar.ecke{position:relative;padding-right:21px}
+.bar.ecke::after{
+  content:"";position:absolute;right:0;top:0;bottom:0;width:17px;pointer-events:none;
+  border-radius:0 var(--pille) var(--pille) 0;
+}
+.bar.ecke.notiz::after {background:#FFC04D}
+.bar.ecke.mangel::after{background:#E03B3B}
+.bar.ecke.beide::after {background:linear-gradient(180deg,#FFC04D 0 50%,#E03B3B 50% 100%)}
+table.month .bar.ecke{padding-right:16px}
+table.month .bar.ecke::after{width:13px}
+
+/* Spurkarte behält die Ecke */
+.spurkarte.ecke{position:relative}
+.spurkarte.ecke::after{
   content:"";position:absolute;top:0;right:0;width:0;height:0;pointer-events:none;
-  border-style:solid;border-width:0 34px 34px 0;
+  border-style:solid;border-width:0 26px 26px 0;
   border-color:transparent var(--eckfarbe) transparent transparent;
   border-top-right-radius:14px;
 }
-.ecke.notiz{--eckfarbe:#FFC04D}
-.ecke.mangel{--eckfarbe:#E03B3B}
-.bar{overflow:hidden}
-.bar.ecke::after{border-width:0 30px 30px 0;border-top-right-radius:var(--pille)}
-table.month .bar.ecke::after{border-width:0 19px 19px 0}
-.spurkarte.ecke::after{border-width:0 26px 26px 0;border-top-right-radius:14px}
+.spurkarte.ecke.notiz {--eckfarbe:#FFC04D}
+.spurkarte.ecke.mangel{--eckfarbe:#E03B3B}
+.spurkarte.ecke.beide {--eckfarbe:#E03B3B}
 .nzblase{
   position:fixed;z-index:120;max-width:380px;min-width:240px;max-height:52vh;overflow:auto;
   background:rgba(18,24,33,.97);border:1px solid var(--line);border-radius:15px;
@@ -1329,7 +1355,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <div class="adminspur" id="adminSpur" hidden>
       <div class="spurkopf">
         <b id="spurName">Admin</b>
-        <span class="hint" style="margin:0">eigene Spur · Karten frei verschieben und in der Breite ziehen</span>
+        <span class="hint" style="margin:0">eigene Spur · Karten umsortieren, in der Breite ziehen, am Griff links wieder herausziehen</span>
         <button class="btn" id="spurAufraeumen" title="Alle Karten bündig nebeneinander legen">Ordnen</button>
       </div>
       <div class="bahn" id="adminBahn"></div>
@@ -1460,6 +1486,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <button class="btn warn" id="asDelete" style="margin-right:auto">Aus Kalender nehmen</button>
     <button class="btn" id="asNotizen">Notizen</button>
     <button class="btn warn" id="asUnlock" hidden>Datum trotzdem ändern</button>
+    <button class="btn" id="asNavi">Navigieren</button>
     <button class="btn" id="asMap">Auf Karte zeigen</button>
     <button class="btn" data-close>Abbrechen</button>
     <button class="btn primary" id="asSave">Eintragen</button>
@@ -2532,9 +2559,8 @@ function renderPhoneJobs(){
   }
   list.forEach(j=>{
     const k=kundeById(j.customerId);
-    const stufeP=notizStufe(j.id);
     const c=document.createElement("div");
-    c.className="jobcard"+(stufeP?" ecke "+stufeP:"");
+    c.className="jobcard";
     c.onclick=e=>{ if(e.target.closest("button,select,input")) return; openJob(j.id); };
     c.style.cursor="pointer";
     c.style.borderLeftColor=j.billed?"#6B7585":(planned.has(j.id)?"#3D4A5C":"var(--ink-faint)");
@@ -2989,6 +3015,7 @@ function makeGap(team,ds,slot,span,full){
       } }catch(_){}
     }
     const jid=e.dataTransfer.getData("text/plain"); if(!jid) return;
+    spurEntfernen(jid);
     dropAssign(team.id,ds,full?"BOTH":slot,jid);
   };
   return c;
@@ -3191,9 +3218,8 @@ function poolSpalte(ziel,zaehler,spalte,mitEinreichungen){
     pool.appendChild(p); return;
   }
   list.forEach(j=>{
-    const stufe=notizStufe(j.id);
     const c=document.createElement("div");
-    c.className="jobcard"+(spalte!=="haupt"?" "+spalte:"")+(stufe?" ecke "+stufe:"");
+    c.className="jobcard"+(spalte!=="haupt"?" "+spalte:"");
     c.draggable=true;
     c.onclick=e=>{ if(e.target.closest("button,select,input")) return; openJob(j.id); };
     c.style.cursor="pointer";
@@ -3629,6 +3655,14 @@ document.getElementById("asJobName").addEventListener("input",e=>{
   zeigeAssignAnhaenge();
 });
 
+document.getElementById("asNavi").onclick=()=>{
+  const name=document.getElementById("asJobName").value.trim();
+  const j = (editing && editing.jobId) ? jobById(editing.jobId)
+           : state.jobs.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  const adr = j ? j.address : document.getElementById("asJobAdr").value.trim();
+  naviOeffnen(adr, j?j.lat:null, j?j.lng:null);
+};
+
 document.getElementById("asNotizen").onclick=()=>{
   const name=document.getElementById("asJobName").value.trim();
   const j = (editing && editing.jobId) ? jobById(editing.jobId)
@@ -3662,6 +3696,7 @@ document.getElementById("asSave").onclick=()=>{
   const toSlot=document.getElementById("asToSlot").value;
 
   if(editing.mode==="run") clearRun(editing);
+  spurEntfernen(jobId);          // nicht gleichzeitig im Kalender und auf der Spur
 
   slotSpan(from,fromSlot,to,toSlot).forEach(({date,slot})=>{
     const ex=assignAt(teamId,date,slot);
@@ -3737,6 +3772,7 @@ document.getElementById("asMap").onclick=()=>{
 };
 
 function dropAssign(teamId,date,slot,jobId){
+  spurEntfernen(jobId);          // nicht gleichzeitig im Kalender und auf der Spur
   const slots = slot==="BOTH" ? ["AM","PM"] : [slot];
   slots.forEach(s=>{
     const ex=assignAt(teamId,date,s);
@@ -3990,10 +4026,10 @@ document.getElementById("jbGeo").onclick=async()=>{
         } }catch(_){}
       }
 
-      /* b) Auftragskarte aus der anderen Spalte */
+      /* b) Auftragskarte aus einer anderen Spalte oder von der Spur */
       const id=e.dataTransfer.getData("text/plain");
       const job=id?jobById(id):null;
-      if(job) spalteSetzen(job,spalte);
+      if(job){ spurEntfernen(id); spalteSetzen(job,spalte); }
     });
   });
 })();
@@ -4900,11 +4936,60 @@ async function listeFreigeben(){
 
 /* =========================================================
    Die eigene Spur unter dem Kalender
-   Eine durchgehende Bahn ohne Kalendertage. Karten liegen
-   dort, wo man sie hinschiebt, und sind so breit, wie man
-   sie zieht.
+   Eine durchgehende Bahn ohne Kalendertage. Die Karten liegen
+   immer lückenlos hintereinander in einer Reihe; verschieben
+   sortiert um, der rechte Rand macht sie breiter.
    ========================================================= */
 const SPUR_H=78;
+let spurZieht=null;          // Karte, die gerade aus der Spur gezogen wird
+let spurAbbrechen=null;      // bricht das Schieben innerhalb der Spur ab
+
+/* Wird aufgerufen, wenn die Karte woanders abgelegt wurde */
+function spurEntfernen(jobId){
+  const vorher=spurListe().length;
+  state.adminSpur=spurListe().filter(x=>x.jobId!==jobId);
+  spurZieht=null;
+  if(spurListe().length!==vorher){ save(); zeichneSpur(); return true; }
+  return false;
+}
+const aufSpur = jobId => spurListe().some(k=>k.jobId===jobId);
+
+/* Die Karten liegen immer lückenlos hintereinander in einer Reihe.
+   Die Lage ergibt sich aus der Reihenfolge, nicht aus freien Koordinaten –
+   so kann keine Karte unter einer anderen oder aus der Bahn rutschen. */
+const SPUR_LUECKE=8, SPUR_LINKS=10;
+function spurOrdnen(){
+  const l=spurListe();
+  for(let i=l.length-1;i>=0;i--){ if(!jobById(l[i].jobId)) l.splice(i,1); }
+  let x=SPUR_LINKS;
+  l.forEach(k=>{
+    k.w=Math.max(70, Math.min(1400, Math.round((k.w||190)/5)*5));
+    k.x=x; x+=k.w+SPUR_LUECKE;
+  });
+  return x;
+}
+/* An welche Stelle der Reihe gehört etwas, das bei "mitte" losgelassen wird? */
+function spurStelle(mitte,ausser){
+  const l=spurListe().filter(k=>k!==ausser);
+  let i=0;
+  while(i<l.length && mitte > (l[i].x||0)+(l[i].w||190)/2) i++;
+  return i;
+}
+/* Karte in die Reihe einsetzen – ausser wird vorher herausgenommen */
+function spurEinsetzen(karte,stelle,ausser){
+  const l=spurListe();
+  if(ausser){ const w=l.indexOf(ausser); if(w>=0) l.splice(w,1); }
+  l.splice(Math.max(0,Math.min(stelle,l.length)),0,karte);
+  spurOrdnen();
+}
+/* Die Bahn gerade so weit schieben, dass die Karte ganz zu sehen ist */
+function spurZeigen(k){
+  const bahn=document.getElementById("adminBahn");
+  if(!bahn || !k) return;
+  const a=k.x||0, b=a+(k.w||190);
+  if(a < bahn.scrollLeft+4) bahn.scrollLeft=Math.max(0,a-SPUR_LINKS);
+  else if(b > bahn.scrollLeft+bahn.clientWidth-4) bahn.scrollLeft=Math.max(0,b-bahn.clientWidth+SPUR_LINKS);
+}
 function spurListe(){
   if(!Array.isArray(state.adminSpur)) state.adminSpur=[];
   return state.adminSpur;
@@ -4919,13 +5004,15 @@ function zeichneSpur(){
   document.getElementById("spurName").textContent=poolName("admin");
   const bahn=document.getElementById("adminBahn");
   bahn.replaceChildren();
-  const liste=spurListe().filter(k=>jobById(k.jobId));
+  /* Alte Pläne mit frei gesetzten Karten einmalig in eine Reihe bringen */
+  if(!state.spurReihe){ spurListe().sort((a,b)=>(a.x||0)-(b.x||0)); state.spurReihe=true; }
+  const ende=spurOrdnen();
+  const liste=spurListe();
   if(!liste.length){
     const d=document.createElement("div"); d.className="leer";
-    d.textContent="Aus dem Auftragspool hierher ziehen. Danach die Karte verschieben oder am rechten Rand breiter ziehen.";
+    d.textContent="Aus dem Auftragspool oder aus dem Kalender hierher ziehen. Die Karten reihen sich von links nach rechts auf.";
     bahn.appendChild(d);
   }
-  let rechts=0;
   liste.forEach(k=>{
     const j=jobById(k.jobId);
     const stufe=notizStufe(j.id);
@@ -4938,8 +5025,7 @@ function zeichneSpur(){
       <b>${esc(j.name)}</b>
       <small>${esc(j.address||"")}</small>
       ${offeneMaengel(j.id)?`<small style="color:#FF9D9D">offener Mangel</small>`:""}`;
-    d.title=`${j.name}\n${j.address||""}\n\nZiehen zum Verschieben · rechter Rand zum Verbreitern · Doppelklick öffnet den Auftrag`;
-    d.ondblclick=()=>openJob(j.id);
+    d.title=`${nrText(j.nr)} ${j.name}\n${j.address||""}\n\nAnklicken zum Öffnen · ziehen zum Umsortieren · rechter Rand zum Verbreitern\nGriff links: in den Kalender oder in eine Spalte ziehen`;
 
     const weg=document.createElement("button"); weg.className="weg"; weg.textContent="✕";
     weg.title="Von der Spur nehmen";
@@ -4955,34 +5041,58 @@ function zeichneSpur(){
     d.appendChild(griff);
 
     d.onpointerdown=e=>{
-      if(e.target===griff || e.target===weg) return;
-      spurZiehen(e,k,d,"schieben");
+      if(e.target===griff || e.target===weg || e.target.classList.contains("ausgriff")) return;
+      spurZiehen(e,k,d,"schieben",()=>openJob(j.id));
     };
+    /* Herausziehen in den Kalender oder in eine Auftragsspalte:
+       nur über den schmalen Griff links. Sonst würde der Browser
+       beim Verschieben innerhalb der Spur sein eigenes Ziehen starten. */
+    const raus=document.createElement("span");
+    raus.className="ausgriff"; raus.textContent="⠿";
+    raus.title="Hier anfassen und in den Kalender oder in eine Auftragsspalte ziehen";
+    raus.draggable=true;
+    raus.ondragstart=ev=>{
+      if(spurAbbrechen) spurAbbrechen();
+      spurZieht=k;
+      ev.dataTransfer.setData("text/plain",j.id);
+      ev.dataTransfer.effectAllowed="move";
+      try{ ev.dataTransfer.setDragImage(d,20,20); }catch(_){}
+    };
+    raus.ondragend=()=>{ spurZieht=null; };
+    raus.onpointerdown=e=>e.stopPropagation();
+    d.appendChild(raus);
     bahn.appendChild(d);
-    rechts=Math.max(rechts,(k.x||0)+(k.w||190));
   });
-  /* Platz zum Wegschieben nach rechts */
+  /* Die Bahn ist genau so lang wie die Reihe – kein Scrollen ins Leere */
   const platz=document.createElement("div");
-  platz.style.cssText=`position:absolute;left:0;top:0;height:1px;width:${rechts+600}px`;
+  platz.style.cssText=`position:absolute;left:0;top:0;height:1px;width:${Math.max(1,ende)}px`;
   bahn.appendChild(platz);
+  if(bahn.scrollLeft > Math.max(0, ende-bahn.clientWidth)) bahn.scrollLeft=Math.max(0, ende-bahn.clientWidth);
 }
 
-function spurZiehen(ev,k,el,was){
-  ev.preventDefault();
+function spurZiehen(ev,k,el,was,beiKlick){
   const startX=ev.clientX, x0=k.x||0, w0=k.w||190;
+  let bewegt=false, zeigt=x0;
   el.classList.add("zieht");
   const zieh=e=>{
     const d=e.clientX-startX;
-    if(was==="schieben") k.x=Math.max(0, Math.round((x0+d)/5)*5);
-    else k.w=Math.max(70, Math.min(1400, Math.round((w0+d)/5)*5));
-    el.style.left=(k.x||0)+"px"; el.style.width=(k.w||190)+"px";
+    if(Math.abs(d)>4) bewegt=true;
+    if(was==="schieben"){ zeigt=x0+d; el.style.left=zeigt+"px"; }
+    else { k.w=Math.max(70, Math.min(1400, Math.round((w0+d)/5)*5)); el.style.width=k.w+"px"; }
   };
-  const los=()=>{
+  const los=(abbruch)=>{
     window.removeEventListener("pointermove",zieh);
     window.removeEventListener("pointerup",los);
+    spurAbbrechen=null;
     el.classList.remove("zieht");
-    save(); zeichneSpur();
+    if(abbruch===true){ k.w=w0; spurOrdnen(); zeichneSpur(); return; }
+    /* Nur getippt, nicht gezogen? Dann den Auftrag öffnen. */
+    if(!bewegt && beiKlick){ el.style.left=(k.x||0)+"px"; beiKlick(); return; }
+    if(was==="schieben") spurEinsetzen(k, spurStelle(zeigt+(k.w||190)/2, k), k);
+    else spurOrdnen();
+    save(); zeichneSpur(); spurZeigen(k);
   };
+  spurAbbrechen=()=>los(true);
   window.addEventListener("pointermove",zieh);
   window.addEventListener("pointerup",los);
 }
@@ -4995,7 +5105,7 @@ function spurZiehen(ev,k,el,was){
     if(!darfPlanen()) return;
     const t=[...e.dataTransfer.types];
     if(!t.includes("text/plain") && !t.includes("application/json")) return;
-    e.preventDefault(); e.dataTransfer.dropEffect="copy"; bahn.classList.add("dragover");
+    e.preventDefault(); e.dataTransfer.dropEffect="move"; bahn.classList.add("dragover");
   });
   bahn.addEventListener("dragleave",e=>{ if(!bahn.contains(e.relatedTarget)) bahn.classList.remove("dragover"); });
   bahn.addEventListener("drop",e=>{
@@ -5008,18 +5118,22 @@ function spurZiehen(ev,k,el,was){
       try{ const r=JSON.parse(raw); if(r&&r.jobId) jid=r.jobId; }catch(_){}
     }
     const j=jid?jobById(jid):null; if(!j) return;
-    if(spurListe().some(k=>k.jobId===j.id)){ alert("Dieser Auftrag liegt schon auf der Spur."); return; }
+    if(aufSpur(j.id)){ alert("Dieser Auftrag liegt schon auf der Spur."); return; }
+    const imKalender=state.assignments.filter(a=>a.jobId===j.id).length;
+    if(imKalender){
+      if(!confirm(`„${j.name}“ steht schon im Kalender.\n\n`+
+                  "Aus dem Kalender nehmen und hierher auf die Spur legen?")) return;
+      if(istFixiert(j.id)){ alert(fixHinweis(j.id)); return; }
+      state.assignments=state.assignments.filter(a=>a.jobId!==j.id);
+    }
     const r=bahn.getBoundingClientRect();
-    const x=Math.max(0, Math.round((e.clientX-r.left+bahn.scrollLeft-60)/5)*5);
-    spurListe().push({id:uid(), jobId:j.id, x, w:190});
-    save(); zeichneSpur(); renderPool();
+    const wo=e.clientX-r.left+bahn.scrollLeft;
+    const neu={id:uid(), jobId:j.id, x:0, w:190};
+    spurEinsetzen(neu, spurStelle(wo,null), null);
+    save(); zeichneSpur(); renderPool(); render(); spurZeigen(neu);
   });
   const ord=document.getElementById("spurAufraeumen");
-  if(ord) ord.onclick=()=>{
-    let x=10;
-    spurListe().forEach(k=>{ k.x=x; x+=(k.w||190)+8; });
-    save(); zeichneSpur();
-  };
+  if(ord) ord.remove();
 })();
 
 /* =========================================================
@@ -5031,11 +5145,16 @@ function spurZiehen(ev,k,el,was){
 const notizenVon = j => (j && Array.isArray(j.notizen)) ? j.notizen : [];
 const offeneMaengel = jobId => notizenVon(jobById(jobId)).filter(n=>n.art==="mangel" && !n.erledigt).length;
 const notizAnzahl  = jobId => notizenVon(jobById(jobId)).length;
-/* "" = nichts, "notiz" = gelb, "mangel" = rot */
+/* "" = neutral · "notiz" = gelb · "mangel" = rot · "beide" = halb und halb
+   Ein erledigter Mangel zählt nicht mehr mit. */
 function notizStufe(jobId){
   const n=notizenVon(jobById(jobId));
-  if(!n.length) return "";
-  return n.some(x=>x.art==="mangel" && !x.erledigt) ? "mangel" : "notiz";
+  const notiz  = n.some(x=>x.art!=="mangel");
+  const mangel = n.some(x=>x.art==="mangel" && !x.erledigt);
+  if(notiz && mangel) return "beide";
+  if(mangel) return "mangel";
+  if(notiz)  return "notiz";
+  return "";
 }
 
 let jnJobId=null, jnArt="info";
