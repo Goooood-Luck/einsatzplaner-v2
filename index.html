@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="KUBIK">
+<meta name="apple-mobile-web-app-title" content="kub.ik">
 <meta name="theme-color" content="#10141A">
-<title>KUBIK – Elektro Meisterbetrieb</title>
+<title>kub.ik 1.0 – Elektro Meisterbetrieb</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,6 +61,11 @@ header{
 .brand b{
   font-family:"Barlow Condensed",sans-serif;
   font-weight:700;font-size:22px;letter-spacing:.02em;
+}
+.brand b i{font-style:normal;color:var(--focus)}
+.brand .ver{
+  flex:none;align-self:center;color:var(--ink-faint);font-size:9.5px;letter-spacing:.09em;
+  border:1px solid var(--line);border-radius:var(--pille);padding:1px 6px;
 }
 .brand span{color:var(--ink-faint);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:1700px){.brand span{display:none}}
@@ -562,6 +567,7 @@ dialog h3{
 .kdrow:hover{border-color:var(--focus)}
 .kdrow b{font-size:13px;display:block}
 .kdrow small{color:var(--ink-dim);font-size:11.5px;display:block;margin-top:2px;line-height:1.4}
+.kdrow .blattknopf{padding:5px 13px;font-size:12px;flex:none;margin-left:10px}
 .kdrow .n{color:var(--ink-faint);font-size:11px;white-space:nowrap}
 .kdlist .pool-empty{padding:22px 6px}
 .kdbox{
@@ -686,8 +692,7 @@ dialog h3{
 .poolcol h2 .marke{
   width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--focus);
 }
-.poolcol[data-pool="irina"] h2 .marke{background:#C9A6FF}
-.poolcol[data-pool="irina"]{background:rgba(201,166,255,.045)}
+
 .jobcard.irina{border-left-color:#C9A6FF}
 .att .vonwem{
   position:absolute;left:5px;bottom:5px;max-width:calc(100% - 10px);
@@ -725,8 +730,7 @@ dialog h3{
 }
 .spaltenschalter:hover{color:var(--ink);border-color:var(--focus)}
 .spaltenschalter[aria-pressed="true"]{color:#C9A6FF;border-color:rgba(201,166,255,.45);background:rgba(201,166,255,.12)}
-.poolcol[data-pool="admin"] h2 .marke{background:#7FD39B}
-.poolcol[data-pool="admin"]{background:rgba(127,211,155,.045)}
+
 .jobcard.admin{border-left-color:#7FD39B}
 .poolcol.aus{display:none}
 
@@ -738,9 +742,11 @@ dialog h3{
   border-radius:var(--pille);color:var(--ink-faint);font-size:11px;padding:5px 8px;cursor:pointer;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.poolschalter button[aria-pressed="true"]{color:var(--ink);background:rgba(255,255,255,.1);border-color:var(--line)}
-.poolschalter button[data-k="irina"][aria-pressed="true"]{color:#C9A6FF;border-color:rgba(201,166,255,.45);background:rgba(201,166,255,.12)}
-.poolschalter button[data-k="admin"][aria-pressed="true"]{color:#9BDCA0;border-color:rgba(127,211,155,.45);background:rgba(127,211,155,.12)}
+.poolschalter button[aria-pressed="true"]{
+  color:var(--marke,var(--ink));
+  border-color:color-mix(in srgb, var(--marke,#fff) 45%, transparent);
+  background:color-mix(in srgb, var(--marke,#fff) 12%, transparent);
+}
 
 /* Vorabzuweisung an ein Team */
 .jobcard.vorab{border-left-width:4px}
@@ -827,11 +833,60 @@ table.jahr thead th.monatssumme{color:var(--focus);font-weight:600;text-align:ce
 .zelle input::-webkit-outer-spin-button,.zelle input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .zelle input:focus{outline:2px solid var(--focus);outline-offset:-2px;background:rgba(127,212,255,.12);border-radius:4px}
 .zelle input.hat{font-weight:650}
+.jbleiste{display:flex;align-items:center;gap:11px;margin:0 0 13px}
+.mangelband{
+  margin:0 0 11px;padding:9px 13px;border-radius:var(--radius);
+  background:rgba(224,59,59,.13);border:1px solid rgba(224,59,59,.4);
+  color:#FFC9C9;font-size:12.5px;
+}
+.mangelband b{color:#fff}
+.mangelband button{
+  background:none;border:0;color:#9BD7FF;text-decoration:underline;
+  cursor:pointer;font:inherit;padding:0;margin-left:6px;
+}
+.jobcard.mangelkarte{border-left-color:#E03B3B}
+.jobcard .mangelzu{font-size:10px;color:#FF9D9D;letter-spacing:.04em}
+table.liste tr.mangelzeile td:first-child input{padding-left:17px}
+table.liste tr.mangelzeile td:first-child::before{
+  content:"↳";position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  color:#C0392B;font-size:11px;pointer-events:none;
+}
+table.liste tr.mangelzeile td:first-child{position:relative}
 .zelle input.auszeit{color:#9BD7FF}
 .zelle .uhr{
   position:absolute;left:1px;bottom:0;font-size:8px;line-height:1;
   color:#7FD4FF;opacity:.85;pointer-events:none;
 }
+.wahlliste{display:flex;flex-direction:column;gap:9px}
+.wahlliste button{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;color:var(--ink);
+}
+.wahlliste button:hover{border-color:var(--focus);background:rgba(127,212,255,.08)}
+.wahlliste b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:600;letter-spacing:.01em}
+.wahlliste small{display:block;margin-top:3px;color:var(--ink-dim);font-size:12.5px;line-height:1.5}
+.trefferliste{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow:auto}
+.trefferliste button{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  background:none;border:1px solid transparent;border-radius:var(--radius);
+  padding:8px 11px;color:var(--ink);font-size:13px;
+}
+.trefferliste button:hover{background:var(--panel-2);border-color:var(--line-soft)}
+.trefferliste .nr{color:var(--ink-faint);font-variant-numeric:tabular-nums;margin-right:9px}
+.trefferliste .wo{display:block;color:var(--ink-dim);font-size:11.5px;margin-top:1px}
+.trefferliste .leer{color:var(--ink-faint);font-size:12.5px;padding:9px 2px}
+.jobcard .aufgabenzu{font-size:10px;color:#9BD7FF;letter-spacing:.04em}
+.jobcard.aufgabenkarte{border-left-color:#7FD4FF}
+.spaltenliste{display:flex;flex-direction:column;gap:6px}
+.spaltenzeile{display:flex;align-items:center;gap:8px}
+.spaltenzeile input{flex:1}
+.spaltenzeile .weg{
+  flex:none;padding:7px 11px;font-size:12px;border-radius:var(--radius);
+  background:rgba(224,59,59,.14);border:1px solid rgba(224,59,59,.36);color:#FF9D9D;cursor:pointer;
+}
+.spaltenzeile .weg:hover{background:rgba(224,59,59,.24)}
+.spaltenzeile .fest{flex:none;font-size:11px;color:var(--ink-faint);padding-right:4px}
 .zeitergebnis{
   display:flex;align-items:center;min-height:38px;padding:0 12px;
   border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2);
@@ -903,6 +958,7 @@ dialog.hell .dlg-body{max-height:76vh}
 }
 .reiter:hover{background:#EAEDF1;color:var(--l-ink)}
 .reiter.an{background:var(--l-feld);color:var(--l-ink);font-weight:650;box-shadow:0 -2px 0 var(--l-akzent) inset}
+.reiter.kunde::before{content:"●";color:#4C86C6;font-size:8px;margin-right:6px;vertical-align:middle}
 .reiter.plus{padding:7px 12px;color:var(--l-dim);font-size:15px;line-height:1;background:none;border-color:transparent}
 .reiter.plus:hover{background:#E1E4E9;border-color:var(--l-line)}
 
@@ -1272,7 +1328,13 @@ dialog.chatfenster{width:min(1120px,96vw)}
   backdrop-filter:blur(34px) saturate(1.7);-webkit-backdrop-filter:blur(34px) saturate(1.7);
   border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14);
 }
-.loginbox h1{font-family:"Barlow Condensed",sans-serif;font-size:30px;font-weight:700;margin:0;letter-spacing:.015em}
+.loginbox h1{font-family:"Barlow Condensed",sans-serif;font-size:34px;font-weight:700;margin:0;letter-spacing:.015em}
+.loginbox h1 i{font-style:normal;color:var(--focus)}
+.loginbox h1 .ver{
+  font-family:system-ui,sans-serif;font-size:10.5px;font-weight:500;letter-spacing:.1em;
+  color:var(--ink-faint);border:1px solid var(--line);border-radius:var(--pille);
+  padding:2px 7px;vertical-align:middle;margin-left:7px;
+}
 .loginbox .sub{color:var(--ink-faint);font-size:12.5px;margin:4px 0 22px}
 .loginbox label{display:block;color:var(--ink-faint);font-size:11.5px;margin:0 0 6px}
 .loginbox input{
@@ -1329,7 +1391,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
 
 <div id="login" class="login">
   <form class="loginbox" id="loginForm">
-    <h1>KUBIK</h1>
+    <h1>kub<i>.</i>ik <span class="ver">1.0</span></h1>
     <p class="sub" id="loginSub">Bitte anmelden</p>
     <label for="lgUser">Benutzername</label>
     <input type="text" id="lgUser" autocomplete="username" autocapitalize="none" spellcheck="false" required>
@@ -1342,7 +1404,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
 </div>
 
 <header>
-  <div class="brand"><b>KUBIK</b><span id="companyName">Elektro Meisterbetrieb</span></div>
+  <div class="brand"><b>kub<i>.</i>ik</b><span class="ver">1.0</span><span id="companyName">Elektro Meisterbetrieb</span></div>
 
   <div class="views">
     <button id="btnAnsicht" aria-haspopup="true" title="Ansicht wählen"><span id="ansichtName">Monat</span><i>▾</i></button>
@@ -1392,26 +1454,10 @@ dialog.chatfenster{width:min(1120px,96vw)}
   </div>
   <aside>
     <div class="poolschalter" id="poolSchalter" role="group" aria-label="Sichtbare Auftragsspalten"></div>
-    <div class="pools">
-      <div class="poolcol" data-pool="haupt">
-        <h2><span class="marke"></span><span class="titel" id="poolName0">Auftragspool</span>
-          <span class="count" id="poolCount"></span></h2>
-        <div class="pool" id="pool"></div>
-      </div>
-      <div class="poolcol" data-pool="irina">
-        <h2><span class="marke"></span><span class="titel" id="irinaName">Irina</span>
-          <span class="count" id="poolCountIrina"></span></h2>
-        <div class="pool" id="poolIrina"></div>
-      </div>
-      <div class="poolcol" data-pool="admin">
-        <h2><span class="marke"></span><span class="titel" id="adminName">Admin</span>
-          <span class="count" id="poolCountAdmin"></span></h2>
-        <div class="pool" id="poolAdmin"></div>
-      </div>
-    </div>
+    <div class="pools" id="poolSpalten"></div>
 
     <div class="aside-foot">
-      <button class="primary" id="btnNewJob">Auftrag anlegen</button>
+      <button class="primary" id="btnNewJob">Eintrag anlegen</button>
       <button id="btnScan" title="Ausgefülltes Auftragsformular abfotografiert? Hier hochladen.">Scannen</button>
       <button id="btnAllJobs">Alle</button>
     </div>
@@ -1530,6 +1576,11 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <h3 id="jobTitle">Auftrag anlegen</h3>
   <div class="dlg-body">
     <p class="hint" id="jbHerkunft" style="margin-top:0" hidden></p>
+    <p class="mangelband" id="jbMangelBand" hidden></p>
+    <div class="jbleiste" id="jbMangelLeiste" hidden>
+      <button type="button" class="btn warn" id="jbMangelNeu">Mangel zu diesem Auftrag aufnehmen</button>
+      <span class="hint" id="jbMangelZahl" style="margin:0"></span>
+    </div>
     <div class="field">
       <label for="jbName">Auftrag</label>
       <div class="pair">
@@ -1837,11 +1888,14 @@ dialog.chatfenster{width:min(1120px,96vw)}
       <p class="hint" style="margin-top:7px" id="stListeHint"></p>
     </div>
     <div class="field">
-      <label for="stZweit">Name der zweiten Auftragsspalte</label>
-      <input type="text" id="stZweit" placeholder="Irina">
-      <label for="stDritt" style="margin-top:11px">Name der dritten Auftragsspalte</label>
-      <input type="text" id="stDritt" placeholder="Admin">
-      <p class="hint" style="margin-top:7px">Neben dem gemeinsamen Auftragspool steht eine zweite Spalte. Aufträge lassen sich zwischen beiden hin- und herziehen und aus beiden in den Kalender.</p>
+      <label>Auftragsspalten</label>
+      <div class="spaltenliste" id="stPools"></div>
+      <div class="pruefzeile" style="margin-top:9px">
+        <button type="button" class="btn" id="stPoolNeu">Spalte hinzufügen</button>
+        <span class="hint" style="margin:0">Aufträge lassen sich zwischen allen Spalten hin- und herziehen und aus jeder in den Kalender.</span>
+      </div>
+      <label for="stSpur" style="margin-top:14px">Name der durchgehenden Spur unter dem Kalender</label>
+      <input type="text" id="stSpur" placeholder="Admin">
     </div>
     <div class="field">
       <label for="stModel">Verwendetes Modell</label>
@@ -1876,7 +1930,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
 <!-- Die Welt des Monteurs: nur der Chat, sonst nichts -->
 <div id="monteurWelt" hidden>
   <div class="mkopf">
-    <div class="brand"><b>KUBIK</b></div>
+    <div class="brand"><b>kub<i>.</i>ik</b><span class="ver">1.0</span></div>
     <div class="mteam" id="mTeam"></div>
     <div class="spacer"></div>
     <button class="ghost" id="mKonto">Konto</button>
@@ -1904,6 +1958,64 @@ dialog.chatfenster{width:min(1120px,96vw)}
 </dialog>
 
 <!-- Notizen und Mängel zu einem Auftrag -->
+<dialog id="dlgEintrag">
+  <h3 id="einTitel">Was möchtest du anlegen?</h3>
+  <div class="dlg-body">
+    <div class="wahlliste" id="einWahl">
+      <button type="button" data-w="auftrag">
+        <b>Auftrag</b><small>Arbeit bei einem Kunden – mit Adresse, Kunde und eigener Auftragsnummer.</small></button>
+      <button type="button" data-w="mangel">
+        <b>Mangel</b><small>Etwas ist nicht in Ordnung – zu einem bestehenden Auftrag oder ohne Bezug.</small></button>
+      <button type="button" data-w="aufgabe">
+        <b>Aufgabe</b><small>Etwas zu erledigen, ohne Kunde und ohne Nummer – in einer Spalte deiner Wahl.</small></button>
+    </div>
+
+    <div id="einMangel" hidden>
+      <div class="field">
+        <label for="einSuche">Zu welchem Auftrag gehört der Mangel?</label>
+        <input type="search" id="einSuche" autocomplete="off" placeholder="Auftragsnummer, z.B. 0018 – oder Bezeichnung, Straße">
+      </div>
+      <div class="trefferliste" id="einTreffer"></div>
+      <button type="button" class="btn" id="einExtern" style="width:100%;margin-top:11px">Externer Mangel – ohne Bezug zu einem Auftrag</button>
+    </div>
+
+    <div id="einAufgabe" hidden>
+      <div class="field">
+        <label for="einAufText">Was ist zu tun?</label>
+        <input type="text" id="einAufText" placeholder="z.B. Material für Konstanz bestellen">
+      </div>
+      <div class="field">
+        <label for="einAufPool">In welche Spalte?</label>
+        <select id="einAufPool"></select>
+      </div>
+      <p class="hint">Die Aufgabe liegt dort wie ein Auftrag und lässt sich genauso in den Kalender ziehen – sie bekommt nur keine Auftragsnummer und steht in keiner Kundenliste.</p>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" id="einZurueck" style="margin-right:auto" hidden>Zurück</button>
+    <button class="btn" data-close>Abbrechen</button>
+    <button class="btn primary" id="einAnlegen" hidden>Aufgabe anlegen</button>
+  </div>
+</dialog>
+
+<dialog id="dlgMangel">
+  <h3 id="mgTitel">Mangel aufnehmen</h3>
+  <div class="dlg-body">
+    <p class="hint" style="margin-top:0" id="mgZu"></p>
+    <div class="field">
+      <label for="mgText">Was ist der Mangel?</label>
+      <textarea id="mgText" rows="3" placeholder="z.B. Steckdose Küche ohne Funktion"></textarea>
+    </div>
+    <p class="hint">Daraus wird ein eigener Auftrag mit eigener Nummer – im Auftragspool, zum Einplanen wie
+      jeder andere. Adresse und Kunde übernimmt er vom Ausgangsauftrag. In der Kundenliste steht er
+      direkt unter dem Auftrag, zu dem er gehört.</p>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" data-close>Abbrechen</button>
+    <button class="btn primary" id="mgSpeichern">Mangel anlegen</button>
+  </div>
+</dialog>
+
 <dialog id="dlgJobNotiz">
   <h3 id="jnTitel">Notizen</h3>
   <div class="dlg-body">
@@ -1945,7 +2057,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
       <div class="field"><label for="ztPause">Pause in Minuten</label><input type="number" id="ztPause" min="0" max="240" step="5"></div>
       <div class="field"><label>Ergibt</label><div class="zeitergebnis" id="ztErgebnis">–</div></div>
     </div>
-    <p class="hint">Die Stunden rechnet KUBIK selbst aus: Ende minus Beginn, abzüglich der Pause.
+    <p class="hint">Die Stunden rechnet kub.ik selbst aus: Ende minus Beginn, abzüglich der Pause.
       In der Tabelle geht das auch direkt – einfach <b>7:30-15:30</b> in das Feld tippen.</p>
   </div>
   <div class="dlg-foot">
@@ -1958,7 +2070,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
 <dialog id="dlgReset">
   <h3>Passwort vergessen</h3>
   <div class="dlg-body">
-    <p class="hint" style="margin-top:0">KUBIK schickt einen Link zum Zurücksetzen – aber nur an eine
+    <p class="hint" style="margin-top:0">kub.ik schickt einen Link zum Zurücksetzen – aber nur an eine
       echte E-Mail-Adresse. Kurze Benutzernamen wie <b>admin</b> haben kein Postfach dahinter.</p>
     <div class="field">
       <label for="rsMail">E-Mail-Adresse des Zugangs</label>
@@ -2199,9 +2311,11 @@ function naechsteAuftragsNr(){
 const nrText = n => n ? String(n).padStart(4,"0") : "";
 
 /* Jeder neue Auftrag bekommt Nummer, Urheber und Zeitpunkt */
-function neuerAuftrag(felder){
+/* ohneNummer: Aufgaben bekommen keine Auftragsnummer, damit die
+   Nummernfolge nur echte Aufträge und Mängel zählt. */
+function neuerAuftrag(felder,ohneNummer){
   return Object.assign({
-    id:uid(), nr:naechsteAuftragsNr(),
+    id:uid(), nr: ohneNummer ? null : naechsteAuftragsNr(),
     erstelltVon:(typeof meinName!=="undefined" && meinName) ? meinName : "",
     erstelltAm:new Date().toISOString(),
     name:"", address:"", lat:null, lng:null, contact:"", note:""
@@ -2358,12 +2472,21 @@ function zustandPruefen(d){
   if(!d.settings.auftragNr) d.settings.auftragNr=0;
   (d.jobs||[]).forEach(j=>{ if(!j.nr){ d.settings.auftragNr++; j.nr=d.settings.auftragNr; } });
   d.settings.auftragNr=Math.max(d.settings.auftragNr, ...(d.jobs||[]).map(j=>j.nr||0), 0);
-  if(!d.settings.zweitpool) d.settings.zweitpool="Irina";
-  if(!d.settings.drittpool) d.settings.drittpool="Admin";
-  if(d.settings.zweitpoolAn===undefined) d.settings.zweitpoolAn=true;
-  if(!d.settings.poolsAn) d.settings.poolsAn={haupt:true, irina:d.settings.zweitpoolAn!==false, admin:true};
-  ["haupt","irina","admin"].forEach(k=>{ if(d.settings.poolsAn[k]===undefined) d.settings.poolsAn[k]=true; });
-  if(!Object.values(d.settings.poolsAn).some(Boolean)) d.settings.poolsAn.haupt=true;
+  /* Die Auftragsspalten sind frei: Namen ändern, neue dazu, alte weg.
+     Alte Pläne kannten nur drei feste – die werden hier übernommen. */
+  if(!Array.isArray(d.settings.pools) || !d.settings.pools.length){
+    d.settings.pools=[
+      {k:"haupt", name:"Auftragspool"},
+      {k:"irina", name:d.settings.zweitpool||"Irina"},
+      {k:"admin", name:d.settings.drittpool||"Admin"},
+    ];
+  }
+  d.settings.pools=d.settings.pools.filter(p=>p&&p.k).map(p=>({k:String(p.k),name:String(p.name||p.k)}));
+  if(!d.settings.pools.some(p=>p.k==="haupt")) d.settings.pools.unshift({k:"haupt",name:"Auftragspool"});
+  if(!d.settings.spurName) d.settings.spurName=d.settings.drittpool||"Admin";
+  if(!d.settings.poolsAn) d.settings.poolsAn={};
+  d.settings.pools.forEach(p=>{ if(d.settings.poolsAn[p.k]===undefined) d.settings.poolsAn[p.k]=true; });
+  if(!d.settings.pools.some(p=>d.settings.poolsAn[p.k])) d.settings.poolsAn.haupt=true;
   return d;
 }
 
@@ -2689,10 +2812,11 @@ function renderPhoneJobs(){
       ${j.wishDate?`<small style="margin-top:3px;color:#FFC978">Wunschbeginn ${esc(wunschText(j.wishDate))}</small>`:""}
       <small style="margin-top:3px;color:var(--ink-faint)">${planned.has(j.id)?"eingeplant":"noch offen"}${j.billed?" · abgerechnet":""}${fileCounts[j.id]?` · ${fileCounts[j.id]} Anhang`:""}</small>
       <div class="row"><button data-m="${j.id}">Karte</button
-        ><button class="nzknopf ${notizStufe(j.id)}" data-nz="${j.id}" title="Notizen und Mängel">Notizen</button></div>
+        ><button class="nzknopf ${notizStufe(j.id)}" data-nz="${j.id}" title="Notizen und Mängel">Notizen</button
+        >${istMangelAuftrag(j)?`<button data-mok="${j.id}">Mangel erledigt</button>`:""}</div>
       ${darfPlanen()?`<div class="vorabzeile">
         <select class="spaltenwahl" data-sp="${j.id}" title="In welcher Spalte steht der Auftrag?">
-          ${POOLS.map(k=>`<option value="${k}"${k===spalte?" selected":""}>${esc(poolName(k))}</option>`).join("")}
+          ${poolKeys().map(k=>`<option value="${k}"${k===spalte?" selected":""}>${esc(poolName(k))}</option>`).join("")}
         </select>
         <select class="teamwahl" data-tw="${j.id}" title="Vorgesehen für welches Team?">
           <option value=""${!j.planTeam?" selected":""}>noch offen</option>
@@ -2713,6 +2837,9 @@ function renderPhoneJobs(){
   });
   wrap.querySelectorAll("[data-sp]").forEach(sel=>sel.onchange=()=>{
     const j=jobById(sel.dataset.sp); if(j){ spalteSetzen(j, sel.value); render(); }
+  });
+  wrap.querySelectorAll("[data-mok]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation(); mangelAuftragErledigen(b.dataset.mok);
   });
   wrap.querySelectorAll("[data-tw]").forEach(sel=>sel.onchange=()=>{
     const j=jobById(sel.dataset.tw); if(!j) return;
@@ -3190,13 +3317,26 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 /* ---- Auftragspool ---- */
 /* Zwei Spalten: der gemeinsame Pool und die Spalte von Irina.
    Ein Auftrag gehört zu einer Spalte, Ziehen verschiebt ihn. */
-const POOLS=["haupt","irina","admin"];
-const poolName = k => k==="haupt" ? "Auftragspool"
-                 : k==="irina" ? (state.settings.zweitpool||"Irina")
-                 : (state.settings.drittpool||"Admin");
-const poolVon  = j => (j && POOLS.includes(j.pool)) ? j.pool : "haupt";
-const istZweit = j => poolVon(j)==="irina";
+const poolListe = () => (state.settings.pools && state.settings.pools.length)
+  ? state.settings.pools : [{k:"haupt",name:"Auftragspool"}];
+const poolKeys = () => poolListe().map(p=>p.k);
+const poolErste = () => poolKeys()[0];
+const poolName = k => { const p=poolListe().find(x=>x.k===k); return p?p.name:"Auftragspool"; };
+const poolVon  = j => (j && poolKeys().includes(j.pool)) ? j.pool : poolErste();
+const istZweit = j => poolVon(j)!==poolErste();
+/* Ein neuer Schlüssel, der mit keinem bestehenden kollidiert */
+function poolSchluessel(name){
+  const roh=String(name||"spalte").toLowerCase()
+    .replace(/[äöüß]/g,m=>({"ä":"ae","ö":"oe","ü":"ue","ß":"ss"}[m]))
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,18) || "spalte";
+  let k=roh, i=2;
+  while(poolKeys().includes(k)){ k=roh+"-"+i; i++; }
+  return k;
+}
 const poolSichtbar = k => state.settings.poolsAn && state.settings.poolsAn[k]!==false;
+
+/* Jede Spalte bekommt ihre eigene Marke – der Reihe nach */
+const POOLFARBEN=["#7FD4FF","#C9A6FF","#7FD39B","#FFC978","#FF9DC0","#9BE8E0"];
 
 /* Blasse Teamfarbe für vorab zugewiesene Aufträge */
 function blass(hex,a){
@@ -3205,30 +3345,106 @@ function blass(hex,a){
   return `rgba(${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)},${a})`;
 }
 
+/* Die Spalten stehen nicht mehr fest im Seitengerüst, sondern
+   entstehen aus der Liste in den Einstellungen. */
+function poolGeruest(){
+  const box=document.getElementById("poolSpalten");
+  const soll=poolKeys().join("|");
+  if(box.dataset.soll===soll) return;
+  box.dataset.soll=soll;
+  box.replaceChildren();
+  poolListe().forEach((p,i)=>{
+    const c=document.createElement("div");
+    c.className="poolcol"; c.dataset.pool=p.k;
+    c.innerHTML=`<h2><span class="marke"></span><span class="titel"></span>
+        <span class="count"></span></h2>
+      <div class="pool"></div>`;
+    const farbe=POOLFARBEN[i%POOLFARBEN.length];
+    c.querySelector(".marke").style.background=farbe;
+    c.style.background=blass(farbe,.045);
+    if(i===0) c.querySelector(".pool").id="pool";   // für Tastatur und Tests
+    spalteAlsZiel(c);
+    box.appendChild(c);
+  });
+}
+
 function renderPool(){
   document.getElementById("btnAllJobs").textContent = poolShowAll ? "Nur offene" : "Alle";
-  document.getElementById("poolName0").textContent = poolName("haupt");
-  document.getElementById("irinaName").textContent = poolName("irina");
-  document.getElementById("adminName").textContent = poolName("admin");
+  poolGeruest();
   spaltenSchalterZeichnen();
-  const sichtbar=POOLS.filter(poolSichtbar);
-  document.querySelectorAll(".poolcol").forEach(c=>c.classList.toggle("aus",!poolSichtbar(c.dataset.pool)));
+  const sichtbar=poolKeys().filter(poolSichtbar);
   const as=document.querySelector("aside");
   as.style.display = sichtbar.length ? "" : "none";
   as.style.flex = `0 0 ${Math.max(1,sichtbar.length)*246}px`;
   const ks=document.getElementById("btnSpalten");
   if(ks) ks.textContent = sichtbar.length ? "Spalten" : "Spalten einblenden";
-  poolSpalte("pool","poolCount","haupt",true);
-  poolSpalte("poolIrina","poolCountIrina","irina",false);
-  poolSpalte("poolAdmin","poolCountAdmin","admin",false);
+  poolListe().forEach((p,i)=>{
+    const c=document.querySelector(`.poolcol[data-pool="${p.k}"]`);
+    if(!c) return;
+    c.classList.toggle("aus", !poolSichtbar(p.k));
+    c.querySelector(".titel").textContent=p.name;
+    poolSpalte(c.querySelector(".pool"), c.querySelector(".count"), p.k, i===0);
+  });
+}
+
+/* ---------------------------------------------------------
+   Spalten verwalten: umbenennen, dazunehmen, wegnehmen.
+   Die erste Spalte ist der Sammelplatz und bleibt immer.
+   --------------------------------------------------------- */
+function poolVerwalterZeichnen(){
+  const box=document.getElementById("stPools"); if(!box) return;
+  box.replaceChildren();
+  poolListe().forEach((p,i)=>{
+    const z=document.createElement("div"); z.className="spaltenzeile";
+    const e=document.createElement("input");
+    e.type="text"; e.value=p.name; e.placeholder="Name der Spalte";
+    e.oninput=()=>{ p.name=e.value.trim()||p.k; };
+    e.onchange=()=>{ save(); renderPool(); };
+    z.appendChild(e);
+    if(i===0){
+      const f=document.createElement("span"); f.className="fest";
+      f.textContent="Sammelplatz"; f.title="Hier landet jeder Auftrag, der keiner anderen Spalte zugeordnet ist.";
+      z.appendChild(f);
+    }else{
+      const w=document.createElement("button");
+      w.type="button"; w.className="weg"; w.textContent="Entfernen";
+      w.onclick=()=>poolEntfernen(p.k);
+      z.appendChild(w);
+    }
+    box.appendChild(z);
+  });
+}
+
+function poolHinzufuegen(){
+  const name=prompt("Wie soll die neue Spalte heißen?","Neue Spalte");
+  if(name===null) return;
+  const t=name.trim(); if(!t) return;
+  const k=poolSchluessel(t);
+  poolListe().push({k,name:t});
+  state.settings.poolsAn[k]=true;
+  save(); poolVerwalterZeichnen(); renderPool(); render();
+}
+
+function poolEntfernen(k){
+  if(k===poolErste()) return;
+  const drin=state.jobs.filter(j=>poolVon(j)===k);
+  const ziel=poolName(poolErste());
+  if(drin.length && !confirm(
+      `In „${poolName(k)}“ stehen ${drin.length} Auftrag${drin.length===1?"":"e"}.\n\n`
+      +`Die Spalte wird entfernt, die Aufträge wandern nach „${ziel}“. Fortfahren?`)) return;
+  drin.forEach(j=>delete j.pool);
+  state.settings.pools=poolListe().filter(p=>p.k!==k);
+  delete state.settings.poolsAn[k];
+  save(); poolVerwalterZeichnen(); renderPool(); render();
 }
 
 /* Welche Spalten stehen gerade da */
 function spaltenSchalterZeichnen(){
   const box=document.getElementById("poolSchalter"); box.replaceChildren();
-  POOLS.forEach(k=>{
+  poolKeys().forEach(k=>{
     const b=document.createElement("button");
     b.dataset.k=k; b.textContent=poolName(k);
+    b.style.setProperty("--marke", POOLFARBEN[poolKeys().indexOf(k)%POOLFARBEN.length]);
     b.setAttribute("aria-pressed", poolSichtbar(k)?"true":"false");
     b.title = poolSichtbar(k) ? `„${poolName(k)}“ ausblenden` : `„${poolName(k)}“ einblenden`;
     b.onclick=()=>spalteUmschalten(k);
@@ -3238,7 +3454,6 @@ function spaltenSchalterZeichnen(){
 
 function spalteUmschalten(k){
   state.settings.poolsAn[k]=!poolSichtbar(k);
-  state.settings.zweitpoolAn=state.settings.poolsAn.irina;
   save(); renderPool(); render();
 }
 
@@ -3249,7 +3464,7 @@ function spaltenWaehler(x,y){
   const d=document.createElement("div"); d.className="nzblase spaltenblase";
   const h=document.createElement("h4"); h.textContent="Auftragsspalten";
   d.appendChild(h);
-  POOLS.forEach(k=>{
+  poolKeys().forEach(k=>{
     const z=document.createElement("label"); z.className="hakzeile";
     const c=document.createElement("input"); c.type="checkbox"; c.checked=poolSichtbar(k);
     c.onchange=()=>{ spalteUmschalten(k); };
@@ -3259,12 +3474,12 @@ function spaltenWaehler(x,y){
   });
   const reihe=document.createElement("div"); reihe.className="blasefuss";
   const alle=document.createElement("button"); alle.textContent="alle zeigen";
-  alle.onclick=()=>{ POOLS.forEach(k=>state.settings.poolsAn[k]=true);
-    state.settings.zweitpoolAn=true; save(); renderPool(); render();
+  alle.onclick=()=>{ poolKeys().forEach(k=>state.settings.poolsAn[k]=true);
+    save(); renderPool(); render();
     d.querySelectorAll("input").forEach(i=>i.checked=true); };
   const keine=document.createElement("button"); keine.textContent="alle ausblenden";
-  keine.onclick=()=>{ POOLS.forEach(k=>state.settings.poolsAn[k]=false);
-    state.settings.zweitpoolAn=false; save(); renderPool(); render();
+  keine.onclick=()=>{ poolKeys().forEach(k=>state.settings.poolsAn[k]=false);
+    save(); renderPool(); render();
     d.querySelectorAll("input").forEach(i=>i.checked=false); };
   reihe.append(alle,keine); d.appendChild(reihe);
   document.body.appendChild(d);
@@ -3291,9 +3506,8 @@ document.getElementById("btnSpalten").onclick=e=>{
 
 /* Auftrag in eine andere Spalte legen */
 function spalteSetzen(job,spalte){
-  if(POOLS.includes(spalte) && spalte!=="haupt") job.pool=spalte; else delete job.pool;
-  if(spalte!=="haupt") state.settings.poolsAn[spalte]=true;
-  state.settings.zweitpoolAn=state.settings.poolsAn.irina;
+  if(poolKeys().includes(spalte) && spalte!==poolErste()) job.pool=spalte; else delete job.pool;
+  if(spalte!==poolErste()) state.settings.poolsAn[spalte]=true;
   save(); renderPool();
 }
 
@@ -3309,12 +3523,14 @@ function auftragSchieben(job,richtung){
 }
 
 function poolSpalte(ziel,zaehler,spalte,mitEinreichungen){
-  const pool=document.getElementById(ziel);
+  const pool=(typeof ziel==="string")?document.getElementById(ziel):ziel;
+  const zaehlFeld=(typeof zaehler==="string")?document.getElementById(zaehler):zaehler;
+  if(!pool) return;
   if(!poolSichtbar(spalte)){ pool.replaceChildren(); return; }
   const planned=plannedJobIds();
   const eigene=state.jobs.filter(j=>poolVon(j)===spalte);
   const list = poolShowAll ? eigene : eigene.filter(j=>!planned.has(j.id));
-  document.getElementById(zaehler).textContent = poolShowAll ? `alle ${eigene.length}` : `${list.length} offen`;
+  if(zaehlFeld) zaehlFeld.textContent = poolShowAll ? `alle ${eigene.length}` : `${list.length} offen`;
   pool.replaceChildren();
 
   // Von Kunden eingereicht, noch nicht übernommen
@@ -3361,7 +3577,12 @@ function poolSpalte(ziel,zaehler,spalte,mitEinreichungen){
       c.style.borderLeftColor=vorab.color;
       c.style.background=blass(vorab.color,.13);
     }
-    c.innerHTML=`<b>${j.nr?`<span class="aufnr">${nrText(j.nr)}</span> `:""}${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
+    if(istMangelAuftrag(j) && !vorab) c.classList.add("mangelkarte");
+    if(istAufgabe(j) && !vorab) c.classList.add("aufgabenkarte");
+    c.innerHTML=`${istMangelAuftrag(j)
+        ? `<span class="mangelzu">${j.mangelZu?`MANGEL ZU ${esc(nrText((jobById(j.mangelZu)||{}).nr))}`:"EXTERNER MANGEL"}</span>`
+        : istAufgabe(j) ? `<span class="aufgabenzu">AUFGABE</span>` : ""}
+      <b>${j.nr?`<span class="aufnr">${nrText(j.nr)}</span> `:""}${esc(j.name)}</b><small>${esc(j.address||"keine Adresse")}</small>
       ${(()=>{const k=kundeById(j.customerId);
         return k?`<small style="margin-top:3px;color:var(--ink-dim)">${esc(k.company)}</small>`:"";})()}
       ${j.wishDate?`<small style="margin-top:3px;color:#FFC978">Wunschbeginn ${esc(wunschText(j.wishDate))}</small>`:""}
@@ -3371,10 +3592,10 @@ function poolSpalte(ziel,zaehler,spalte,mitEinreichungen){
       ${fileCounts[j.id]?`<small style="margin-top:3px;color:var(--ink-dim)">${fileCounts[j.id]} Foto${fileCounts[j.id]===1?"":"s"} / Datei${fileCounts[j.id]===1?"":"en"}</small>`:""}
       <div class="row"><button data-m="${j.id}">Karte</button
         ><button class="nzknopf ${notizStufe(j.id)}" data-nz="${j.id}">Notizen</button
-        ></div>
+        >${istMangelAuftrag(j)?`<button data-mok="${j.id}" title="Mangel beseitigt – wer war es?">Mangel erledigt</button>`:""}</div>
       ${darfPlanen()?`<div class="vorabzeile">
         <select class="spaltenwahl" data-sp="${j.id}" title="In welcher Spalte steht der Auftrag?">
-          ${POOLS.map(k=>`<option value="${k}"${k===spalte?" selected":""}>${esc(poolName(k))}</option>`).join("")}
+          ${poolKeys().map(k=>`<option value="${k}"${k===spalte?" selected":""}>${esc(poolName(k))}</option>`).join("")}
         </select>
         <select class="teamwahl" data-tw="${j.id}" title="Vorgesehen für welches Team?">
           <option value=""${!j.planTeam?" selected":""}>noch offen</option>
@@ -3402,6 +3623,9 @@ function poolSpalte(ziel,zaehler,spalte,mitEinreichungen){
     const j=jobById(sel.dataset.tw); if(!j) return;
     if(sel.value) j.planTeam=sel.value; else delete j.planTeam;
     save(); renderPool();
+  });
+  pool.querySelectorAll("[data-mok]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation(); mangelAuftragErledigen(b.dataset.mok);
   });
   pool.querySelectorAll("[data-up]").forEach(b=>b.onclick=e=>{
     e.stopPropagation(); const j=jobById(b.dataset.up); if(j) auftragSchieben(j,-1);
@@ -3940,10 +4164,38 @@ function openJob(id){
   jbWish.value=j.wishDate||""; jbValue.value=j.value||"";
   jbBilled.checked=!!j.billed;
   const ps=document.getElementById("jbPool");
-  ps.options[0].textContent=poolName("haupt");
-  ps.options[1].textContent=poolName("irina");
-  ps.options[2].textContent=poolName("admin");
+  ps.replaceChildren(...poolListe().map(x=>{
+    const o=document.createElement("option"); o.value=x.k; o.textContent=x.name; return o;
+  }));
   ps.value = poolVon(j);
+  /* Mangel: Band oben, oder der Knopf zum Aufnehmen */
+  const band=document.getElementById("jbMangelBand");
+  const leiste=document.getElementById("jbMangelLeiste");
+  if(id && istMangelAuftrag(j)){
+    const el=j.mangelZu?jobById(j.mangelZu):null;
+    band.hidden=false;
+    band.innerHTML = el
+      ? `Dies ist ein <b>Mangel</b> zum Auftrag <b>${esc(nrText(el.nr))} ${esc(el.name||"–")}</b>.`
+        + (j.erledigt?` <b>Erledigt von ${esc(j.erledigtVon||"–")}.</b>`:"")
+        + ` <button type="button" id="jbZumEltern">Ausgangsauftrag öffnen</button>`
+      : `Dies ist ein <b>externer Mangel</b> – ohne Bezug zu einem Auftrag.`
+        + (j.erledigt?` <b>Erledigt von ${esc(j.erledigtVon||"–")}.</b>`:"");
+    const zu=document.getElementById("jbZumEltern");
+    if(zu && el) zu.onclick=()=>{ dlgJob.close(); setTimeout(()=>openJob(el.id),60); };
+    leiste.hidden=true;
+  }else if(id && istAufgabe(j)){
+    band.hidden=true; leiste.hidden=true;
+  }else{
+    band.hidden=true;
+    leiste.hidden=!id;
+    if(id){
+      const kinder=maengelZu(id);
+      const offen=kinder.filter(k=>!k.erledigt).length;
+      document.getElementById("jbMangelZahl").textContent = kinder.length
+        ? `${kinder.length} Mangel${kinder.length===1?"":"-Aufträge"} dazu${offen?` · ${offen} offen`:" · alle erledigt"}`
+        : "";
+    }
+  }
   document.getElementById("jbDelete").style.display=id?"":"none";
   document.getElementById("geoHint").className="hint";
   document.getElementById("geoHint").textContent="Koordinaten werden für die Karte gebraucht. „Adresse suchen“ holt sie automatisch (braucht Internet).";
@@ -3956,6 +4208,35 @@ function naviOeffnen(adresse,lat,lng){
   if(!ziel){ alert("Für diesen Auftrag ist noch keine Adresse hinterlegt."); return; }
   window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(ziel),"_blank");
 }
+let mangelElternId=null;
+function mangelFensterFuer(elternId){
+  mangelElternId=elternId||null;
+  const p=elternId?jobById(elternId):null;
+  document.getElementById("mgTitel").textContent = p ? "Mangel aufnehmen" : "Externer Mangel";
+  document.getElementById("mgZu").textContent = p
+    ? `Zum Auftrag ${nrText(p.nr)} · ${p.name}${p.address?" · "+p.address:""}`
+    : "Ohne Bezug zu einem Auftrag. Adresse und Kunde kannst du danach im Fenster nachtragen.";
+  document.getElementById("mgText").value="";
+  dlgMangel.showModal();
+  setTimeout(()=>document.getElementById("mgText").focus(),40);
+}
+document.getElementById("jbMangelNeu").onclick=()=>{
+  if(!jobEditId || jobIsNew){ alert("Den Auftrag bitte erst speichern."); return; }
+  if(!jobById(jobEditId)) return;
+  mangelFensterFuer(jobEditId);
+};
+document.getElementById("mgSpeichern").onclick=()=>{
+  const t=document.getElementById("mgText").value.trim();
+  if(!t){ alert("Bitte kurz beschreiben, was der Mangel ist."); return; }
+  const kind=mangelAuftragAnlegen(mangelElternId,t);
+  dlgMangel.close();
+  if(!kind) return;
+  poolShowAll=false;
+  render(); renderPool();
+  if(dlgJob.open) dlgJob.close();
+  setTimeout(()=>openJob(kind.id),80);
+};
+
 document.getElementById("jbNavi").onclick=()=>naviOeffnen(
   jbAdr.value, jbLat.value?parseFloat(jbLat.value):null, jbLng.value?parseFloat(jbLng.value):null);
 
@@ -3971,6 +4252,7 @@ document.getElementById("jbSave").onclick=()=>{
   if(jobIsNew) state.jobs.push(neuerAuftrag(Object.assign({id:jobEditId},data)));
   else Object.assign(jobById(jobEditId),data);
   jobIsNew=false;
+  listeNachfuehren(jobById(jobEditId));
   save(); dlgJob.close(); render();
 };
 
@@ -4130,9 +4412,11 @@ document.getElementById("jbGeo").onclick=async()=>{
 };
 /* Einsatz aus dem Kalender zurück in eine der beiden Auftragsspalten ziehen,
    und Aufträge zwischen den Spalten verschieben */
-(function(){
-  document.querySelectorAll(".poolcol").forEach(zone=>{
-    const spalte = zone.dataset.pool;           // "haupt" oder "irina"
+/* Wird für jede Spalte aufgerufen, sobald sie entsteht –
+   die Spalten stehen nicht mehr fest im Seitengerüst. */
+function spalteAlsZiel(zone){
+  {
+    const spalte = zone.dataset.pool;
     const passt = e => { const t=[...e.dataTransfer.types];
       return t.includes("application/json") || t.includes("text/plain"); };
     zone.addEventListener("dragover",e=>{
@@ -4152,7 +4436,7 @@ document.getElementById("jbGeo").onclick=async()=>{
           if(istFixiert(r.jobId)){ alert(fixHinweis(r.jobId)); return; }
           clearRun(r);
           const j=jobById(r.jobId);
-          if(j){ if(spalte==="irina") j.pool="irina"; else delete j.pool; }
+          if(j) spalteSetzen(j,spalte);
           save(); render(); return;
         } }catch(_){}
       }
@@ -4162,13 +4446,101 @@ document.getElementById("jbGeo").onclick=async()=>{
       const job=id?jobById(id):null;
       if(job){ spurEntfernen(id); spalteSetzen(job,spalte); }
     });
-  });
-})();
+  }
+}
 
 /* Zweite Spalte ein- und ausblenden */
 
 
-document.getElementById("btnNewJob").onclick=()=>openJob(null);
+document.getElementById("stPoolNeu").onclick=poolHinzufuegen;
+
+/* =========================================================
+   Eintrag anlegen: erst die Art wählen, dann das Nötige.
+   ========================================================= */
+function eintragFenster(){
+  einSchritt("wahl");
+  dlgEintrag.showModal();
+}
+function einSchritt(welcher){
+  const wahl=document.getElementById("einWahl");
+  const mang=document.getElementById("einMangel");
+  const aufg=document.getElementById("einAufgabe");
+  const zur =document.getElementById("einZurueck");
+  const anl =document.getElementById("einAnlegen");
+  wahl.hidden = welcher!=="wahl";
+  mang.hidden = welcher!=="mangel";
+  aufg.hidden = welcher!=="aufgabe";
+  zur.hidden  = welcher==="wahl";
+  anl.hidden  = welcher!=="aufgabe";
+  document.getElementById("einTitel").textContent =
+    welcher==="mangel"  ? "Mangel anlegen" :
+    welcher==="aufgabe" ? "Aufgabe anlegen" : "Was möchtest du anlegen?";
+  if(welcher==="mangel"){
+    document.getElementById("einSuche").value="";
+    einTrefferZeichnen("");
+    setTimeout(()=>document.getElementById("einSuche").focus(),40);
+  }
+  if(welcher==="aufgabe"){
+    const sel=document.getElementById("einAufPool");
+    sel.replaceChildren(...poolListe().map(p=>{
+      const o=document.createElement("option"); o.value=p.k; o.textContent=p.name; return o;
+    }));
+    document.getElementById("einAufText").value="";
+    setTimeout(()=>document.getElementById("einAufText").focus(),40);
+  }
+}
+
+/* Aufträge für den Mangel suchen – Nummer oder Text */
+function einTrefferZeichnen(q){
+  const box=document.getElementById("einTreffer"); box.replaceChildren();
+  const t=String(q||"").trim().toLowerCase().replace(/^#/,"");
+  const nr = /^\d{1,6}$/.test(t) ? parseInt(t,10) : null;
+  let liste=state.jobs.filter(j=>!istAufgabe(j) && !istMangelAuftrag(j));
+  if(t){
+    liste=liste.filter(j=>{
+      if(nr!==null && Number(j.nr)===nr) return true;
+      const heu=((j.nr?nrText(j.nr)+" "+j.nr:"")+" "+(j.name||"")+" "+(j.address||"")).toLowerCase();
+      return heu.includes(t);
+    });
+  }
+  liste.sort((a,b)=>{
+    const an=(nr!==null && Number(a.nr)===nr)?0:1, bn=(nr!==null && Number(b.nr)===nr)?0:1;
+    return an-bn || (b.nr||0)-(a.nr||0);
+  });
+  if(!liste.length){
+    const d=document.createElement("div"); d.className="leer";
+    d.textContent = t ? "Kein Auftrag gefunden." : "Noch keine Aufträge angelegt.";
+    box.appendChild(d); return;
+  }
+  liste.slice(0,40).forEach(j=>{
+    const b=document.createElement("button"); b.type="button";
+    b.innerHTML=`<span class="nr">${esc(nrText(j.nr))}</span>${esc(j.name)}
+      <span class="wo">${esc(j.address||"keine Adresse")}</span>`;
+    b.onclick=()=>{ dlgEintrag.close(); mangelFensterFuer(j.id); };
+    box.appendChild(b);
+  });
+}
+
+document.getElementById("einWahl").querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{
+  const w=b.dataset.w;
+  if(w==="auftrag"){ dlgEintrag.close(); openJob(null); return; }
+  einSchritt(w);
+});
+document.getElementById("einZurueck").onclick=()=>einSchritt("wahl");
+document.getElementById("einSuche").oninput=e=>einTrefferZeichnen(e.target.value);
+document.getElementById("einExtern").onclick=()=>{ dlgEintrag.close(); mangelFensterFuer(null); };
+document.getElementById("einAnlegen").onclick=()=>{
+  const t=document.getElementById("einAufText").value.trim();
+  if(!t){ alert("Bitte kurz schreiben, was zu tun ist."); return; }
+  const k=document.getElementById("einAufPool").value;
+  const a=neuerAuftrag({art:"aufgabe", name:t, pool:(k!==poolErste()?k:undefined)}, true);
+  state.jobs.push(a);
+  state.settings.poolsAn[k]=true;
+  save(); dlgEintrag.close();
+  poolShowAll=false; render(); renderPool();
+};
+
+document.getElementById("btnNewJob").onclick=eintragFenster;
 document.getElementById("btnAllJobs").onclick=()=>{poolShowAll=!poolShowAll;renderPool();};
 
 /* ---- Kontextmenü auf einem Einsatz ---- */
@@ -4620,6 +4992,7 @@ document.getElementById("scanSave").onclick=async()=>{
     contact:scContact.value.trim(),note:scWork.value.trim(),
     customerId:kid||"", wishDate:scDate.value||"", value:scValue.value.trim()});
   state.jobs.push(job);
+  listeNachfuehren(job);
   if(adr) geocodeQuiet(job);
   if(scanDatei){
     try{ await Files.add(job.id,scanDatei,(typeof meinName!=="undefined"&&meinName)||"Büro"); await refreshCounts(); }catch(e){}
@@ -4645,8 +5018,11 @@ function openKunden(){
         <small>${esc([k.contact,k.address].filter(Boolean).join(" · ")||"keine weiteren Angaben")}</small>
         ${(k.phone||k.mobile)?`<small>${esc([k.phone,k.mobile].filter(Boolean).join(" · "))}</small>`:""}
       </div>
-      <span class="n">${n?`${n} Auftrag${n===1?"":"­e"}`:"kein Auftrag"}</span>`;
-    row.onclick=()=>openKunde(k.id);
+      <span class="n">${n?`${n} Auftrag${n===1?"":"­e"}`:"kein Auftrag"}</span>
+      <button class="btn blattknopf" data-bl="${k.id}" title="Das Blatt dieses Kunden in der Auftragsliste öffnen">Liste</button>`;
+    row.onclick=e=>{ if(e.target.closest(".blattknopf")) return; openKunde(k.id); };
+    const bl=row.querySelector(".blattknopf");
+    bl.onclick=async e=>{ e.stopPropagation(); dlgCustomers.close(); await openListe(k.id); };
     list.appendChild(row);
   });
   dlgCustomers.showModal();
@@ -4672,6 +5048,7 @@ document.getElementById("kdSave").onclick=()=>{
   let id=kundeEditId;
   if(id) Object.assign(kundeById(id),data);
   else { id=uid(); state.customers.push(Object.assign({id},data)); }
+  const bl=blattVonKunde(id); if(bl && data.company) bl.name=data.company;
   save(); dlgCustomer.close();
   if(kundeCallback){ kundeCallback(id); kundeCallback=null; }
   else if(dlgCustomers.open) openKunden();
@@ -4683,6 +5060,7 @@ document.getElementById("kdDelete").onclick=()=>{
   const n=state.jobs.filter(j=>j.customerId===kundeEditId).length;
   if(n && !confirm(`Dieser Kunde hängt an ${n} Auftrag/Aufträgen. Die Aufträge bleiben erhalten, nur die Zuordnung geht verloren. Trotzdem löschen?`)) return;
   state.jobs.forEach(j=>{ if(j.customerId===kundeEditId) delete j.customerId; });
+  const bl=blattVonKunde(kundeEditId); if(bl) delete bl.kundeId;   // Blatt bleibt als Beleg
   state.customers=state.customers.filter(k=>k.id!==kundeEditId);
   save(); dlgCustomer.close();
   if(dlgCustomers.open) openKunden();
@@ -5132,7 +5510,7 @@ function zeichneSpur(){
   const zeigen = darfPlanen() && !isPhone();
   box.hidden=!zeigen;
   if(!zeigen) return;
-  document.getElementById("spurName").textContent=poolName("admin");
+  document.getElementById("spurName").textContent=(state.settings.spurName||"Admin");
   const bahn=document.getElementById("adminBahn");
   bahn.replaceChildren();
   /* Alte Pläne mit frei gesetzten Karten einmalig in eine Reihe bringen */
@@ -5330,6 +5708,8 @@ function notizZeile(j,n,knapp){
   if(n.art==="mangel" && n.erledigt){
     const auf=document.createElement("button"); auf.textContent="Doch nicht erledigt";
     auf.onclick=()=>{ n.erledigt=false; n.erledigtVon=""; n.erledigtAm="";
+      if(n.mangelJobId){ const k=jobById(n.mangelJobId);
+        if(k){ k.erledigt=false; k.erledigtVon=""; k.erledigtAm=""; } }
       save(); zeichneNotizen(); render(); renderPool();
       if(dlgJob.open) zeigeJobNotizen(jobEditId); };
     unten.appendChild(auf);
@@ -5347,6 +5727,84 @@ function notizZeile(j,n,knapp){
 }
 
 /* Ein Mangel gilt erst als erledigt, wenn jemand dafür geradesteht */
+/* =========================================================
+   Mängel als eigene Aufträge
+   Ein Mangel hängt an seinem Ausgangsauftrag (mangelZu), hat
+   eine eigene Nummer und liegt im Auftragspool. Am Ausgangs-
+   auftrag steht zusätzlich eine Notiz, damit die rote
+   Markierung und die Mängelübersicht wie bisher greifen.
+   ========================================================= */
+const istMangelAuftrag = j => !!(j && (j.mangelZu || j.art==="mangel"));
+const istAufgabe = j => !!(j && j.art==="aufgabe");
+const eintragArt = j => istAufgabe(j) ? "aufgabe" : (istMangelAuftrag(j) ? "mangel" : "auftrag");
+const maengelZu = id => state.jobs.filter(j=>j.mangelZu===id);
+
+/* Die Notiz hängt am Ausgangsauftrag – bei einem externen Mangel
+   am Mangel selbst, damit Markierung und Übersicht trotzdem greifen. */
+function mangelNotizVon(kind){
+  if(!kind) return null;
+  const p = kind.mangelZu ? jobById(kind.mangelZu) : kind;
+  if(!p) return null;
+  return (p.notizen||[]).find(n=>n.mangelJobId===kind.id) || null;
+}
+
+function mangelAuftragAnlegen(elternId,text,extra){
+  const p=elternId?jobById(elternId):null;
+  if(elternId && !p) return null;
+  const kind=neuerAuftrag(Object.assign({
+    art:"mangel",
+    name: text ? ("Mangel: "+text.split("\n")[0].slice(0,70)) : ("Mangel zu "+((p||{}).name||"")),
+    address:(p||{}).address||"", lat:(p||{}).lat??null, lng:(p||{}).lng??null,
+    contact:(p||{}).contact||"", customerId:(p||{}).customerId||"",
+    note:text||"",
+    pool: (p && poolVon(p)!==poolErste()) ? poolVon(p) : undefined
+  }, p?{mangelZu:p.id}:{}, extra||{}));
+  state.jobs.push(kind);
+  /* Ohne Ausgangsauftrag trägt der Mangel seine Notiz selbst */
+  const traeger = p || kind;
+  if(!Array.isArray(traeger.notizen)) traeger.notizen=[];
+  traeger.notizen.push({id:uid(), art:"mangel", text:(text||kind.name),
+    von:(typeof meinName!=="undefined"&&meinName)?meinName:"", am:new Date().toISOString(),
+    erledigt:false, erledigtVon:"", erledigtAm:"", mangelJobId:kind.id});
+  listeNachfuehren(kind);
+  save();
+  return kind;
+}
+
+/* Wer hat den Mangel beseitigt? Ohne Antwort bleibt er offen. */
+function werHatsGemacht(frage){
+  const liste=state.teams.map((t,i)=>`${i+1} = ${t.name}`).join("\n");
+  const ein=prompt((frage||"Wer hat den Mangel erledigt?")+"\n\n"+liste+
+    "\n\nNummer eingeben – oder einen Namen schreiben:");
+  if(ein===null) return null;
+  const txt=String(ein).trim();
+  if(!txt){ alert("Ohne Angabe bleibt der Mangel offen."); return null; }
+  const nr=parseInt(txt,10);
+  const team=(!isNaN(nr) && String(nr)===txt) ? state.teams[nr-1] : null;
+  return team ? team.name : txt;
+}
+
+/* Den Mangelauftrag abschließen – von seiner eigenen Karte aus */
+function mangelAuftragErledigen(kindId){
+  const kind=jobById(kindId); if(!kind || !kind.mangelZu) return;
+  const wer=werHatsGemacht("Wer hat den Mangel „"+(kind.name||"")+"“ beseitigt?");
+  if(!wer) return;
+  kind.erledigt=true; kind.erledigtVon=wer; kind.erledigtAm=new Date().toISOString();
+  const n=mangelNotizVon(kind);
+  if(n){ n.erledigt=true; n.erledigtVon=wer; n.erledigtAm=kind.erledigtAm; }
+  /* Aus Planung und Spur nehmen – erledigt ist erledigt */
+  state.assignments=state.assignments.filter(a=>a.jobId!==kind.id);
+  spurEntfernen(kind.id);
+  const z=state.blaetter.flatMap(b=>b.zeilen).find(x=>x.jobId===kind.id);
+  if(z){
+    const b=state.blaetter.find(bl=>bl.zeilen.includes(z));
+    const c=b && spalteMit(b,"notiz");
+    if(c) z[c.f]=(z[c.f]?z[c.f]+" · ":"")+"erledigt von "+wer;
+  }
+  save(); render(); renderPool(); zeichneSpur();
+  if(dlgJob.open && jobEditId===kindId) openJob(kindId);
+}
+
 function mangelAbhaken(j,n){
   const liste=state.teams.map((t,i)=>`${i+1} = ${t.name}`).join("\n");
   const ein=prompt(
@@ -5359,7 +5817,16 @@ function mangelAbhaken(j,n){
   const team=(!isNaN(nr) && String(nr)===txt) ? state.teams[nr-1] : null;
   const wer = team ? team.name : txt;
   n.erledigt=true; n.erledigtVon=wer; n.erledigtAm=new Date().toISOString();
-  save(); zeichneNotizen(); render(); renderPool();
+  /* Hängt ein eigener Mangelauftrag daran, wird der mitgeschlossen */
+  if(n.mangelJobId){
+    const kind=jobById(n.mangelJobId);
+    if(kind){
+      kind.erledigt=true; kind.erledigtVon=wer; kind.erledigtAm=n.erledigtAm;
+      state.assignments=state.assignments.filter(a=>a.jobId!==kind.id);
+      spurEntfernen(kind.id);
+    }
+  }
+  save(); zeichneNotizen(); render(); renderPool(); zeichneSpur();
   if(dlgJob.open) zeigeJobNotizen(jobEditId);
 }
 
@@ -5552,7 +6019,9 @@ function blaseZu(){
    Ein Blatt je Auftraggeber, jedes mit eigenen Spalten.
    ========================================================= */
 const SPALTENARTEN=[["text","Text"],["zahl","Zahl"],["geld","Betrag"],["datum","Datum"],["haken","Haken"]];
-const ROLLEN=[["","–"],["objekt","Objekt"],["kunde","Kunde"],["stadt","Stadt"],["betrag","Betrag"],["datum","Termin"]];
+const ROLLEN=[["","–"],["nr","Auftragsnummer"],["objekt","Objekt"],["kunde","Kunde"],["stadt","Stadt"],
+  ["preis","Preis"],["betrag","Auftragswert"],["rechnung","Rechnung Nr."],["bezahlt","Bezahlt"],
+  ["datum","Termin"],["notiz","Notizen"]];
 const LISTE_TAT=150;
 
 const istISO = s => /^\d{4}-\d{2}-\d{2}$/.test(s||"");
@@ -5582,25 +6051,119 @@ function blattAktiv(){
 function neuesBlatt(name){
   const b={id:uid(), name:name||"Neues Blatt",
     spalten:[
-      {f:"s1",t:"Eingang",typ:"datum",b:112,rolle:"datum"},
-      {f:"s2",t:"Objekt",typ:"text",b:320,rolle:"objekt"},
-      {f:"s3",t:"Stadt",typ:"text",b:90,rolle:"stadt"},
-      {f:"s4",t:"Betrag",typ:"geld",b:98,rolle:"betrag"},
-      {f:"s5",t:"Rechnung Nr.",typ:"text",b:110,rolle:""},
-      {f:"s6",t:"Bezahlt",typ:"haken",b:64,rolle:""},
-      {f:"s7",t:"Datum Eingang",typ:"datum",b:118,rolle:""},
-      {f:"s8",t:"Notizen",typ:"text",b:240,rolle:""},
+      {f:"s0",t:"Nr.",typ:"text",b:62,rolle:"nr"},
+      {f:"s1",t:"Eingang",typ:"datum",b:110,rolle:"datum"},
+      {f:"s2",t:"Objekt / Adresse",typ:"text",b:300,rolle:"objekt"},
+      {f:"s3",t:"Stadt",typ:"text",b:92,rolle:"stadt"},
+      {f:"s9",t:"Preis",typ:"geld",b:96,rolle:"preis"},
+      {f:"s4",t:"Auftragswert",typ:"geld",b:112,rolle:"betrag"},
+      {f:"s5",t:"Rechnung Nr.",typ:"text",b:110,rolle:"rechnung"},
+      {f:"s6",t:"Bezahlt",typ:"haken",b:70,rolle:"bezahlt"},
+      {f:"s8",t:"Notizen",typ:"text",b:240,rolle:"notiz"},
     ],
     zeilen:[]};
   state.blaetter.push(b); return b;
 }
 
-async function openListe(){
+/* =========================================================
+   Kundenblätter
+   Jeder Kunde hat genau ein Blatt. Ein neuer Auftrag trägt
+   sich dort von selbst als Zeile ein; ein Mangel rutscht
+   direkt unter seinen Ausgangsauftrag.
+   ========================================================= */
+const blattVonKunde = kid => state.blaetter.find(b=>b.kundeId===kid);
+
+function blattFuerKunde(kid){
+  const k=kundeById(kid); if(!k) return null;
+  let b=blattVonKunde(kid);
+  if(!b){
+    /* Ein gleichnamiges Blatt ohne Bindung übernehmen – etwa aus Numbers */
+    const name=(k.company||"").trim().toLowerCase();
+    b=state.blaetter.find(x=>!x.kundeId && (x.name||"").trim().toLowerCase()===name && name);
+    if(b) b.kundeId=kid;
+  }
+  if(!b){ b=neuesBlatt(k.company||"Kunde"); b.kundeId=kid; }
+  if(k.company && b.name!==k.company) b.name=k.company;
+  return b;
+}
+const spalteMit = (b,rolle) => b.spalten.find(c=>c.rolle===rolle);
+function stadtAus(adresse){
+  const t=String(adresse||"").split(",").map(x=>x.trim()).filter(Boolean);
+  if(t.length<2) return "";
+  return t[t.length-1].replace(/^\d{4,5}\s*/,"").trim();
+}
+
+/* Wo gehört die Zeile hin? Ein Mangel direkt unter seinen Auftrag,
+   sonst ans Ende. */
+function zeileEinfuegen(b,z,job){
+  const eltern = job.mangelZu ? b.zeilen.findIndex(x=>x.jobId===job.mangelZu) : -1;
+  if(eltern<0){ b.zeilen.push(z); return; }
+  let i=eltern+1;
+  while(i<b.zeilen.length){
+    const nach=b.zeilen[i] && jobById(b.zeilen[i].jobId);
+    if(nach && nach.mangelZu===job.mangelZu) i++; else break;
+  }
+  b.zeilen.splice(i,0,z);
+}
+
+/* Legt die Zeile zum Auftrag an oder pflegt sie nach.
+   Nur Nummer, Objekt und Stadt folgen dem Auftrag – Preis,
+   Rechnung, Haken und Notizen gehören dem Blatt und werden
+   nie wieder überschrieben. */
+function listeNachfuehren(job){
+  if(!job) return;
+  const alt=state.blaetter.map(b=>({b, z:b.zeilen.find(x=>x.jobId===job.id)})).find(x=>x.z);
+  if(!job.customerId){ return; }                 // ohne Kunde kein Blatt
+  const b=blattFuerKunde(job.customerId); if(!b) return;
+
+  let z=null;
+  if(alt && alt.b===b) z=alt.z;
+  else if(alt){                                   // Kunde gewechselt: Zeile umziehen
+    alt.b.zeilen=alt.b.zeilen.filter(x=>x!==alt.z);
+    z=alt.z; zeileEinfuegen(b,z,job);
+  }
+  const neu=!z;
+  if(neu){ z={id:uid(), jobId:job.id}; zeileEinfuegen(b,z,job); }
+
+  const setz=(rolle,wert,immer)=>{
+    const c=spalteMit(b,rolle); if(!c) return;
+    if(immer || neu || z[c.f]===undefined || z[c.f]==="") z[c.f]=wert;
+  };
+  setz("nr", job.nr?nrText(job.nr):"", true);
+  setz("objekt", job.name||"", true);
+  setz("stadt", stadtAus(job.address));
+  setz("datum", job.wishDate||todayISO());
+  const wert=geldWert(String(job.value||""));
+  if(wert!=="" && !isNaN(wert)) setz("preis", wert);
+  if(job.mangelZu){
+    const c=spalteMit(b,"notiz");
+    if(c && neu) z[c.f]="Mangel zu "+nrText((jobById(job.mangelZu)||{}).nr);
+  }
+  return z;
+}
+
+async function openListe(kundeId){
   if(!await listeFreigeben()) return;
+  blaetterAngleichen();
   if(!state.blaetter.length) neuesBlatt("Blatt 1");
+  if(kundeId){ const b=blattVonKunde(kundeId); if(b) liBlattId=b.id; }
   liFilterText=""; document.getElementById("liSuche").value="";
   zeichneListe();
   dlgListe.showModal();
+}
+
+/* Jeder Kunde ein Blatt, und jeder Auftrag mit Kunde eine Zeile darauf.
+   So holt die Liste auch alles nach, was vor dieser Fassung entstanden ist. */
+const zeileZuAuftrag = id => state.blaetter.flatMap(b=>b.zeilen).find(z=>z.jobId===id) || null;
+function blaetterAngleichen(){
+  let geaendert=false;
+  state.customers.forEach(k=>{ if(!blattVonKunde(k.id)){ blattFuerKunde(k.id); geaendert=true; } });
+  /* Erst die Ausgangsaufträge, dann die Mängel – sonst findet der Mangel
+     seine Zeile zum Einhängen nicht. */
+  const mitKunde=state.jobs.filter(j=>j.customerId);
+  mitKunde.filter(j=>!j.mangelZu).forEach(j=>{ if(!zeileZuAuftrag(j.id)){ listeNachfuehren(j); geaendert=true; } });
+  mitKunde.filter(j=>j.mangelZu).forEach(j=>{ if(!zeileZuAuftrag(j.id)){ listeNachfuehren(j); geaendert=true; } });
+  if(geaendert) save();
 }
 
 /* ---- Blattreiter ---- */
@@ -5609,11 +6172,14 @@ function zeichneReiter(){
   leiste.replaceChildren();
   state.blaetter.forEach(b=>{
     const t=document.createElement("button");
-    t.className="reiter"+(b.id===liBlattId?" an":"");
+    t.className="reiter"+(b.id===liBlattId?" an":"")+(b.kundeId?" kunde":"");
     t.textContent=b.name;
-    t.title=`${b.zeilen.length} Zeile${b.zeilen.length===1?"":"n"} · Doppelklick zum Umbenennen`;
+    t.title=(b.kundeId?"Blatt des Kunden · ":"")
+      +`${b.zeilen.length} Zeile${b.zeilen.length===1?"":"n"}`
+      +(b.kundeId?" · der Name folgt dem Kunden":" · Doppelklick zum Umbenennen");
     t.onclick=()=>{ liBlattId=b.id; zeichneListe(); };
     t.ondblclick=()=>{
+      if(b.kundeId){ alert("Dieses Blatt gehört zum Kunden „"+b.name+"“.\n\nDer Name ändert sich mit dem Kunden – unter „Kunden“."); return; }
       const n=prompt("Name des Blattes:",b.name);
       if(n&&n.trim()){ b.name=n.trim(); save(); zeichneListe(); }
     };
@@ -5670,6 +6236,8 @@ function zeichneListe(){
   zeilen.forEach(z=>{
     const tr=document.createElement("tr");
     if(z.jobId && vorhanden.has(z.jobId)) tr.className="imPool";
+    const zj=z.jobId?jobById(z.jobId):null;
+    if(zj && zj.mangelZu) tr.classList.add("mangelzeile");
     b.spalten.forEach(c=>{
       const td=document.createElement("td");
       if(c.typ==="geld"||c.typ==="zahl") td.className="geld";
@@ -5955,7 +6523,7 @@ function eintragSetzen(modus,wer,ds,wert,notiz,zeit){
 
 /* ---------------------------------------------------------
    Arbeitszeit: Beginn und Ende statt einer Stundenzahl.
-   KUBIK rechnet selbst – Ende minus Beginn, minus Pause.
+   kub.ik rechnet selbst – Ende minus Beginn, minus Pause.
    --------------------------------------------------------- */
 const pauseStandard = () => {
   const p=state.settings && state.settings.pause;
@@ -6047,7 +6615,7 @@ function zeichneJahr(){
   document.getElementById("jahrLabel").textContent = jahrJahr;
   document.getElementById("jahrHint").textContent = istTeam
     ? "Gefahrene Kilometer pro Tag. Über das Zeichen in der Ecke eine Notiz dazu."
-    : "Stunden eintippen – oder gleich 7:30-15:30. Die Pause zieht KUBIK selbst ab.";
+    : "Stunden eintippen – oder gleich 7:30-15:30. Die Pause zieht kub.ik selbst ab.";
   document.getElementById("jahrFuss").textContent = istTeam
     ? "Pfeiltasten wechseln die Zelle, Enter springt zum nächsten Tag. Alles wird sofort gespeichert."
     : `Pfeiltasten wechseln die Zelle, Enter springt zum nächsten Tag. Doppelklick auf einen Tag öffnet Beginn und Ende; `
@@ -6584,8 +7152,8 @@ document.getElementById("btnSettings").onclick=()=>{
   stPause.value=pauseStandard();
   try{ stApiKey.value=localStorage.getItem(API_KEY)||""; }catch(e){}
   stModel.value=(s.model||MODELL_STANDARD);
-  stZweit.value=(s.zweitpool||"Irina");
-  stDritt.value=(s.drittpool||"Admin");
+  stSpur.value=(s.spurName||"Admin");
+  poolVerwalterZeichnen();
   stListePin.value="";
   document.getElementById("stListeHint").textContent = listeGesperrt()
     ? "Die Liste ist mit einem Passwort geschützt. Ein neues Passwort hier eintragen ersetzt das alte; das Wort „weg“ hebt den Schutz auf."
@@ -6645,8 +7213,7 @@ document.getElementById("stSave").onclick=async()=>{
   }
   Object.assign(state.settings,{company:stCompany.value.trim()||"Betrieb",amStart:stAmS.value,amEnd:stAmE.value,pmStart:stPmS.value,pmEnd:stPmE.value,
     pause:Math.max(0,Math.min(240, parseInt(stPause.value,10)||0)),
-    zweitpool:(stZweit.value.trim()||"Irina"),
-    drittpool:(stDritt.value.trim()||"Admin"),
+    spurName:(stSpur.value.trim()||"Admin"),
     model:(stModel.value.trim()||MODELL_STANDARD)});
   try{
     const k=stApiKey.value.trim();
@@ -7136,6 +7703,7 @@ async function einreichungUebernehmen(e){
     contact:e.ansprechpartner||"", note:e.beschreibung||"",
     customerId:e.customer_id||"", wishDate:e.wunschdatum||"", value:"", herkunft:e.id});
   state.jobs.push(job);
+  listeNachfuehren(job);
   if(job.address) geocodeQuiet(job);
   save();
   try{ await sb.from("kunden_auftraege").update({status:"uebernommen"}).eq("id",e.id); }catch(_){}
@@ -7604,7 +8172,7 @@ async function zugaengeLaden(){
     return;
   }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  /* Abgesichert: fehlt die Funktion, startet KUBIK trotzdem */
+  /* Abgesichert: fehlt die Funktion, startet kub.ik trotzdem */
   try{
     if(typeof sb.auth.onAuthStateChange==="function"){
       sb.auth.onAuthStateChange((ereignis)=>{
