@@ -1598,7 +1598,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <div class="sch-zahlen" id="schZahlen"></div>
   </div>
   <div class="sch-fuss">
-    <button class="sch-voll" id="schVoll">Zur Vollversion</button>
+    <button class="sch-voll" id="schVoll" title="Kalender, Spalten und alles Übrige. Zurück geht es unten über ✚ Aufnehmen oder über das Menü ☰.">Zur Vollversion</button>
     <span class="sch-stand" id="schStand"></span>
   </div>
 </div>
@@ -1616,6 +1616,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <h3>Menü</h3>
   <div class="dlg-body">
     <div class="menuliste">
+      <button type="button" data-m="aufnahme">Aufnahmeseite – nur Auftrag, Mangel oder Aufgabe anlegen</button>
       <button type="button" data-m="leiste">Leiste einrichten – welche Knöpfe oben stehen</button>
       <button type="button" data-m="maengel">Mängel und Notizen</button>
       <button type="button" data-m="spalten">Auftragsspalten</button>
@@ -1641,6 +1642,8 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <h3 id="assignTitle">Einsatz eintragen</h3>
   <div class="dlg-body">
     <p class="fixnote" id="assignFix" hidden></p>
+    <div id="asKarte" hidden></div>
+    <div id="asForm">
     <div id="assignKunde" class="kdbox" hidden></div>
     <div class="field" id="assignBilledRow" hidden>
       <label><input type="checkbox" id="asBilled" style="width:auto;margin-right:8px">Abgerechnet – im Kalender grau statt farbig</label>
@@ -1701,9 +1704,16 @@ dialog.chatfenster{width:min(1120px,96vw)}
       </div>
     </div>
     <p class="hint" id="assignHint"></p>
-
+    </div><!-- /asForm -->
   </div>
-  <div class="dlg-foot voll">
+  <div class="dlg-foot voll" id="asFussAnsicht" hidden>
+    <button class="btn warn" id="askRaus" style="margin-right:auto">Aus Kalender nehmen</button>
+    <button class="btn" id="askNotizen">Notizen</button>
+    <button class="btn" id="askMap">Auf der Karte</button>
+    <button class="btn" data-close>Schließen</button>
+    <button class="btn primary" id="askEdit">Bearbeiten</button>
+  </div>
+  <div class="dlg-foot voll" id="asFussForm">
     <button class="btn warn" id="asDelete" style="margin-right:auto">Aus Kalender nehmen</button>
     <button class="btn" id="asNotizen">Notizen</button>
     <button class="btn warn" id="asUnlock" hidden>Datum trotzdem ändern</button>
@@ -3928,7 +3938,10 @@ function fillAssignDialog(teamId,jobId,from,fromSlot,to,toSlot,titleTxt,hintTxt,
   }
   zeigeKundeImEinsatz(jobId);
   sperreSetzen(editing && editing.mode==="run" ? editing.jobId : null);
-  dlgAssign.showModal();
+  /* Ein bestehender Einsatz zeigt sich erst als Karte, ein leerer
+     Halbtag geht gleich ins Formular – da ist ja noch nichts. */
+  if(!(editing && editing.jobId && assignKarteZeichnen())) assignModus(false);
+  if(!dlgAssign.open) dlgAssign.showModal();
   zeigeAssignAnhaenge();
 }
 
@@ -4325,8 +4338,8 @@ function zeile(dt,dd,gross){
   return `<div class="kzeile"><dt>${esc(dt)}</dt><dd class="${gross?"gross":""}">${dd}</dd></div>`;
 }
 
-async function jobKarteZeichnen(id){
-  const box=document.getElementById("jbKarte");
+async function jobKarteZeichnen(id,zielId,zusatz){
+  const box=document.getElementById(zielId||"jbKarte");
   const j=jobById(id);
   if(!j){ box.innerHTML=`<p class="kleer">Dieser Auftrag ist nicht mehr da.</p>`; return; }
   const k=j.customerId?kundeById(j.customerId):null;
@@ -4394,21 +4407,23 @@ async function jobKarteZeichnen(id){
   const freitext = j.note && j.note.trim()
     ? `<div class="kblock"><h5>Beschreibung</h5><div class="knotiz">${esc(j.note.trim())}</div></div>` : "";
 
+  const fotoId="kFotos_"+(zielId||"jbKarte");
   box.innerHTML =
       `<div class="kkopf">${j.nr?`<span class="knr">${esc(nrText(j.nr))}</span>`:""}<h4>${esc(j.name||"Ohne Bezeichnung")}</h4></div>`
     + `<div class="kmarken">${marken.join("")}</div>`
+    + (zusatz||"")
     + (zeilen?`<div class="kzeilen">${zeilen}</div>`:`<p class="kleer">Zu diesem Eintrag sind noch keine Angaben hinterlegt.</p>`)
-    + freitext + notizen + plan
-    + `<div class="kblock" id="kFotosBlock" hidden><h5>Fotos und Dateien</h5><div class="kfotos" id="kFotos"></div></div>`;
+    + freitext + notizen + (zusatz?"":plan)
+    + `<div class="kblock" id="${fotoId}Block" hidden><h5>Fotos und Dateien</h5><div class="kfotos" id="${fotoId}"></div></div>`;
 
   /* Fotos nachladen – die liegen in der Dateiablage */
   try{
     const list=await Files.forJob(id);
     if(list.length){
-      const ziel=document.getElementById("kFotos");
+      const ziel=document.getElementById(fotoId);
       if(ziel){
         list.forEach(f=>ziel.appendChild(kachel(f,false)));
-        document.getElementById("kFotosBlock").hidden=false;
+        document.getElementById(fotoId+"Block").hidden=false;
       }
     }
   }catch(_){}
@@ -4417,6 +4432,7 @@ async function jobKarteZeichnen(id){
     const z=jobById(b.dataset.navi); if(z) naviOeffnen(z.address,z.lat,z.lng);
   });
 
+  if(zielId) return;            // fremdes Ziel: der Fuß gehört dort jemand anderem
   /* Knöpfe im Fuß an den Eintrag anpassen */
   document.getElementById("jbkNavi").hidden = !j.address;
   const mk=document.getElementById("jbkMangel");
@@ -4424,6 +4440,48 @@ async function jobKarteZeichnen(id){
   mk.textContent = istMangelAuftrag(j)
     ? (j.erledigt?"Mangel wieder öffnen":"Mangel erledigt") : "Mangel aufnehmen";
 }
+
+/* ---------------------------------------------------------
+   Dasselbe für das Einsatzfenster: erst ansehen, dann ändern.
+   Oben steht zusätzlich, wer wann dort ist.
+   --------------------------------------------------------- */
+function assignModus(ansicht){
+  const an=!!ansicht;
+  const t=document.getElementById("assignTitle");
+  if(an) t.textContent="Einsatz";
+  else if(editing && editing.jobId) t.textContent="Einsatz bearbeiten";
+  document.getElementById("asKarte").hidden=!an;
+  document.getElementById("asForm").hidden=an;
+  document.getElementById("asFussAnsicht").hidden=!an;
+  document.getElementById("asFussForm").hidden=an;
+  const b=document.querySelector("#dlgAssign .dlg-body");
+  if(b) b.scrollTop=0;
+}
+
+function assignKarteZeichnen(){
+  const j = (editing && editing.jobId) ? jobById(editing.jobId) : null;
+  if(!j){ assignModus(false); return false; }
+  const t = teamById(editing.teamId);
+  const bl = einsaetzeZu(j.id).find(b=>b.teamId===editing.teamId) || einsaetzeZu(j.id)[0];
+  const einsatz = `<div class="kblock"><h5>Dieser Einsatz</h5>`
+    + `<div class="keinsatz"><b>${esc(t?t.name:"Team")}</b>`
+    + (bl?` · ${esc(zeitraumText(bl))} · ${bl.halbtage/2===Math.round(bl.halbtage/2)?bl.halbtage/2:(bl.halbtage/2).toFixed(1)} Tag${bl.halbtage===2?"":"e"}`:"")
+    + `</div>`
+    + (t && t.members && t.members.length ? `<div class="keinsatz">${esc(t.members.join(" · "))}</div>` : "")
+    + (istFixiert(j.id)?`<div class="keinsatz" style="color:#FFC978">Termin ist fixiert</div>`:"")
+    + `</div>`;
+  jobKarteZeichnen(j.id,"asKarte",einsatz);
+  document.getElementById("askNotizen").textContent =
+    notizStufe(j.id)==="mangel" ? "Mängel" : "Notizen";
+  document.getElementById("askMap").hidden = (j.lat==null || j.lng==null);
+  assignModus(true);
+  return true;
+}
+
+document.getElementById("askEdit").onclick=()=>assignModus(false);
+document.getElementById("askRaus").onclick=()=>document.getElementById("asDelete").click();
+document.getElementById("askNotizen").onclick=()=>document.getElementById("asNotizen").click();
+document.getElementById("askMap").onclick=()=>document.getElementById("asMap").click();
 
 function openJob(id){
   jobIsNew=!id;
@@ -4798,10 +4856,10 @@ function schnellMerken(an){
 }
 
 let schnellAn=false;
-function schnellZeigen(an){
+function schnellZeigen(an,erzwingen){
   const el=document.getElementById("schnell");
   if(!el) return;
-  schnellAn=!!an && isPhone();
+  schnellAn=!!an && (isPhone() || !!erzwingen);
   el.classList.toggle("an", schnellAn);
   el.hidden=!schnellAn;
   document.body.classList.toggle("imSchnell", schnellAn);
@@ -4838,8 +4896,16 @@ document.getElementById("schVoll").onclick=()=>{
    diesen hier nicht überschreibt. */
 window.addEventListener("load",()=>{
   const t=document.getElementById("tabSchnell");
-  if(t) t.onclick=()=>{ schnellMerken(true); schnellZeigen(true); };
+  if(t) t.onclick=()=>{ schnellMerken(true); schnellZeigen(true,true); };
 });
+/* Zweiter Weg zurück, der immer da ist: über das Menü ☰.
+   Quer gehalten ist das iPhone breiter als 760 Punkte – dann
+   fehlt die untere Leiste, und ohne das hier käme man nicht
+   mehr zur Aufnahmeseite. */
+function zurAufnahme(){
+  schnellMerken(true);
+  schnellZeigen(true,true);
+}
 /* Nach dem Aufnehmen führt der Weg auf dem Telefon zurück zur Startseite */
 ["dlgJob","dlgEintrag","dlgMangel"].forEach(id=>{
   const d=document.getElementById(id);
@@ -7811,7 +7877,8 @@ document.getElementById("btnMenu").onclick=()=>dlgMenu.showModal();
 dlgMenu.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{
   const m=b.dataset.m; dlgMenu.close();
   setTimeout(()=>{
-    if(m==="leiste") leisteFenster();
+    if(m==="aufnahme") zurAufnahme();
+    else if(m==="leiste") leisteFenster();
     else if(m==="maengel") openUeberblick("offen");
     else if(m==="spalten"){
       const r=knopfOderMenue("btnSpalten").getBoundingClientRect();
