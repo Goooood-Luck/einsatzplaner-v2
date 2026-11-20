@@ -974,6 +974,16 @@ table.liste tr.mangelzeile td:first-child{position:relative}
 .keinsatz b{color:var(--ink);font-weight:600}
 .kfotos{display:flex;gap:7px;flex-wrap:wrap}
 .kleer{color:var(--ink-faint);font-size:13px;padding:16px 0}
+.sicherliste{display:flex;flex-direction:column;gap:7px}
+.sicherzeile{
+  display:flex;align-items:center;gap:12px;padding:11px 13px;
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2);
+}
+.sicherzeile .wann{flex:1;min-width:0}
+.sicherzeile .wann b{display:block;font-size:13.5px}
+.sicherzeile .wann small{color:var(--ink-dim);font-size:12px}
+.sicherzeile.jetzt{border-color:var(--focus)}
+.sicherzeile .btn{flex:none;padding:7px 14px;font-size:12.5px}
 .wahlliste{display:flex;flex-direction:column;gap:9px}
 .wahlliste button{
   display:block;width:100%;text-align:left;cursor:pointer;
@@ -1616,6 +1626,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <h3>Menü</h3>
   <div class="dlg-body">
     <div class="menuliste">
+      <button type="button" data-m="sicher">Frühere Stände – etwas zurückholen</button>
       <button type="button" data-m="aufnahme">Aufnahmeseite – nur Auftrag, Mangel oder Aufgabe anlegen</button>
       <button type="button" data-m="leiste">Leiste einrichten – welche Knöpfe oben stehen</button>
       <button type="button" data-m="maengel">Mängel und Notizen</button>
@@ -2121,6 +2132,20 @@ dialog.chatfenster{width:min(1120px,96vw)}
 </dialog>
 
 <!-- Notizen und Mängel zu einem Auftrag -->
+<dialog id="dlgSicher">
+  <h3>Frühere Stände auf diesem Gerät</h3>
+  <div class="dlg-body">
+    <p class="hint" style="margin-top:0">Jedes Gerät führt die letzten Stände mit, die es gesehen hat.
+      Wenn auf dem Server etwas fehlt, lässt es sich von hier zurückholen. Prüfe die Zahlen:
+      der richtige Stand ist meist der mit den meisten Aufträgen.</p>
+    <div class="sicherliste" id="sicherListe"></div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" id="sicherDatei">Als Datei sichern</button>
+    <button class="btn" data-close>Schließen</button>
+  </div>
+</dialog>
+
 <dialog id="dlgEintrag">
   <h3 id="einTitel">Was möchtest du anlegen?</h3>
   <div class="dlg-body">
@@ -2588,6 +2613,10 @@ const MAIL_DOMAINS = ["kubik.local","einsatzplaner.local"];  // aus „admin“ 
 let sb = null;
 let state = demoState();
 let version = 0;                 // Stand, den dieses Fenster zuletzt gesehen hat
+/* Erst wenn die Planung nachweislich vom Server kam, darf dieses Fenster
+   schreiben. Sonst könnte ein Gerät, das den Server nicht erreicht hat,
+   seinen eigenen Stand über die echte Planung legen. */
+let planGeladen = false;
 let rolle = null;                // "admin" | "buero" | "monteur" | "kunde"
 let meinKunde = null;            // bei Rolle "kunde": zugehörige Kunden-ID
 let meineId   = null;            // eigene Benutzerkennung
@@ -2655,8 +2684,123 @@ function zustandPruefen(d){
 
 /* ---- Speichern: schreibt nur, wenn niemand anders dazwischengekommen ist ---- */
 let saveTimer=null;
+/* =========================================================
+   Örtliche Sicherungen
+   Jedes Gerät führt die letzten Stände mit, die es gesehen
+   hat. Geht auf dem Server etwas verloren, lässt sich daraus
+   zurückholen – ohne fremde Hilfe.
+   ========================================================= */
+const SICHER_KEY="einsatzplaner.sicherungen";
+const SICHER_ANZAHL=8;
+
+function sicherungen(){
+  try{ const l=JSON.parse(localStorage.getItem(SICHER_KEY)||"[]"); return Array.isArray(l)?l:[]; }
+  catch(e){ return []; }
+}
+function sicherungAblegen(st){
+  try{
+    if(!st || !Array.isArray(st.jobs)) return;
+    const l=sicherungen();
+    const letzte=l[0];
+    const zahl=st.jobs.length, eins=(st.assignments||[]).length;
+    /* Nur ablegen, wenn sich etwas Zählbares geändert hat – sonst
+       würde die Liste von lauter gleichen Ständen volllaufen. */
+    if(letzte && letzte.jobs===zahl && letzte.einsaetze===eins
+       && (Date.now()-letzte.wann)<1000*60*20) return;
+    l.unshift({wann:Date.now(), jobs:zahl, einsaetze:eins,
+               kunden:(st.customers||[]).length, inhalt:JSON.stringify(st)});
+    while(l.length>SICHER_ANZAHL) l.pop();
+    localStorage.setItem(SICHER_KEY, JSON.stringify(l));
+  }catch(e){
+    /* Speicher voll: älteste wegwerfen und einmal erneut versuchen */
+    try{ const l=sicherungen(); l.length=Math.max(1,Math.floor(l.length/2));
+         localStorage.setItem(SICHER_KEY, JSON.stringify(l)); }catch(_){}
+  }
+}
+function sicherungNeueste(){
+  const l=sicherungen();
+  for(const e of l){
+    try{ const d=zustandPruefen(JSON.parse(e.inhalt)); if(d) return {daten:d, satz:e}; }catch(_){}
+  }
+  /* Notnagel: die einfache Kopie aus save() */
+  try{
+    const d=zustandPruefen(JSON.parse(localStorage.getItem(STORE_KEY)||"null"));
+    if(d) return {daten:d, satz:{wann:0, jobs:d.jobs.length, einsaetze:(d.assignments||[]).length}};
+  }catch(_){}
+  return null;
+}
+
+function sicherungenZeigen(){
+  const box=document.getElementById("sicherListe");
+  box.replaceChildren();
+  const l=sicherungen();
+  const jetzt={wann:Date.now(), jetzt:true, jobs:(state.jobs||[]).length,
+               einsaetze:(state.assignments||[]).length, kunden:(state.customers||[]).length};
+  [jetzt,...l].forEach((e,i)=>{
+    const z=document.createElement("div");
+    z.className="sicherzeile"+(e.jetzt?" jetzt":"");
+    const w=document.createElement("div"); w.className="wann";
+    const d=new Date(e.wann);
+    w.innerHTML=`<b>${e.jetzt?"Jetzt geladen":d.toLocaleDateString("de-DE")+" um "+d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}</b>`
+      +`<small>${e.jobs} Aufträge · ${e.einsaetze} Einsätze · ${e.kunden||0} Kunden</small>`;
+    z.appendChild(w);
+    if(!e.jetzt){
+      const b=document.createElement("button"); b.className="btn"; b.textContent="Zurückholen";
+      b.onclick=()=>sicherungZurueck(i-1);
+      z.appendChild(b);
+    }
+    box.appendChild(z);
+  });
+  if(!l.length){
+    const p=document.createElement("p"); p.className="hint"; p.style.margin="9px 0 0";
+    p.textContent="Auf diesem Gerät liegen noch keine früheren Stände.";
+    box.appendChild(p);
+  }
+  dlgSicher.showModal();
+}
+
+async function sicherungZurueck(i){
+  const e=sicherungen()[i]; if(!e) return;
+  let d=null;
+  try{ d=zustandPruefen(JSON.parse(e.inhalt)); }catch(_){}
+  if(!d){ alert("Dieser Stand lässt sich nicht lesen."); return; }
+  const jetztZahl=(state.jobs||[]).length;
+  const wann=new Date(e.wann);
+  if(!confirm(
+      `Stand vom ${wann.toLocaleDateString("de-DE")} um ${wann.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} zurückholen?\n\n`
+      +`Zurückgeholt: ${d.jobs.length} Aufträge, ${(d.assignments||[]).length} Einsätze\n`
+      +`Jetzt im Programm: ${jetztZahl} Aufträge\n\n`
+      +`Der zurückgeholte Stand wird für alle gespeichert. Der jetzige bleibt hier als Sicherung liegen.`)) return;
+  if(!planGeladen){ alert("Erst muss die Verbindung zum Server stehen."); return; }
+  sicherungAblegen(state);
+  state=d;
+  await refreshCounts();
+  save(); render(); renderPool(); zeichneSpur();
+  dlgSicher.close();
+  setSync("Stand zurückgeholt "+zeitJetzt(),"ok");
+}
+
+document.getElementById("sicherDatei").onclick=()=>{
+  const inhalt=JSON.stringify({stand:state, sicherungen:sicherungen()},null,1);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([inhalt],{type:"application/json"}));
+  a.download="kubik-sicherung-"+todayISO()+".json";
+  a.click();
+};
+
+/* Wenn der Server beim Start nicht erreichbar war */
+function ladefehlerZeigen(grund,hatSicherung){
+  alert("Die Planung konnte nicht vom Server geladen werden.\n\n"
+    +"Grund: "+grund+"\n\n"
+    +(hatSicherung
+      ? "Angezeigt wird der letzte Stand dieses Geräts. Es wird nichts gespeichert, "
+        +"damit nichts überschrieben wird.\n\nSobald die Verbindung steht, bitte die Seite neu laden."
+      : "Es wird nichts gespeichert. Bitte die Verbindung prüfen und die Seite neu laden."));
+}
+
 function save(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){ storageOK=false; }
+  sicherungAblegen(state);
   if(istKunde()) return;                       // Kunden schreiben nie in die Planung
   clearTimeout(saveTimer);
   saveTimer=setTimeout(hochladen,350);
@@ -2664,6 +2808,10 @@ function save(){
 
 async function hochladen(){
   if(!sb || istKunde()) return;
+  if(!planGeladen){
+    setSync("Nicht gespeichert – Planung war nicht geladen","warn");
+    return;
+  }
   if(speicherLaeuft){ nochmalSpeichern=true; return; }
   speicherLaeuft=true;
   try{
@@ -2695,10 +2843,35 @@ async function hochladen(){
 async function konfliktLoesen(){
   const meins=JSON.stringify(state);
   const frisch=await serverStandHolen();
-  if(!frisch) { setSync("Verbindung gestört","warn"); return; }
+  if(!frisch || !frisch.data){ setSync("Verbindung gestört","warn"); return; }
+
+  /* Beide Stände behalten, bevor irgendetwas entschieden wird */
+  sicherungAblegen(state);
+  sicherungAblegen(frisch.data);
+
+  const meineZahl=(state.jobs||[]).length;
+  const fremdZahl=(frisch.data.jobs||[]).length;
+
+  /* Der gefährliche Fall: der eigene Stand ist deutlich kleiner.
+     Dann ist er fast sicher veraltet oder gar nicht erst geladen
+     worden – hier wird nicht gefragt, hier wird geschützt. */
+  if(fremdZahl - meineZahl >= 3 || (fremdZahl>0 && meineZahl*2 < fremdZahl)){
+    state=frisch.data; version=frisch.version;
+    await refreshCounts(); render(); renderPool();
+    alert("Deine Änderung wurde nicht gespeichert.\n\n"
+      +`Auf dem Server stehen ${fremdZahl} Aufträge, auf diesem Gerät waren es nur ${meineZahl}. `
+      +"Das sieht nach einem veralteten Stand aus, darum wurde der Server nicht überschrieben.\n\n"
+      +"Der aktuelle Stand ist jetzt geladen – bitte die Änderung noch einmal eintragen.\n"
+      +"Dein vorheriger Stand liegt unter Menü ☰ → Frühere Stände.");
+    setSync("Fremder Stand geladen "+zeitJetzt(),"warn");
+    return;
+  }
+
   const weiter=confirm(
     "Jemand anderes hat die Planung inzwischen geändert"+
     (frisch.updated_by?` (${frisch.updated_by})`:"")+".\n\n"+
+    `Auf dem Server: ${fremdZahl} Aufträge\n`+
+    `Auf diesem Gerät: ${meineZahl} Aufträge\n\n`+
     "OK  = deine Änderung übernehmen und die andere überschreiben\n"+
     "Abbrechen = fremden Stand laden, deine letzte Änderung verwerfen");
   if(weiter){
@@ -2712,14 +2885,27 @@ async function konfliktLoesen(){
   }
 }
 
+/* Gibt entweder den Stand zurück, oder {leer:true}, wenn auf dem Server
+   wirklich noch nichts liegt, oder {fehler:"..."} wenn er nicht erreichbar
+   war. Das auseinanderzuhalten ist lebenswichtig: ein nicht erreichbarer
+   Server darf niemals als „leer“ gelten – sonst schreibt das Gerät seinen
+   eigenen, womöglich fast leeren Stand über die echte Planung. */
 async function serverStandHolen(){
   try{
     const { data, error } = await sb.from("schedule_data")
       .select("content,version,updated_by").eq("id",1).single();
-    if(error||!data) return null;
-    const d=zustandPruefen(JSON.parse(data.content||"{}"));
-    return d ? {data:d, version:data.version||0, updated_by:data.updated_by||""} : null;
-  }catch(e){ return null; }
+    if(error){
+      if(error.code==="PGRST116") return {leer:true};   // Zeile gibt es noch nicht
+      return {fehler:error.message||"Server nicht erreichbar"};
+    }
+    if(!data) return {leer:true};
+    let roh=null;
+    try{ roh=JSON.parse(data.content||"{}"); }
+    catch(e){ return {fehler:"Inhalt unlesbar"}; }
+    const d=zustandPruefen(roh);
+    if(!d) return {fehler:"Inhalt unlesbar"};
+    return {data:d, version:data.version||0, updated_by:data.updated_by||""};
+  }catch(e){ return {fehler:String((e&&e.message)||e)}; }
 }
 
 /* ---- Live: Änderungen der anderen erscheinen ohne Neuladen ---- */
@@ -2732,7 +2918,11 @@ function liveVerbinden(){
       if(speicherLaeuft || saveTimer){ return; }   // eigene Änderung ist unterwegs
       const d=zustandPruefen(JSON.parse(neu.content||"{}"));
       if(!d) return;
+      /* Vor dem Übernehmen den eigenen bisherigen Stand sichern –
+         so ist er noch da, falls der fremde Stand Unsinn ist. */
+      sicherungAblegen(state);
       state=d; version=neu.version||0;
+      sicherungAblegen(state);
       await refreshCounts(); render();
       setSync("Aktualisiert von "+(neu.updated_by||"jemand anderem")+" "+zeitJetzt(),"ok");
     })
@@ -7877,7 +8067,8 @@ document.getElementById("btnMenu").onclick=()=>dlgMenu.showModal();
 dlgMenu.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{
   const m=b.dataset.m; dlgMenu.close();
   setTimeout(()=>{
-    if(m==="aufnahme") zurAufnahme();
+    if(m==="sicher") sicherungenZeigen();
+    else if(m==="aufnahme") zurAufnahme();
     else if(m==="leiste") leisteFenster();
     else if(m==="maengel") openUeberblick("offen");
     else if(m==="spalten"){
@@ -8442,14 +8633,39 @@ function ladeHinweis(txt){
 
 async function planungStarten(){
   setSync("Planung wird geladen …");
-  const frisch=await serverStandHolen();
-  if(frisch){ state=frisch.data; version=frisch.version; setSync("Verbunden "+zeitJetzt(),"ok"); }
-  else{
-    // Noch nichts auf dem Server: aktuellen Stand anlegen
+  let frisch=await serverStandHolen();
+
+  /* Bei einer gestörten Verbindung lieber zweimal fragen, bevor
+     irgendetwas angenommen wird. */
+  if(frisch && frisch.fehler){
+    await new Promise(r=>setTimeout(r,1200));
+    frisch=await serverStandHolen();
+  }
+
+  if(frisch && frisch.data){
+    state=frisch.data; version=frisch.version; planGeladen=true;
+    sicherungAblegen(state);                     // örtliche Kopie mitführen
+    setSync("Verbunden "+zeitJetzt(),"ok");
+  }else if(frisch && frisch.leer){
+    /* Wirklich noch nichts da – hier darf eine Planung angelegt werden */
     state=zustandPruefen(state)||demoState();
-    version=0;
+    version=0; planGeladen=true;
     setSync("Neue Planung angelegt","ok");
     await hochladen();
+  }else{
+    /* Server nicht erreichbar: NICHTS schreiben. Lieber nichts tun als
+       die Planung aller mit dem Stand dieses Geräts überschreiben. */
+    planGeladen=false;
+    const ort=sicherungNeueste();
+    if(ort){ state=ort.daten; }
+    else {
+      /* Lieber eine leere Oberfläche als eine erfundene –
+         Beispieldaten hier wären nur verwirrend. */
+      state=zustandPruefen({teams:[],jobs:[],assignments:[],customers:[],
+        blaetter:[],fileRegistry:[],adminSpur:[],settings:{}}) || state;
+    }
+    setSync("Keine Verbindung – Nur-Lesen","warn");
+    ladefehlerZeigen((frisch&&frisch.fehler)||"unbekannt", !!ort);
   }
   await refreshCounts();
   await nummernNachtragen();
@@ -8470,7 +8686,7 @@ async function monteurWeltStarten(){
   document.body.classList.add("alsMonteur");
   document.getElementById("monteurWelt").hidden=false;
   const frisch=await serverStandHolen();        // nur für Teamnamen und Besetzung
-  if(frisch){ state=frisch.data; version=frisch.version; }
+  if(frisch && frisch.data){ state=frisch.data; version=frisch.version; planGeladen=true; }
   await chatStarten();
   const team=state.teams.find(t=>t.id===meinTeam);
   document.getElementById("mTeam").textContent = team
