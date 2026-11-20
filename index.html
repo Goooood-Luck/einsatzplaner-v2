@@ -984,6 +984,27 @@ table.liste tr.mangelzeile td:first-child{position:relative}
 .sicherzeile .wann small{color:var(--ink-dim);font-size:12px}
 .sicherzeile.jetzt{border-color:var(--focus)}
 .sicherzeile .btn{flex:none;padding:7px 14px;font-size:12.5px}
+/* ---------------------------------------------------------
+   Geführter Weg: eine Frage je Seite statt eines langen
+   Formulars. Unterwegs mit dem Daumen ist das der Unterschied
+   zwischen „geht schnell“ und „mache ich später“.
+   --------------------------------------------------------- */
+.asn-fort{display:flex;align-items:center;gap:11px;margin:0 0 15px}
+.asn-fort span{flex:none;color:var(--ink-faint);font-size:11.5px;letter-spacing:.04em;white-space:nowrap}
+.asn-balken{flex:1;height:3px;border-radius:3px;background:var(--panel-2);overflow:hidden}
+.asn-balken i{display:block;height:100%;background:var(--focus);width:0;transition:width .22s ease}
+.asn-frage{
+  margin:0 0 14px;font-family:"Barlow Condensed",sans-serif;
+  font-size:23px;font-weight:600;letter-spacing:.005em;color:var(--ink);
+}
+.wahlliste.schmal button{padding:12px 15px}
+.wahlliste.schmal b{font-size:17px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chips button{
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--pille);
+  padding:6px 13px;font-size:12.5px;color:var(--ink-dim);cursor:pointer;
+}
+.chips button:hover{color:var(--ink);border-color:var(--focus)}
 .wahlliste{display:flex;flex-direction:column;gap:9px}
 .wahlliste button{
   display:block;width:100%;text-align:left;cursor:pointer;
@@ -1756,6 +1777,10 @@ dialog.chatfenster{width:min(1120px,96vw)}
       </div>
     </div>
     <div class="field">
+      <label for="jbEtage">Etage und Lage</label>
+      <input type="text" id="jbEtage" autocomplete="off" placeholder="z.B. 2. OG links">
+    </div>
+    <div class="field">
       <label for="jbAdr">Adresse</label>
       <div class="pair">
         <input type="text" id="jbAdr" placeholder="Straße Hausnummer, PLZ Ort">
@@ -2167,6 +2192,61 @@ dialog.chatfenster{width:min(1120px,96vw)}
       <button type="button" class="btn" id="einExtern" style="width:100%;margin-top:11px">Externer Mangel – ohne Bezug zu einem Auftrag</button>
     </div>
 
+    <!-- Geführter Weg für einen neuen Auftrag: eine Frage je Seite -->
+    <div id="einAuftrag" hidden>
+      <div class="asn-fort"><span id="asnSchritt"></span><div class="asn-balken"><i id="asnBalken"></i></div></div>
+
+      <div class="asn-seite" data-seite="arbeit" hidden>
+        <p class="asn-frage">Was soll beauftragt werden?</p>
+        <div class="wahlliste schmal" id="asnArbeiten"></div>
+        <div class="field" id="asnArbeitFreiFeld" hidden style="margin-top:11px">
+          <label for="asnArbeitFrei">Was genau?</label>
+          <input type="text" id="asnArbeitFrei" placeholder="z.B. Zählerschrank tauschen">
+        </div>
+      </div>
+
+      <div class="asn-seite" data-seite="kunde" hidden>
+        <p class="asn-frage">Für wen ist der Auftrag?</p>
+        <input type="search" id="asnKundeSuche" autocomplete="off" placeholder="Kunden suchen …" style="margin-bottom:9px">
+        <div class="trefferliste" id="asnKunden"></div>
+      </div>
+
+      <div class="asn-seite" data-seite="adresse" hidden>
+        <p class="asn-frage">Wo ist das Objekt?</p>
+        <div class="field"><label for="asnStrasse">Straße und Hausnummer</label>
+          <input type="text" id="asnStrasse" autocomplete="off" placeholder="Schillerstraße 2"></div>
+        <div class="two">
+          <div class="field"><label for="asnPlz">Postleitzahl</label>
+            <input type="text" id="asnPlz" inputmode="numeric" autocomplete="off" placeholder="46045"></div>
+          <div class="field"><label for="asnOrt">Stadt</label>
+            <input type="text" id="asnOrt" autocomplete="off" placeholder="Oberhausen"></div>
+        </div>
+        <div class="field"><label for="asnEtage">Etage und Lage</label>
+          <input type="text" id="asnEtage" autocomplete="off" placeholder="2. OG links">
+          <div class="chips" id="asnEtageChips"></div></div>
+      </div>
+
+      <div class="asn-seite" data-seite="wert" hidden>
+        <p class="asn-frage">Was ist der Auftrag wert?</p>
+        <div class="field"><label for="asnWert">Auftragswert</label>
+          <input type="text" id="asnWert" inputmode="decimal" autocomplete="off" placeholder="z.B. 4.800 €"></div>
+        <p class="hint">Kann auch leer bleiben und später in der Kundenliste nachgetragen werden.</p>
+      </div>
+
+      <div class="asn-seite" data-seite="start" hidden>
+        <p class="asn-frage">Wann soll es losgehen?</p>
+        <div class="field"><label for="asnStart">Gewünschter Beginn</label>
+          <input type="date" id="asnStart">
+          <div class="chips" id="asnStartChips"></div></div>
+        <p class="hint">Nur ein Wunsch – geplant wird später im Kalender.</p>
+      </div>
+
+      <div class="asn-seite" data-seite="fertig" hidden>
+        <p class="asn-frage">Passt das so?</p>
+        <div class="kzeilen" id="asnUebersicht"></div>
+      </div>
+    </div>
+
     <div id="einAufgabe" hidden>
       <div class="field">
         <label for="einAufText">Was ist zu tun?</label>
@@ -2182,6 +2262,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
   <div class="dlg-foot">
     <button class="btn" id="einZurueck" style="margin-right:auto" hidden>Zurück</button>
     <button class="btn" data-close>Abbrechen</button>
+    <button class="btn" id="asnUeber" hidden>Überspringen</button>
     <button class="btn primary" id="einAnlegen" hidden>Aufgabe anlegen</button>
   </div>
 </dialog>
@@ -2676,6 +2757,10 @@ function zustandPruefen(d){
   d.settings.pools=d.settings.pools.filter(p=>p&&p.k).map(p=>({k:String(p.k),name:String(p.name||p.k)}));
   if(!d.settings.pools.some(p=>p.k==="haupt")) d.settings.pools.unshift({k:"haupt",name:"Auftragspool"});
   if(!d.settings.spurName) d.settings.spurName=d.settings.drittpool||"Admin";
+  if(!Array.isArray(d.settings.arbeiten) || !d.settings.arbeiten.length){
+    d.settings.arbeiten=["E-Check / DGUV V3","Vorab-Check","Modernisierung",
+                         "Elektroinstallation neu","Reparatur / Störung"];
+  }
   if(!d.settings.poolsAn) d.settings.poolsAn={};
   d.settings.pools.forEach(p=>{ if(d.settings.poolsAn[p.k]===undefined) d.settings.poolsAn[p.k]=true; });
   if(!d.settings.pools.some(p=>d.settings.poolsAn[p.k])) d.settings.poolsAn.haupt=true;
@@ -4558,6 +4643,7 @@ async function jobKarteZeichnen(id,zielId,zusatz){
             : `<span class="neben">noch keine Koordinaten – auf der Karte nicht sichtbar</span>`)
       : "");
   zeilen+=zeile("Kunde", k ? `${esc(k.company)}${k.contact?`<span class="neben">${esc(k.contact)}</span>`:""}` : "");
+  zeilen+=zeile("Etage", j.etage?esc(j.etage):"");
   zeilen+=zeile("Vor Ort", j.contact?esc(j.contact):"");
   zeilen+=zeile("Auftragswert", j.value?esc(j.value):"", true);
   zeilen+=zeile("Gewünschter Beginn", j.wishDate?wunschText(j.wishDate):"");
@@ -4693,6 +4779,7 @@ function openJob(id){
   zeigeAnhaenge(jobEditId);
   zeigeJobNotizen(id?jobEditId:null);
   jbName.value=j.name; jbAdr.value=j.address||""; jbLat.value=j.lat??""; jbLng.value=j.lng??"";
+  jbEtage.value=j.etage||"";
   jbContact.value=j.contact||""; jbNote.value=j.note||"";
   fuelleKundenAuswahl(j.customerId||"");
   jbWish.value=j.wishDate||""; jbValue.value=j.value||"";
@@ -4802,7 +4889,7 @@ document.getElementById("jbNavi").onclick=()=>naviOeffnen(
 
 document.getElementById("jbSave").onclick=()=>{
   if(!jbName.value.trim()){alert("Bitte eine Bezeichnung eingeben.");return;}
-  const data={name:jbName.value.trim(),address:jbAdr.value.trim(),
+  const data={name:jbName.value.trim(),address:jbAdr.value.trim(),etage:jbEtage.value.trim(),
     lat:jbLat.value?parseFloat(jbLat.value):null, lng:jbLng.value?parseFloat(jbLng.value):null,
     contact:jbContact.value.trim(), note:jbNote.value.trim(),
     customerId:document.getElementById("jbCustomer").value||"",
@@ -5024,7 +5111,6 @@ document.getElementById("stPoolNeu").onclick=poolHinzufuegen;
    Eintrag anlegen: erst die Art wählen, dann das Nötige.
    ========================================================= */
 function eintragFenster(art){
-  if(art==="auftrag"){ openJob(null); return; }
   einSchritt(art||"wahl");
   dlgEintrag.showModal();
 }
@@ -5104,20 +5190,42 @@ function zurAufnahme(){
     if(isPhone() && schnellGewuenscht()) schnellZeigen(true);
   },80));
 });
+/* =========================================================
+   Der geführte Auftrag
+   Reihenfolge der Fragen. „wert“ und „start“ dürfen leer
+   bleiben, darum bekommen sie einen Überspringen-Knopf.
+   ========================================================= */
+const ASN_SEITEN=["arbeit","kunde","adresse","wert","start","fertig"];
+const ASN_FREIWILLIG=["wert","start"];
+let asnIndex=0;
+let entwurf={};
+
 function einSchritt(welcher){
   const wahl=document.getElementById("einWahl");
   const mang=document.getElementById("einMangel");
   const aufg=document.getElementById("einAufgabe");
+  const auftr=document.getElementById("einAuftrag");
   const zur =document.getElementById("einZurueck");
   const anl =document.getElementById("einAnlegen");
+  const ueb =document.getElementById("asnUeber");
   wahl.hidden = welcher!=="wahl";
   mang.hidden = welcher!=="mangel";
   aufg.hidden = welcher!=="aufgabe";
+  auftr.hidden= welcher!=="auftrag";
   zur.hidden  = welcher==="wahl";
   anl.hidden  = welcher!=="aufgabe";
+  ueb.hidden  = true;
   document.getElementById("einTitel").textContent =
     welcher==="mangel"  ? "Mangel anlegen" :
-    welcher==="aufgabe" ? "Aufgabe anlegen" : "Was möchtest du anlegen?";
+    welcher==="aufgabe" ? "Aufgabe anlegen" :
+    welcher==="auftrag" ? "Auftrag anlegen" : "Was möchtest du anlegen?";
+  if(welcher==="auftrag"){
+    entwurf={}; asnIndex=0;
+    ["asnArbeitFrei","asnKundeSuche","asnStrasse","asnPlz","asnOrt","asnEtage","asnWert","asnStart"]
+      .forEach(id=>{ const e=document.getElementById(id); if(e) e.value=""; });
+    document.getElementById("asnArbeitFreiFeld").hidden=true;
+    asnZeigen();
+  }
   if(welcher==="mangel"){
     document.getElementById("einSuche").value="";
     einTrefferZeichnen("");
@@ -5164,15 +5272,205 @@ function einTrefferZeichnen(q){
   });
 }
 
+/* ---------------------------------------------------------
+   Die einzelnen Seiten des geführten Auftrags
+   --------------------------------------------------------- */
+const asnSeite = n => document.querySelector(`.asn-seite[data-seite="${n}"]`);
+
+function asnZeigen(){
+  const name=ASN_SEITEN[asnIndex];
+  ASN_SEITEN.forEach(n=>{ const el=asnSeite(n); if(el) el.hidden = n!==name; });
+  document.getElementById("asnSchritt").textContent=`Schritt ${asnIndex+1} von ${ASN_SEITEN.length}`;
+  document.getElementById("asnBalken").style.width=
+    Math.round((asnIndex+1)/ASN_SEITEN.length*100)+"%";
+  document.getElementById("asnUeber").hidden = !ASN_FREIWILLIG.includes(name);
+  const w=document.getElementById("einAnlegen");
+  w.hidden=false;
+  w.textContent = name==="fertig" ? "Auftrag eintragen" : "Weiter";
+  if(name==="arbeit")  asnArbeitenZeichnen();
+  if(name==="kunde")   asnKundenZeichnen("");
+  if(name==="adresse"){ asnEtageChips(); setTimeout(()=>document.getElementById("asnStrasse").focus(),50); }
+  if(name==="wert")    setTimeout(()=>document.getElementById("asnWert").focus(),50);
+  if(name==="start")   asnStartChips();
+  if(name==="fertig")  asnUebersichtZeichnen();
+}
+
+function asnArbeitenZeichnen(){
+  const box=document.getElementById("asnArbeiten");
+  box.replaceChildren();
+  const arbeiten=(state.settings.arbeiten||[]).concat(["Diverse andere Arbeiten"]);
+  arbeiten.forEach(a=>{
+    const b=document.createElement("button"); b.type="button";
+    const frei = a==="Diverse andere Arbeiten";
+    b.innerHTML=`<b>${esc(a)}</b>`+(frei?`<small>Selbst beschreiben, was zu tun ist.</small>`:"");
+    if(entwurf.arbeit===a) b.style.borderColor="var(--focus)";
+    b.onclick=()=>{
+      entwurf.arbeit=a;
+      document.getElementById("asnArbeitFreiFeld").hidden=!frei;
+      asnArbeitenZeichnen();
+      if(frei) setTimeout(()=>document.getElementById("asnArbeitFrei").focus(),40);
+      else asnWeiter();
+    };
+    box.appendChild(b);
+  });
+  document.getElementById("asnArbeitFreiFeld").hidden = entwurf.arbeit!=="Diverse andere Arbeiten";
+}
+
+function asnKundenZeichnen(q){
+  const box=document.getElementById("asnKunden");
+  box.replaceChildren();
+  const t=String(q||"").trim().toLowerCase();
+  const zeile=(titel,unten,fn,aktiv)=>{
+    const b=document.createElement("button"); b.type="button";
+    b.innerHTML=`${esc(titel)}${unten?`<span class="wo">${esc(unten)}</span>`:""}`;
+    if(aktiv) b.style.borderColor="var(--focus)";
+    b.onclick=fn; box.appendChild(b);
+  };
+  zeile("Diverses","Ohne festen Kunden – sammelt sich auf einem eigenen Blatt",
+    ()=>{ entwurf.kunde="divers"; asnWeiter(); }, entwurf.kunde==="divers");
+  const liste=state.customers.filter(k=>!t
+    || (k.company||"").toLowerCase().includes(t)
+    || (k.contact||"").toLowerCase().includes(t));
+  liste.forEach(k=>zeile(k.company, k.contact||k.address||"",
+    ()=>{ entwurf.kunde=k.id; asnWeiter(); }, entwurf.kunde===k.id));
+  if(!liste.length && t){
+    const d=document.createElement("div"); d.className="leer";
+    d.textContent="Kein Kunde gefunden."; box.appendChild(d);
+  }
+  zeile("＋ Neuer Kunde","Kunde jetzt anlegen und übernehmen",()=>{
+    const name=prompt("Wie heißt der Kunde?");
+    if(name===null) return;
+    const n=name.trim(); if(!n) return;
+    const k={id:uid(), company:n, contact:"", address:"", phone:"", email:""};
+    state.customers.push(k); save();
+    entwurf.kunde=k.id; asnWeiter();
+  });
+}
+
+function asnStartChips(){
+  const box=document.getElementById("asnStartChips");
+  box.replaceChildren();
+  const heute=new Date();
+  [["Heute",0],["Morgen",1],["In einer Woche",7]].forEach(([t,n])=>{
+    const b=document.createElement("button"); b.type="button"; b.textContent=t;
+    b.onclick=()=>{ document.getElementById("asnStart").value=iso(addDays(heute,n)); };
+    box.appendChild(b);
+  });
+}
+
+function asnEtageChips(){
+  const box=document.getElementById("asnEtageChips");
+  if(!box || box.childElementCount) return;
+  ["EG links","EG rechts","1. OG links","1. OG rechts","2. OG links","2. OG rechts","DG"].forEach(t=>{
+    const b=document.createElement("button"); b.type="button"; b.textContent=t;
+    b.onclick=()=>{ document.getElementById("asnEtage").value=t; };
+    box.appendChild(b);
+  });
+}
+
+const asnBezeichnung = () => (entwurf.arbeit==="Diverse andere Arbeiten")
+  ? (entwurf.arbeitFrei||"Diverse Arbeiten") : (entwurf.arbeit||"Auftrag");
+const asnAdresse = () => [ (entwurf.strasse||"").trim(),
+    [(entwurf.plz||"").trim(),(entwurf.ort||"").trim()].filter(Boolean).join(" ") ]
+  .filter(Boolean).join(", ");
+
+function asnUebersichtZeichnen(){
+  const box=document.getElementById("asnUebersicht");
+  const k = entwurf.kunde==="divers" ? "Diverses"
+          : (kundeById(entwurf.kunde)||{}).company || "—";
+  const z=(dt,dd)=> dd ? `<div class="kzeile"><dt>${dt}</dt><dd>${esc(dd)}</dd></div>` : "";
+  box.innerHTML = z("Arbeit", asnBezeichnung())
+    + z("Kunde", k)
+    + z("Adresse", asnAdresse())
+    + z("Etage", entwurf.etage)
+    + z("Auftragswert", entwurf.wert)
+    + z("Gewünschter Beginn", entwurf.start?wunschText(entwurf.start):"")
+    + z("Nummer", nrText((state.settings.auftragNr||0)+1));
+}
+
+/* Eingaben der aktuellen Seite einsammeln und prüfen */
+function asnSeiteLesen(){
+  const name=ASN_SEITEN[asnIndex];
+  if(name==="arbeit"){
+    if(!entwurf.arbeit){ alert("Bitte zuerst auswählen, was beauftragt wird."); return false; }
+    if(entwurf.arbeit==="Diverse andere Arbeiten"){
+      entwurf.arbeitFrei=document.getElementById("asnArbeitFrei").value.trim();
+      if(!entwurf.arbeitFrei){ alert("Bitte kurz beschreiben, was zu tun ist."); return false; }
+    }
+  }
+  if(name==="kunde" && !entwurf.kunde){ alert("Bitte einen Kunden wählen – oder „Diverses“."); return false; }
+  if(name==="adresse"){
+    entwurf.strasse=document.getElementById("asnStrasse").value.trim();
+    entwurf.plz=document.getElementById("asnPlz").value.trim();
+    entwurf.ort=document.getElementById("asnOrt").value.trim();
+    entwurf.etage=document.getElementById("asnEtage").value.trim();
+    if(!entwurf.strasse || !entwurf.ort){
+      alert("Straße mit Hausnummer und die Stadt werden gebraucht –\nsonst findet das Team das Objekt nicht.");
+      return false;
+    }
+  }
+  if(name==="wert")  entwurf.wert=document.getElementById("asnWert").value.trim();
+  if(name==="start") entwurf.start=document.getElementById("asnStart").value;
+  return true;
+}
+
+function asnWeiter(){
+  if(!asnSeiteLesen()) return;
+  if(asnIndex<ASN_SEITEN.length-1){ asnIndex++; asnZeigen(); asnEtageChips(); }
+  else asnAnlegen();
+}
+function asnZurueckSchritt(){
+  if(asnIndex>0){ asnSeiteLesen(); asnIndex--; asnZeigen(); }
+  else einSchritt("wahl");
+}
+
+/* Der Kunde „Diverses“ bekommt sein eigenes Blatt wie jeder andere */
+function kundeDiverses(){
+  let k=state.customers.find(x=>(x.company||"").trim().toLowerCase()==="diverses");
+  if(!k){ k={id:uid(), company:"Diverses", contact:"", address:"", phone:"", email:""};
+    state.customers.push(k); }
+  return k;
+}
+
+function asnAnlegen(){
+  const kunde = entwurf.kunde==="divers" ? kundeDiverses() : kundeById(entwurf.kunde);
+  const job=neuerAuftrag({
+    name: asnBezeichnung(),
+    address: asnAdresse(),
+    etage: entwurf.etage||"",
+    customerId: kunde?kunde.id:"",
+    value: entwurf.wert||"",
+    wishDate: entwurf.start||""
+  });
+  state.jobs.push(job);
+  listeNachfuehren(job);
+  save();
+  if(job.address) geocodeQuiet(job);
+  dlgEintrag.close();
+  poolShowAll=false; render(); renderPool();
+  setTimeout(()=>openJob(job.id),80);
+}
+
+document.getElementById("asnUeber").onclick=()=>{
+  const name=ASN_SEITEN[asnIndex];
+  if(name==="wert") document.getElementById("asnWert").value="";
+  if(name==="start") document.getElementById("asnStart").value="";
+  asnWeiter();
+};
+document.getElementById("asnKundeSuche").oninput=e=>asnKundenZeichnen(e.target.value);
+document.getElementById("asnArbeitFrei").onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); asnWeiter(); } };
+
 document.getElementById("einWahl").querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{
-  const w=b.dataset.w;
-  if(w==="auftrag"){ dlgEintrag.close(); openJob(null); return; }
-  einSchritt(w);
+  einSchritt(b.dataset.w);
 });
-document.getElementById("einZurueck").onclick=()=>einSchritt("wahl");
+document.getElementById("einZurueck").onclick=()=>{
+  if(!document.getElementById("einAuftrag").hidden) asnZurueckSchritt();
+  else einSchritt("wahl");
+};
 document.getElementById("einSuche").oninput=e=>einTrefferZeichnen(e.target.value);
 document.getElementById("einExtern").onclick=()=>{ dlgEintrag.close(); mangelFensterFuer(null); };
 document.getElementById("einAnlegen").onclick=()=>{
+  if(!document.getElementById("einAuftrag").hidden){ asnWeiter(); return; }
   const t=document.getElementById("einAufText").value.trim();
   if(!t){ alert("Bitte kurz schreiben, was zu tun ist."); return; }
   const k=document.getElementById("einAufPool").value;
