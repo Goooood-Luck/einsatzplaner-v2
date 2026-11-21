@@ -658,6 +658,26 @@ dialog h3{
 }
 .sch-zahlen span b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:21px;color:var(--ink);font-weight:600}
 .sch-zahlen span.rot b{color:#FF9D9D}
+/* Die Teams als Schnellweg: wer ist heute wo?
+   Ein Tipp führt direkt in den Auftrag, und von dort
+   mit einem weiteren zur Navigation. */
+.sch-teams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}
+.sch-teams .sch-leer{
+  grid-column:1/-1;color:var(--ink-faint);font-size:12.5px;padding:4px 2px;
+}
+.sch-team{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  background:var(--panel-2);border:1px solid var(--line);border-left:4px solid var(--ink-faint);
+  border-radius:12px;padding:11px 13px;color:var(--ink);min-height:58px;
+}
+.sch-team:active{filter:brightness(1.25)}
+.sch-team b{display:block;font-size:14px;font-weight:650;line-height:1.2}
+.sch-team small{
+  display:block;margin-top:3px;color:var(--ink-dim);font-size:11.5px;line-height:1.35;
+  overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+.sch-team.frei{opacity:.5}
+.sch-team.frei small{color:var(--ink-faint)}
 .sch-fuss{
   padding:12px 20px 16px;border-top:1px solid var(--line-soft);
   display:flex;align-items:center;gap:12px;
@@ -1661,6 +1681,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <button class="sch-gross aufgabe" data-s="aufgabe">
       <b>Aufgabe anlegen</b><small>Etwas zu erledigen, ohne Kunde</small></button>
     <div class="sch-zahlen" id="schZahlen"></div>
+    <div class="sch-teams" id="schTeams"></div>
   </div>
   <div class="sch-fuss">
     <button class="sch-voll" id="schVoll" title="Kalender, Spalten und alles Übrige. Zurück geht es unten über ✚ Aufnehmen oder über das Menü ☰.">Zur Vollversion</button>
@@ -5515,8 +5536,65 @@ function schnellAuffrischen(){
       `<span><b>${offen}</b>offen im Pool</span>`
     + `<span class="${maengel?"rot":""}"><b>${maengel}</b>Mängel offen</span>`
     + `<span><b>${Math.ceil(heute/2)}</b>heute verplant</span>`;
+  schnellTeamsZeichnen();
   const sp=document.getElementById("schStand"), sy=document.getElementById("syncState");
   if(sp && sy) sp.textContent=sy.textContent;
+}
+
+/* Welcher Auftrag läuft bei diesem Team gerade?
+   Vormittags der Vormittagseinsatz, ab der Mittagsgrenze der
+   vom Nachmittag – und wenn davon einer fehlt, der andere. */
+function teamHeute(teamId){
+  const heute=todayISO();
+  const amJetzt = (new Date().getHours()*60+new Date().getMinutes())
+                  < zeitMinuten(state.settings.pmStart||"12:30");
+  const hol = sl => state.assignments.find(a=>a.teamId===teamId && a.date===heute && a.slot===sl);
+  const erst = amJetzt ? hol("AM") : hol("PM");
+  const zweit= amJetzt ? hol("PM") : hol("AM");
+  const a = erst || zweit;
+  if(!a) return null;
+  const j=jobById(a.jobId); if(!j) return null;
+  const anderer = (erst&&zweit&&erst.jobId!==zweit.jobId) ? jobById(zweit.jobId) : null;
+  return {job:j, slot:a.slot, anderer};
+}
+function zeitMinuten(t){
+  const m=String(t||"").match(/^(\d{1,2}):(\d{2})$/);
+  return m ? (+m[1])*60 + (+m[2]) : 12*60+30;
+}
+
+function schnellTeamsZeichnen(){
+  const box=document.getElementById("schTeams");
+  if(!box) return;
+  box.replaceChildren();
+  const teams=(state.teams||[]).filter(t=>t && t.name);
+  if(!teams.length){
+    const d=document.createElement("div"); d.className="sch-leer";
+    d.textContent="Noch keine Teams angelegt.";
+    box.appendChild(d); return;
+  }
+  teams.forEach(t=>{
+    const heute=teamHeute(t.id);
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="sch-team"+(heute?"":" frei");
+    b.style.borderLeftColor = heute ? (t.color||"#7FD4FF") : "";
+    if(heute) b.style.background=blass(t.color||"#7FD4FF",.1);
+    b.innerHTML=`<b>${esc(t.name)}</b><small>${heute
+      ? esc(heute.job.name)+(heute.job.address?" · "+esc(heute.job.address.split(",")[0]):"")
+        +(heute.anderer?" · danach "+esc(heute.anderer.name):"")
+      : "heute nichts eingetragen"}</small>`;
+    b.onclick=()=>{
+      const h=teamHeute(t.id);
+      if(!h){
+        alert(`${t.name} hat heute keinen Einsatz im Kalender.`);
+        return;
+      }
+      schnellZeigen(false);
+      schnellMerken(true);            // nach dem Ansehen zurück hierher
+      openJob(h.job.id);
+    };
+    box.appendChild(b);
+  });
 }
 document.querySelectorAll("#schnell [data-s]").forEach(b=>b.onclick=()=>{
   const art=b.dataset.s;
