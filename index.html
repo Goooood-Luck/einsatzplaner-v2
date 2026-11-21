@@ -80,6 +80,12 @@ header{
 .views button i{font-style:normal;font-size:11px;opacity:.6}
 .views button:hover{background:#fff}
 header button[hidden]{display:none!important}
+/* Ein Punkt am Menü, wenn gewählte Knöpfe dort stecken statt in der Leiste */
+#btnMenu{position:relative}
+#btnMenu.vollerMenue::after{
+  content:"";position:absolute;top:5px;right:5px;width:6px;height:6px;
+  border-radius:50%;background:var(--focus);
+}
 .hakenliste{display:flex;flex-direction:column;gap:2px}
 .hakenliste label{
   display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--radius);
@@ -427,6 +433,30 @@ dialog h3{
 }
 .quick button:hover{border-color:var(--focus);color:var(--ink)}
 .quick button.on{background:var(--focus);border-color:var(--focus);color:#0A1119;font-weight:600}
+/* ---------------------------------------------------------
+   Wer ist gerade dran?
+   Supabase meldet, wer den Kanal offen hat. Das sagt nichts
+   darüber, was jemand tut – nur, dass das Programm bei ihm
+   offen ist, und wann er zuletzt etwas angefasst hat.
+   --------------------------------------------------------- */
+.onlineknopf{
+  display:flex;align-items:center;gap:7px;flex:none;
+  padding:6px 12px;font-size:12.5px;
+}
+.onlineknopf i{
+  width:7px;height:7px;border-radius:50%;background:#7FD39B;flex:none;
+  box-shadow:0 0 0 3px rgba(127,211,155,.18);
+}
+.onlineknopf.allein i{background:var(--ink-faint);box-shadow:none}
+.onlineliste{display:flex;flex-direction:column;gap:3px;min-width:242px}
+.onlinezeile{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius)}
+.onlinezeile:hover{background:var(--panel-2)}
+.onlinezeile .punkt{width:8px;height:8px;border-radius:50%;background:#7FD39B;flex:none}
+.onlinezeile.ruht .punkt{background:#F2B01E}
+.onlinezeile .wer{flex:1;min-width:0}
+.onlinezeile .wer b{display:block;font-size:13.5px;font-weight:600}
+.onlinezeile .wer small{color:var(--ink-dim);font-size:11.5px}
+.onlinezeile .ich{color:var(--focus);font-size:11px;flex:none}
 .searchbox{position:relative;flex:1 1 160px;min-width:120px;max-width:230px}
 .searchbox input{
   width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--pille);
@@ -999,6 +1029,7 @@ table.liste tr.mangelzeile td:first-child{position:relative}
 }
 .wahlliste.schmal button{padding:12px 15px}
 .wahlliste.schmal b{font-size:17px}
+.anhangzeile{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chips button{
   background:var(--panel-2);border:1px solid var(--line);border-radius:var(--pille);
@@ -1107,6 +1138,7 @@ dialog.hell .dlg-body{max-height:76vh}
 .reiter:hover{background:#EAEDF1;color:var(--l-ink)}
 .reiter.an{background:var(--l-feld);color:var(--l-ink);font-weight:650;box-shadow:0 -2px 0 var(--l-akzent) inset}
 .reiter.kunde::before{content:"●";color:#4C86C6;font-size:8px;margin-right:6px;vertical-align:middle}
+.reiter.fest::before{content:"◆";color:#C9A6FF;font-size:8px;margin-right:6px;vertical-align:middle}
 .reiter.plus{padding:7px 12px;color:var(--l-dim);font-size:15px;line-height:1;background:none;border-color:transparent}
 .reiter.plus:hover{background:#E1E4E9;border-color:var(--l-line)}
 
@@ -1567,6 +1599,8 @@ dialog.chatfenster{width:min(1120px,96vw)}
 
   <div class="spacer"></div>
   <span id="syncState" class="sync">Verbinden …</span>
+  <button class="ghost onlineknopf" id="btnOnline" hidden aria-haspopup="true"
+          title="Wer ist gerade im Programm?"><i></i><span id="onlineZahl">0</span></button>
   <div class="searchbox">
     <input type="search" id="qSearch" placeholder="Nummer, Objekt oder Straße …" autocomplete="off">
   </div>
@@ -2250,13 +2284,28 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <div id="einAufgabe" hidden>
       <div class="field">
         <label for="einAufText">Was ist zu tun?</label>
-        <input type="text" id="einAufText" placeholder="z.B. Material für Konstanz bestellen">
+        <input type="text" id="einAufText" placeholder="z.B. Steckdosen kaufen">
       </div>
       <div class="field">
         <label for="einAufPool">In welche Spalte?</label>
         <select id="einAufPool"></select>
       </div>
-      <p class="hint">Die Aufgabe liegt dort wie ein Auftrag und lässt sich genauso in den Kalender ziehen – sie bekommt nur keine Auftragsnummer und steht in keiner Kundenliste.</p>
+      <div class="field">
+        <label for="einAufZiel">Wohin in der Auftragsliste?</label>
+        <select id="einAufZiel"></select>
+      </div>
+      <div class="field">
+        <label>Fotos oder Dateien</label>
+        <div class="anhangzeile">
+          <button type="button" class="btn" id="einAufFoto">Foto aufnehmen</button>
+          <button type="button" class="btn" id="einAufDatei">Datei wählen</button>
+          <span class="hint" id="einAufDateiZahl" style="margin:0"></span>
+        </div>
+        <input type="file" id="einAufKamera" accept="image/*" capture="environment" hidden>
+        <input type="file" id="einAufAuswahl" multiple hidden>
+      </div>
+      <p class="hint">Die Aufgabe bekommt eine eigene Nummer, liegt in der gewählten Spalte und steht
+        in der Auftragsliste – auch nachdem sie erledigt ist.</p>
     </div>
   </div>
   <div class="dlg-foot">
@@ -2275,8 +2324,22 @@ dialog.chatfenster{width:min(1120px,96vw)}
       <label for="mgText">Was ist der Mangel?</label>
       <textarea id="mgText" rows="3" placeholder="z.B. Steckdose Küche ohne Funktion"></textarea>
     </div>
+    <div class="field" id="mgZielFeld" hidden>
+      <label for="mgZiel">Wohin in der Auftragsliste?</label>
+      <select id="mgZiel"></select>
+    </div>
+    <div class="field">
+      <label>Fotos oder Dateien</label>
+      <div class="anhangzeile">
+        <button type="button" class="btn" id="mgFoto">Foto aufnehmen</button>
+        <button type="button" class="btn" id="mgDatei">Datei wählen</button>
+        <span class="hint" id="mgDateiZahl" style="margin:0"></span>
+      </div>
+      <input type="file" id="mgKamera" accept="image/*" capture="environment" hidden>
+      <input type="file" id="mgAuswahl" multiple hidden>
+    </div>
     <p class="hint">Daraus wird ein eigener Auftrag mit eigener Nummer – im Auftragspool, zum Einplanen wie
-      jeder andere. Adresse und Kunde übernimmt er vom Ausgangsauftrag. In der Kundenliste steht er
+      jeder andere. Adresse und Kunde übernimmt er vom Ausgangsauftrag. In der Liste steht er
       direkt unter dem Auftrag, zu dem er gehört.</p>
   </div>
   <div class="dlg-foot">
@@ -2883,6 +2946,126 @@ function ladefehlerZeigen(grund,hatSicherung){
       : "Es wird nichts gespeichert. Bitte die Verbindung prüfen und die Seite neu laden."));
 }
 
+/* =========================================================
+   Zusammenführen statt auswählen
+
+   Wenn zwei Leute gleichzeitig arbeiten, ist die Frage
+   „deins oder meins?“ immer die falsche – es geht beides.
+   Dafür merkt sich jedes Fenster den Stand, auf dem es
+   aufgesetzt hat (die Basis). Aus Basis, eigenem Stand und
+   fremdem Stand lässt sich für jeden Eintrag sagen, WER ihn
+   geändert hat – und nur das wird übernommen. Verloren geht
+   nur, was zwei Leute im selben Feld unterschiedlich
+   geschrieben haben; dort gewinnt der Server, und kub.ik
+   sagt, was es war.
+   ========================================================= */
+let basis=null;                    // Stand, auf dem dieses Fenster aufsetzt
+let mischKonflikte=[];
+
+const tief = o => JSON.parse(JSON.stringify(o));
+const gleich = (a,b) => JSON.stringify(a)===JSON.stringify(b);
+function basisSetzen(st){ try{ basis=tief(st); }catch(e){ basis=null; } }
+
+const nachId = l => { const m=new Map(); (l||[]).forEach(x=>{ if(x&&x.id) m.set(x.id,x); }); return m; };
+
+/* Ein einzelnes Objekt feldweise mischen */
+function objektMischen(b,m,f,was){
+  if(!b) return tief(f||m);
+  const ergebnis=tief(f||{});
+  const felder=new Set([...Object.keys(b||{}),...Object.keys(m||{}),...Object.keys(f||{})]);
+  felder.forEach(k=>{
+    const bw=b?b[k]:undefined, mw=m?m[k]:undefined, fw=f?f[k]:undefined;
+    if(gleich(mw,fw)) return;                       // einig
+    if(gleich(mw,bw)){ ergebnis[k]=tief(fw); return; }   // nur fremd geändert
+    if(gleich(fw,bw)){ ergebnis[k]=tief(mw); return; }   // nur ich geändert
+    /* Beide haben dasselbe Feld geändert: der Server gewinnt,
+       damit zwei Geräte nie auseinanderlaufen. */
+    ergebnis[k]=tief(fw);
+    mischKonflikte.push(`${was||"Eintrag"} · ${k}`);
+  });
+  /* Verschachtelte Listen mit eigenen Kennungen nachziehen */
+  ["notizen","zeilen","spalten"].forEach(k=>{
+    if(Array.isArray((b||{})[k])||Array.isArray((m||{})[k])||Array.isArray((f||{})[k])){
+      ergebnis[k]=listeMischen((b||{})[k],(m||{})[k],(f||{})[k],was+" · "+k,
+        k==="spalten"?"f":"id");
+    }
+  });
+  return ergebnis;
+}
+
+/* Listen von Objekten mischen – angelegt, geändert, gelöscht */
+function listeMischen(bl,ml,fl,was,schluessel){
+  const sch=schluessel||"id";
+  const kl=l=>{ const m=new Map(); (l||[]).forEach(x=>{ if(x&&x[sch]!=null) m.set(x[sch],x); }); return m; };
+  const B=kl(bl), M=kl(ml), F=kl(fl);
+  const raus=[];
+  const gesehen=new Set();
+  const nimm=(id)=>{
+    if(gesehen.has(id)) return; gesehen.add(id);
+    const b=B.get(id), m=M.get(id), f=F.get(id);
+    if(!b){                                   // neu auf mindestens einer Seite
+      if(m&&f) raus.push(objektMischen(null,m,f,was));
+      else raus.push(tief(m||f));
+      return;
+    }
+    if(!m && !f) return;                      // beide gelöscht
+    if(!m){ if(gleich(b,f)) return; raus.push(tief(f)); return; }  // ich gelöscht, fremd geändert
+    if(!f){ if(gleich(b,m)) return; raus.push(tief(m)); return; }  // fremd gelöscht, ich geändert
+    raus.push(objektMischen(b,m,f,was));
+  };
+  (fl||[]).forEach(x=>nimm(x[sch]));          // Reihenfolge des Servers führt
+  (ml||[]).forEach(x=>nimm(x[sch]));          // dann, was nur ich habe
+  return raus;
+}
+
+/* Zwei Einsätze dürfen nicht denselben Halbtag belegen */
+function einsaetzeEntdoppeln(liste,bl){
+  const B=new Set((bl||[]).map(a=>a.id));
+  const platz=new Map(); const raus=[];
+  (liste||[]).forEach(a=>{
+    const k=`${a.teamId}|${a.date}|${a.slot}`;
+    if(!platz.has(k)){ platz.set(k,a); raus.push(a); return; }
+    const da=platz.get(k);
+    if(da.jobId===a.jobId) return;            // derselbe Auftrag, nur doppelt
+    /* Zwei verschiedene Aufträge auf einem Halbtag: der bestehende
+       bleibt, der andere wird gemeldet statt still verworfen. */
+    if(!B.has(da.id) && B.has(a.id)){
+      raus[raus.indexOf(da)]=a; platz.set(k,a);
+      mischKonflikte.push(`Einsatz ${a.date} ${a.slot}`);
+    }else{
+      mischKonflikte.push(`Einsatz ${a.date} ${a.slot}`);
+    }
+  });
+  return raus;
+}
+
+function zusammenfuehren(b,m,f){
+  mischKonflikte=[];
+  const erg=tief(f);
+  erg.teams        = listeMischen(b.teams,        m.teams,        f.teams,        "Team");
+  erg.jobs         = listeMischen(b.jobs,         m.jobs,         f.jobs,         "Auftrag");
+  erg.customers    = listeMischen(b.customers,    m.customers,    f.customers,    "Kunde");
+  erg.blaetter     = listeMischen(b.blaetter,     m.blaetter,     f.blaetter,     "Blatt");
+  erg.fileRegistry = listeMischen(b.fileRegistry, m.fileRegistry, f.fileRegistry, "Datei");
+  erg.adminSpur    = listeMischen(b.adminSpur,    m.adminSpur,    f.adminSpur,    "Spur");
+  erg.assignments  = einsaetzeEntdoppeln(
+    listeMischen(b.assignments, m.assignments, f.assignments, "Einsatz"), b.assignments);
+  erg.settings     = objektMischen(b.settings, m.settings, f.settings, "Einstellung");
+  /* Stunden und Kilometer sind einfache Zuordnungen Tag -> Wert */
+  ["stunden","km"].forEach(k=>{
+    const bb=b[k]||{}, mm=m[k]||{}, ff=f[k]||{};
+    const z=Object.assign({},ff);
+    new Set([...Object.keys(bb),...Object.keys(mm),...Object.keys(ff)]).forEach(t=>{
+      if(gleich(mm[t],ff[t])) return;
+      if(gleich(mm[t],bb[t])) return;                 // nur fremd geändert
+      if(gleich(ff[t],bb[t])){ if(mm[t]===undefined) delete z[t]; else z[t]=tief(mm[t]); return; }
+      mischKonflikte.push((k==="km"?"Kilometer":"Stunden")+" "+t);
+    });
+    erg[k]=z;
+  });
+  return zustandPruefen(erg)||erg;
+}
+
 function save(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){ storageOK=false; }
   sicherungAblegen(state);
@@ -2912,6 +3095,7 @@ async function hochladen(){
       await konfliktLoesen();
     }else{
       version=data[0].version;
+      basisSetzen(state);                      // ab hier ist das der gemeinsame Stand
       setSync("Gespeichert "+zeitJetzt(),"ok");
       termineZurueckmelden();
     }
@@ -2925,48 +3109,69 @@ async function hochladen(){
 
 /* Jemand anders hat zwischendurch gespeichert: fremden Stand holen, eigene
    Änderung nicht blind darüberschreiben, sondern den Benutzer entscheiden lassen. */
+/* Jemand anderes war schneller: beide Stände zusammenführen und
+   das Ergebnis speichern. Gefragt wird nur noch, wenn die Basis
+   fehlt – dann ist ein Mischen nicht möglich. */
+let mischVersuche=0;
 async function konfliktLoesen(){
-  const meins=JSON.stringify(state);
   const frisch=await serverStandHolen();
   if(!frisch || !frisch.data){ setSync("Verbindung gestört","warn"); return; }
 
-  /* Beide Stände behalten, bevor irgendetwas entschieden wird */
   sicherungAblegen(state);
   sicherungAblegen(frisch.data);
 
   const meineZahl=(state.jobs||[]).length;
   const fremdZahl=(frisch.data.jobs||[]).length;
 
-  /* Der gefährliche Fall: der eigene Stand ist deutlich kleiner.
-     Dann ist er fast sicher veraltet oder gar nicht erst geladen
-     worden – hier wird nicht gefragt, hier wird geschützt. */
-  if(fremdZahl - meineZahl >= 3 || (fremdZahl>0 && meineZahl*2 < fremdZahl)){
-    state=frisch.data; version=frisch.version;
+  if(!basis){
+    /* Ohne Basis lässt sich nicht sagen, wer was geändert hat.
+       Dann gilt der Schutz: der Server behält recht. */
+    state=frisch.data; version=frisch.version; basisSetzen(state);
     await refreshCounts(); render(); renderPool();
-    alert("Deine Änderung wurde nicht gespeichert.\n\n"
-      +`Auf dem Server stehen ${fremdZahl} Aufträge, auf diesem Gerät waren es nur ${meineZahl}. `
-      +"Das sieht nach einem veralteten Stand aus, darum wurde der Server nicht überschrieben.\n\n"
-      +"Der aktuelle Stand ist jetzt geladen – bitte die Änderung noch einmal eintragen.\n"
+    alert("Deine letzte Änderung wurde nicht gespeichert.\n\n"
+      +"Diesem Fenster fehlte der Ausgangsstand, darum ließ sich nicht zusammenführen. "
+      +"Der aktuelle Stand ist jetzt geladen – bitte die Änderung noch einmal eintragen.\n\n"
       +"Dein vorheriger Stand liegt unter Menü ☰ → Frühere Stände.");
     setSync("Fremder Stand geladen "+zeitJetzt(),"warn");
     return;
   }
 
-  const weiter=confirm(
-    "Jemand anderes hat die Planung inzwischen geändert"+
-    (frisch.updated_by?` (${frisch.updated_by})`:"")+".\n\n"+
-    `Auf dem Server: ${fremdZahl} Aufträge\n`+
-    `Auf diesem Gerät: ${meineZahl} Aufträge\n\n`+
-    "OK  = deine Änderung übernehmen und die andere überschreiben\n"+
-    "Abbrechen = fremden Stand laden, deine letzte Änderung verwerfen");
-  if(weiter){
-    state=JSON.parse(meins);
-    version=frisch.version;
-    await hochladen();
+  /* Veralteter, viel kleinerer Stand: nicht mischen, sondern schützen */
+  if(fremdZahl - meineZahl >= 3 || (fremdZahl>0 && meineZahl*2 < fremdZahl)){
+    state=frisch.data; version=frisch.version; basisSetzen(state);
+    await refreshCounts(); render(); renderPool();
+    alert("Deine Änderung wurde nicht gespeichert.\n\n"
+      +`Auf dem Server stehen ${fremdZahl} Aufträge, auf diesem Gerät waren es nur ${meineZahl}. `
+      +"Das sieht nach einem veralteten Stand aus, darum wurde der Server nicht überschrieben.\n\n"
+      +"Der aktuelle Stand ist jetzt geladen – bitte die Änderung noch einmal eintragen.");
+    setSync("Fremder Stand geladen "+zeitJetzt(),"warn");
+    return;
+  }
+
+  const gemischt=zusammenfuehren(basis, state, frisch.data);
+  const konflikte=mischKonflikte.slice();
+  state=gemischt;
+  version=frisch.version;
+  await refreshCounts(); render(); renderPool(); zeichneSpur();
+
+  if(mischVersuche++ > 4){
+    mischVersuche=0;
+    setSync("Zusammenführen bricht ab – bitte neu laden","warn");
+    return;
+  }
+  await hochladen();
+  mischVersuche=0;
+
+  if(konflikte.length){
+    const liste=[...new Set(konflikte)].slice(0,6).join("\n· ");
+    setSync("Zusammengeführt "+zeitJetzt(),"ok");
+    alert("Beide Änderungen wurden zusammengeführt.\n\n"
+      +`An ${konflikte.length===1?"einer Stelle":"diesen Stellen"} hatten zwei Leute dasselbe `
+      +"geändert – dort gilt jetzt der Stand vom Server:\n\n· "+liste
+      +"\n\nBitte kurz nachsehen, ob es so stimmt. Dein vorheriger Stand liegt "
+      +"unter Menü ☰ → Frühere Stände.");
   }else{
-    state=frisch.data; version=frisch.version;
-    await refreshCounts(); render();
-    setSync("Fremder Stand geladen "+zeitJetzt(),"ok");
+    setSync("Zusammengeführt mit "+(frisch.updated_by||"dem Server")+" "+zeitJetzt(),"ok");
   }
 }
 
@@ -2993,6 +3198,130 @@ async function serverStandHolen(){
   }catch(e){ return {fehler:String((e&&e.message)||e)}; }
 }
 
+/* =========================================================
+   Anwesenheit
+   Jedes Fenster meldet sich an einem eigenen Kanal an.
+   Supabase führt die Liste und räumt auf, wenn jemand das
+   Fenster schließt oder die Verbindung verliert.
+   ========================================================= */
+let anwesendKanal=null, anwesendListe=[], letzteAktion=Date.now(), anwesendTakt=null;
+
+function anwesendStarten(){
+  if(!sb || anwesendKanal || istKunde()) return;   // Kunden bleiben außen vor
+  if(typeof sb.channel!=="function") return;
+  try{
+    anwesendKanal=sb.channel("anwesend", {config:{presence:{key:(meineId||uid())}}});
+    if(!anwesendKanal || typeof anwesendKanal.on!=="function"){ anwesendKanal=null; return; }
+    anwesendKanal
+      .on("presence",{event:"sync"},()=>anwesendAuffrischen())
+      .on("presence",{event:"join"},()=>anwesendAuffrischen())
+      .on("presence",{event:"leave"},()=>anwesendAuffrischen())
+      .subscribe(async status=>{
+        if(status!=="SUBSCRIBED") return;
+        await anwesendMelden();
+        clearInterval(anwesendTakt);
+        anwesendTakt=setInterval(anwesendMelden,45000);
+      });
+  }catch(e){ anwesendKanal=null; }
+}
+
+async function anwesendMelden(){
+  if(!anwesendKanal) return;
+  try{
+    await anwesendKanal.track({
+      name:(typeof meinName!=="undefined" && meinName) ? meinName : "Jemand",
+      rolle:(typeof rolle!=="undefined") ? rolle : "",
+      seit: anwesendSeit,
+      aktion: letzteAktion,
+      geraet: isPhone() ? "Telefon" : "Rechner"
+    });
+  }catch(e){}
+}
+const anwesendSeit=Date.now();
+
+function anwesendAuffrischen(){
+  if(!anwesendKanal) return;
+  let roh={};
+  try{ roh=anwesendKanal.presenceState()||{}; }catch(e){ return; }
+  const liste=[];
+  Object.keys(roh).forEach(k=>{
+    const e=(roh[k]||[])[0]; if(!e) return;
+    liste.push({schluessel:k, name:e.name||"Jemand", rolle:e.rolle||"",
+                seit:e.seit||0, aktion:e.aktion||0, geraet:e.geraet||""});
+  });
+  liste.sort((a,b)=>(b.aktion||0)-(a.aktion||0));
+  anwesendListe=liste;
+  const knopf=document.getElementById("btnOnline");
+  if(knopf){
+    knopf.hidden = !darfPlanen();
+    knopf.classList.toggle("allein", liste.length<=1);
+    document.getElementById("onlineZahl").textContent=liste.length;
+    knopf.title = liste.length<=1 ? "Nur du bist gerade im Programm"
+      : liste.map(x=>x.name).join(", ")+" sind gerade im Programm";
+  }
+  if(onlineBlase) onlineListeZeichnen();
+}
+
+/* Jede Bedienung merkt sich die Zeit – daran sieht man, wer
+   wirklich arbeitet und wer das Fenster nur offen hat. */
+["pointerdown","keydown"].forEach(ev=>
+  document.addEventListener(ev,()=>{
+    const jetzt=Date.now();
+    if(jetzt-letzteAktion>20000){ letzteAktion=jetzt; anwesendMelden(); }
+    else letzteAktion=jetzt;
+  },{capture:true,passive:true}));
+
+let onlineBlase=null;
+function onlineBlaseZu(){
+  if(!onlineBlase) return;
+  document.removeEventListener("pointerdown",onlineBlaseWeg,{capture:true});
+  onlineBlase.remove(); onlineBlase=null;
+}
+function onlineBlaseWeg(e){
+  if(!onlineBlase || onlineBlase.contains(e.target)) return;
+  if(e.target.closest("#btnOnline")) return;
+  e.preventDefault(); e.stopPropagation(); onlineBlaseZu();
+}
+function onlineListeZeichnen(){
+  if(!onlineBlase) return;
+  const box=onlineBlase.querySelector(".onlineliste");
+  box.replaceChildren();
+  if(!anwesendListe.length){
+    const d=document.createElement("div"); d.className="hint"; d.style.margin="4px 2px";
+    d.textContent="Gerade niemand – auch du selbst erscheinst erst nach einem Moment.";
+    box.appendChild(d); return;
+  }
+  const jetzt=Date.now();
+  anwesendListe.forEach(x=>{
+    const ruht=(jetzt-(x.aktion||0))>5*60*1000;
+    const z=document.createElement("div"); z.className="onlinezeile"+(ruht?" ruht":"");
+    const seit=x.seit?Math.max(0,Math.round((jetzt-x.seit)/60000)):0;
+    const stille=x.aktion?Math.round((jetzt-x.aktion)/60000):0;
+    z.innerHTML=`<span class="punkt"></span>
+      <span class="wer"><b>${esc(x.name)}</b><small>${esc(x.geraet)}`
+      +`${seit?` · seit ${seit<60?seit+" Min":Math.round(seit/60)+" Std"}`:""}`
+      +`${ruht?` · ${stille<60?stille+" Min":Math.round(stille/60)+" Std"} nichts getan`:" · gerade aktiv"}`
+      +`</small></span>`
+      +`${x.schluessel===meineId?`<span class="ich">du</span>`:""}`;
+    box.appendChild(z);
+  });
+}
+document.getElementById("btnOnline").onclick=e=>{
+  if(onlineBlase){ onlineBlaseZu(); return; }
+  const d=document.createElement("div"); d.className="nzblase spaltenblase";
+  const h=document.createElement("h4"); h.textContent="Gerade im Programm";
+  const l=document.createElement("div"); l.className="onlineliste";
+  d.append(h,l);
+  document.body.appendChild(d);
+  onlineBlase=d;
+  onlineListeZeichnen();
+  const r=e.currentTarget.getBoundingClientRect();
+  const bb=d.getBoundingClientRect();
+  d.style.left=Math.max(10, Math.min(r.left+r.width/2-bb.width/2, innerWidth-bb.width-10))+"px";
+  d.style.top =Math.min(r.bottom+8, innerHeight-bb.height-10)+"px";
+  setTimeout(()=>document.addEventListener("pointerdown",onlineBlaseWeg,{capture:true}),0);
+};
+
 /* ---- Live: Änderungen der anderen erscheinen ohne Neuladen ---- */
 function liveVerbinden(){
   if(!sb) return;
@@ -3006,9 +3335,23 @@ function liveVerbinden(){
       /* Vor dem Übernehmen den eigenen bisherigen Stand sichern –
          so ist er noch da, falls der fremde Stand Unsinn ist. */
       sicherungAblegen(state);
-      state=d; version=neu.version||0;
+      /* Habe ich selbst seit dem letzten gemeinsamen Stand etwas
+         geändert, wird gemischt statt ersetzt – sonst wäre meine
+         Arbeit weg, bevor sie überhaupt gespeichert war. */
+      if(basis && !gleich(basis,state)){
+        const vorher=(state.jobs||[]).length;
+        state=zusammenfuehren(basis,state,d);
+        version=neu.version||0;
+        basisSetzen(d);
+        sicherungAblegen(state);
+        await refreshCounts(); render(); renderPool(); zeichneSpur();
+        setSync("Zusammengeführt mit "+(neu.updated_by||"jemand anderem")+" "+zeitJetzt(),"ok");
+        if((state.jobs||[]).length!==vorher || mischKonflikte.length) save();
+        return;
+      }
+      state=d; version=neu.version||0; basisSetzen(state);
       sicherungAblegen(state);
-      await refreshCounts(); render();
+      await refreshCounts(); render(); renderPool(); zeichneSpur();
       setSync("Aktualisiert von "+(neu.updated_by||"jemand anderem")+" "+zeitJetzt(),"ok");
     })
     .subscribe();
@@ -3252,7 +3595,8 @@ function renderPhoneJobs(){
       <small style="margin-top:3px;color:var(--ink-faint)">${planned.has(j.id)?"eingeplant":"noch offen"}${j.billed?" · abgerechnet":""}${fileCounts[j.id]?` · ${fileCounts[j.id]} Anhang`:""}</small>
       <div class="row"><button data-m="${j.id}">Karte</button
         ><button class="nzknopf ${notizStufe(j.id)}" data-nz="${j.id}" title="Notizen und Mängel">Notizen</button
-        >${istMangelAuftrag(j)?`<button data-mok="${j.id}">Mangel erledigt</button>`:""}</div>
+        >${(istMangelAuftrag(j)||istAufgabe(j)) && !j.erledigt
+            ? `<button data-mok="${j.id}">Erledigt</button>` : ""}</div>
       ${darfPlanen()?`<div class="vorabzeile">
         <select class="spaltenwahl" data-sp="${j.id}" title="In welcher Spalte steht der Auftrag?">
           ${poolKeys().map(k=>`<option value="${k}"${k===spalte?" selected":""}>${esc(poolName(k))}</option>`).join("")}
@@ -3278,7 +3622,7 @@ function renderPhoneJobs(){
     const j=jobById(sel.dataset.sp); if(j){ spalteSetzen(j, sel.value); render(); }
   });
   wrap.querySelectorAll("[data-mok]").forEach(b=>b.onclick=e=>{
-    e.stopPropagation(); mangelAuftragErledigen(b.dataset.mok);
+    e.stopPropagation(); eintragErledigen(b.dataset.mok);
   });
   wrap.querySelectorAll("[data-tw]").forEach(sel=>sel.onchange=()=>{
     const j=jobById(sel.dataset.tw); if(!j) return;
@@ -3968,7 +4312,8 @@ function poolSpalte(ziel,zaehler,spalte,mitEinreichungen){
   if(!poolSichtbar(spalte)){ pool.replaceChildren(); return; }
   const planned=plannedJobIds();
   const eigene=state.jobs.filter(j=>poolVon(j)===spalte);
-  const list = poolShowAll ? eigene : eigene.filter(j=>!planned.has(j.id));
+  /* Erledigtes ist aus dem Pool heraus – in der Liste bleibt es stehen */
+  const list = poolShowAll ? eigene : eigene.filter(j=>!planned.has(j.id) && !j.erledigt);
   if(zaehlFeld) zaehlFeld.textContent = poolShowAll ? `alle ${eigene.length}` : `${list.length} offen`;
   pool.replaceChildren();
 
@@ -4031,7 +4376,8 @@ function poolSpalte(ziel,zaehler,spalte,mitEinreichungen){
       ${fileCounts[j.id]?`<small style="margin-top:3px;color:var(--ink-dim)">${fileCounts[j.id]} Foto${fileCounts[j.id]===1?"":"s"} / Datei${fileCounts[j.id]===1?"":"en"}</small>`:""}
       <div class="row"><button data-m="${j.id}">Karte</button
         ><button class="nzknopf ${notizStufe(j.id)}" data-nz="${j.id}">Notizen</button
-        >${istMangelAuftrag(j)?`<button data-mok="${j.id}" title="Mangel beseitigt – wer war es?">Mangel erledigt</button>`:""}</div>
+        >${(istMangelAuftrag(j)||istAufgabe(j)) && !j.erledigt
+            ? `<button data-mok="${j.id}" title="Wer hat es erledigt?">Erledigt</button>` : ""}</div>
       ${darfPlanen()?`<div class="vorabzeile">
         <select class="spaltenwahl" data-sp="${j.id}" title="In welcher Spalte steht der Auftrag?">
           ${poolKeys().map(k=>`<option value="${k}"${k===spalte?" selected":""}>${esc(poolName(k))}</option>`).join("")}
@@ -4064,7 +4410,7 @@ function poolSpalte(ziel,zaehler,spalte,mitEinreichungen){
     save(); renderPool();
   });
   pool.querySelectorAll("[data-mok]").forEach(b=>b.onclick=e=>{
-    e.stopPropagation(); mangelAuftragErledigen(b.dataset.mok);
+    e.stopPropagation(); eintragErledigen(b.dataset.mok);
   });
   pool.querySelectorAll("[data-up]").forEach(b=>b.onclick=e=>{
     e.stopPropagation(); const j=jobById(b.dataset.up); if(j) auftragSchieben(j,-1);
@@ -4643,6 +4989,10 @@ async function jobKarteZeichnen(id,zielId,zusatz){
             : `<span class="neben">noch keine Koordinaten – auf der Karte nicht sichtbar</span>`)
       : "");
   zeilen+=zeile("Kunde", k ? `${esc(k.company)}${k.contact?`<span class="neben">${esc(k.contact)}</span>`:""}` : "");
+  const blatt=blattFuer(j);
+  zeilen+=zeile("In der Liste", blatt
+    ? `${esc(blatt.name)}<span class="neben">Nummer ${esc(nrText(j.nr))} · bleibt dort auch nach dem Erledigen</span>`
+    : "");
   zeilen+=zeile("Etage", j.etage?esc(j.etage):"");
   zeilen+=zeile("Vor Ort", j.contact?esc(j.contact):"");
   zeilen+=zeile("Auftragswert", j.value?esc(j.value):"", true);
@@ -4712,9 +5062,10 @@ async function jobKarteZeichnen(id,zielId,zusatz){
   /* Knöpfe im Fuß an den Eintrag anpassen */
   document.getElementById("jbkNavi").hidden = !j.address;
   const mk=document.getElementById("jbkMangel");
-  mk.hidden = istAufgabe(j);
-  mk.textContent = istMangelAuftrag(j)
-    ? (j.erledigt?"Mangel wieder öffnen":"Mangel erledigt") : "Mangel aufnehmen";
+  mk.hidden = false;
+  mk.textContent = (istMangelAuftrag(j)||istAufgabe(j))
+    ? (j.erledigt ? "Wieder öffnen" : "Erledigt")
+    : "Mangel aufnehmen";
 }
 
 /* ---------------------------------------------------------
@@ -4834,15 +5185,9 @@ document.getElementById("jbkNavi").onclick=()=>{
 };
 document.getElementById("jbkMangel").onclick=()=>{
   const j=jobById(jobEditId); if(!j) return;
-  if(istMangelAuftrag(j)){
-    if(j.erledigt){
-      j.erledigt=false; j.erledigtVon=""; j.erledigtAm="";
-      const n=mangelNotizVon(j);
-      if(n){ n.erledigt=false; n.erledigtVon=""; n.erledigtAm=""; }
-      save(); render(); renderPool(); jobKarteZeichnen(j.id);
-    }else{
-      mangelAuftragErledigen(j.id);
-    }
+  if(istMangelAuftrag(j)||istAufgabe(j)){
+    if(j.erledigt){ eintragWiederOeffnen(j.id); jobKarteZeichnen(j.id); }
+    else eintragErledigen(j.id);
     return;
   }
   mangelFensterFuer(j.id);
@@ -4862,8 +5207,15 @@ function mangelFensterFuer(elternId){
   document.getElementById("mgTitel").textContent = p ? "Mangel aufnehmen" : "Externer Mangel";
   document.getElementById("mgZu").textContent = p
     ? `Zum Auftrag ${nrText(p.nr)} · ${p.name}${p.address?" · "+p.address:""}`
-    : "Ohne Bezug zu einem Auftrag. Adresse und Kunde kannst du danach im Fenster nachtragen.";
+      + ` · kommt in der Liste direkt darunter`
+    : "Ohne Bezug zu einem Auftrag. Adresse kannst du danach im Fenster nachtragen.";
   document.getElementById("mgText").value="";
+  /* Hängt der Mangel an einem Auftrag, steht das Blatt schon fest.
+     Sonst muss es hier gewählt werden. */
+  const feld=document.getElementById("mgZielFeld");
+  feld.hidden=!!p;
+  if(!p) zielAuswahlFuellen(document.getElementById("mgZiel"),"divers");
+  dateienVergessen();
   dlgMangel.showModal();
   setTimeout(()=>document.getElementById("mgText").focus(),40);
 }
@@ -4872,12 +5224,19 @@ document.getElementById("jbMangelNeu").onclick=()=>{
   if(!jobById(jobEditId)) return;
   mangelFensterFuer(jobEditId);
 };
-document.getElementById("mgSpeichern").onclick=()=>{
+document.getElementById("mgSpeichern").onclick=async()=>{
   const t=document.getElementById("mgText").value.trim();
   if(!t){ alert("Bitte kurz beschreiben, was der Mangel ist."); return; }
-  const kind=mangelAuftragAnlegen(mangelElternId,t);
+  let extra={};
+  if(!mangelElternId){
+    const ziel=document.getElementById("mgZiel").value;
+    if(!ziel){ alert("Bitte angeben, wohin der Mangel in der Liste gehört."); return; }
+    extra=zielFelder(ziel);
+  }
+  const kind=mangelAuftragAnlegen(mangelElternId,t,extra);
+  if(!kind){ dlgMangel.close(); return; }
+  await dateienAnhaengen(kind.id);
   dlgMangel.close();
-  if(!kind) return;
   poolShowAll=false;
   render(); renderPool();
   if(dlgJob.open) dlgJob.close();
@@ -5237,6 +5596,8 @@ function einSchritt(welcher){
       const o=document.createElement("option"); o.value=p.k; o.textContent=p.name; return o;
     }));
     document.getElementById("einAufText").value="";
+    zielAuswahlFuellen(document.getElementById("einAufZiel"),"aufgaben");
+    dateienVergessen();
     setTimeout(()=>document.getElementById("einAufText").focus(),40);
   }
 }
@@ -5276,6 +5637,53 @@ function einTrefferZeichnen(q){
    Die einzelnen Seiten des geführten Auftrags
    --------------------------------------------------------- */
 const asnSeite = n => document.querySelector(`.asn-seite[data-seite="${n}"]`);
+
+/* ---------------------------------------------------------
+   Wohin gehört der Eintrag in der Auftragsliste?
+   Diese Frage lässt sich nicht überspringen – jede vergebene
+   Nummer muss in einem Blatt auftauchen.
+   --------------------------------------------------------- */
+function zielAuswahlFuellen(sel,vorgabe){
+  if(!sel) return;
+  sel.replaceChildren();
+  const dazu=(wert,text)=>{ const o=document.createElement("option");
+    o.value=wert; o.textContent=text; sel.appendChild(o); };
+  dazu("aufgaben","Aufgaben – das Blatt für alles Interne");
+  dazu("divers","Diverses – ohne festen Kunden");
+  state.customers.slice()
+    .sort((a,b)=>(a.company||"").localeCompare(b.company||"","de"))
+    .forEach(k=>dazu("k:"+k.id, k.company));
+  sel.value = vorgabe || "aufgaben";
+}
+function zielFelder(wert){
+  if(String(wert||"").startsWith("k:")) return {customerId:wert.slice(2), blattZiel:""};
+  return {customerId:"", blattZiel:(wert==="divers"?"divers":"aufgaben")};
+}
+
+/* Anhänge, die beim Anlegen schon mitgegeben werden */
+let wartendeDateien=[];
+function dateienMerken(liste,zaehlerId){
+  wartendeDateien=wartendeDateien.concat([...liste]);
+  const z=document.getElementById(zaehlerId);
+  if(z) z.textContent = wartendeDateien.length
+    ? `${wartendeDateien.length} Datei${wartendeDateien.length===1?"":"en"} vorgemerkt`
+    : "";
+}
+async function dateienAnhaengen(jobId){
+  if(!wartendeDateien.length) return;
+  const wer=(typeof meinName!=="undefined" && meinName) ? meinName : "";
+  for(const f of wartendeDateien){
+    try{ await Files.add(jobId,f,wer); }
+    catch(e){ console.warn("Datei nicht übernommen:",e); }
+  }
+  wartendeDateien=[];
+}
+function dateienVergessen(){
+  wartendeDateien=[];
+  ["einAufDateiZahl","mgDateiZahl"].forEach(id=>{
+    const z=document.getElementById(id); if(z) z.textContent="";
+  });
+}
 
 function asnZeigen(){
   const name=ASN_SEITEN[asnIndex];
@@ -5326,7 +5734,7 @@ function asnKundenZeichnen(q){
     if(aktiv) b.style.borderColor="var(--focus)";
     b.onclick=fn; box.appendChild(b);
   };
-  zeile("Diverses","Ohne festen Kunden – sammelt sich auf einem eigenen Blatt",
+  zeile("Diverses","Ohne festen Kunden – sammelt sich auf dem Blatt „Diverses“",
     ()=>{ entwurf.kunde="divers"; asnWeiter(); }, entwurf.kunde==="divers");
   const liste=state.customers.filter(k=>!t
     || (k.company||"").toLowerCase().includes(t)
@@ -5376,7 +5784,7 @@ const asnAdresse = () => [ (entwurf.strasse||"").trim(),
 
 function asnUebersichtZeichnen(){
   const box=document.getElementById("asnUebersicht");
-  const k = entwurf.kunde==="divers" ? "Diverses"
+  const k = entwurf.kunde==="divers" ? "Diverses (eigenes Blatt)"
           : (kundeById(entwurf.kunde)||{}).company || "—";
   const z=(dt,dd)=> dd ? `<div class="kzeile"><dt>${dt}</dt><dd>${esc(dd)}</dd></div>` : "";
   box.innerHTML = z("Arbeit", asnBezeichnung())
@@ -5424,21 +5832,14 @@ function asnZurueckSchritt(){
   else einSchritt("wahl");
 }
 
-/* Der Kunde „Diverses“ bekommt sein eigenes Blatt wie jeder andere */
-function kundeDiverses(){
-  let k=state.customers.find(x=>(x.company||"").trim().toLowerCase()==="diverses");
-  if(!k){ k={id:uid(), company:"Diverses", contact:"", address:"", phone:"", email:""};
-    state.customers.push(k); }
-  return k;
-}
-
 function asnAnlegen(){
-  const kunde = entwurf.kunde==="divers" ? kundeDiverses() : kundeById(entwurf.kunde);
+  const kunde = entwurf.kunde==="divers" ? null : kundeById(entwurf.kunde);
   const job=neuerAuftrag({
     name: asnBezeichnung(),
     address: asnAdresse(),
     etage: entwurf.etage||"",
     customerId: kunde?kunde.id:"",
+    blattZiel: kunde?"":"divers",
     value: entwurf.wert||"",
     wishDate: entwurf.start||""
   });
@@ -5469,17 +5870,36 @@ document.getElementById("einZurueck").onclick=()=>{
 };
 document.getElementById("einSuche").oninput=e=>einTrefferZeichnen(e.target.value);
 document.getElementById("einExtern").onclick=()=>{ dlgEintrag.close(); mangelFensterFuer(null); };
-document.getElementById("einAnlegen").onclick=()=>{
+document.getElementById("einAnlegen").onclick=async()=>{
   if(!document.getElementById("einAuftrag").hidden){ asnWeiter(); return; }
   const t=document.getElementById("einAufText").value.trim();
   if(!t){ alert("Bitte kurz schreiben, was zu tun ist."); return; }
   const k=document.getElementById("einAufPool").value;
-  const a=neuerAuftrag({art:"aufgabe", name:t, pool:(k!==poolErste()?k:undefined)}, true);
+  const ziel=document.getElementById("einAufZiel").value;
+  if(!ziel){ alert("Bitte angeben, wohin die Aufgabe in der Liste gehört."); return; }
+  const a=neuerAuftrag(Object.assign({art:"aufgabe", name:t,
+    pool:(k!==poolErste()?k:undefined)}, zielFelder(ziel)));
   state.jobs.push(a);
   state.settings.poolsAn[k]=true;
-  save(); dlgEintrag.close();
+  listeNachfuehren(a);
+  save();
+  await dateienAnhaengen(a.id);
+  dlgEintrag.close();
   poolShowAll=false; render(); renderPool();
+  setTimeout(()=>openJob(a.id),80);
 };
+
+/* Anhänge in den beiden Anlegefenstern */
+const dateiKnopf=(knopf,feld,zaehler)=>{
+  const b=document.getElementById(knopf), f=document.getElementById(feld);
+  if(!b||!f) return;
+  b.onclick=()=>f.click();
+  f.onchange=()=>{ if(f.files && f.files.length) dateienMerken(f.files,zaehler); f.value=""; };
+};
+dateiKnopf("einAufFoto","einAufKamera","einAufDateiZahl");
+dateiKnopf("einAufDatei","einAufAuswahl","einAufDateiZahl");
+dateiKnopf("mgFoto","mgKamera","mgDateiZahl");
+dateiKnopf("mgDatei","mgAuswahl","mgDateiZahl");
 
 /* Klammern wichtig: sonst käme das Klick-Ereignis als „Art“ an. */
 document.getElementById("btnNewJob").onclick=()=>eintragFenster();
@@ -6726,25 +7146,39 @@ function werHatsGemacht(frage){
   return team ? team.name : txt;
 }
 
-/* Den Mangelauftrag abschließen – von seiner eigenen Karte aus */
-function mangelAuftragErledigen(kindId){
-  const kind=jobById(kindId); if(!kind || !kind.mangelZu) return;
-  const wer=werHatsGemacht("Wer hat den Mangel „"+(kind.name||"")+"“ beseitigt?");
+/* Einen Eintrag abschließen – Mangel wie Aufgabe.
+   Er verschwindet aus dem Pool und aus der Planung, bleibt aber
+   in seinem Blatt stehen: jede Nummer bleibt nachvollziehbar. */
+function eintragErledigen(id){
+  const j=jobById(id); if(!j) return;
+  const was = istAufgabe(j) ? "die Aufgabe" : "den Mangel";
+  const wer=werHatsGemacht(`Wer hat ${was} „${j.name||""}“ erledigt?`);
   if(!wer) return;
-  kind.erledigt=true; kind.erledigtVon=wer; kind.erledigtAm=new Date().toISOString();
-  const n=mangelNotizVon(kind);
-  if(n){ n.erledigt=true; n.erledigtVon=wer; n.erledigtAm=kind.erledigtAm; }
-  /* Aus Planung und Spur nehmen – erledigt ist erledigt */
-  state.assignments=state.assignments.filter(a=>a.jobId!==kind.id);
-  spurEntfernen(kind.id);
-  const z=state.blaetter.flatMap(b=>b.zeilen).find(x=>x.jobId===kind.id);
+  j.erledigt=true; j.erledigtVon=wer; j.erledigtAm=new Date().toISOString();
+  const n=mangelNotizVon(j);
+  if(n){ n.erledigt=true; n.erledigtVon=wer; n.erledigtAm=j.erledigtAm; }
+  state.assignments=state.assignments.filter(a=>a.jobId!==j.id);
+  spurEntfernen(j.id);
+  /* In der Liste vermerken, statt die Zeile zu entfernen */
+  listeNachfuehren(j);
+  const z=zeileZuAuftrag(j.id);
   if(z){
     const b=state.blaetter.find(bl=>bl.zeilen.includes(z));
     const c=b && spalteMit(b,"notiz");
-    if(c) z[c.f]=(z[c.f]?z[c.f]+" · ":"")+"erledigt von "+wer;
+    const satz="erledigt von "+wer+" am "+new Date(j.erledigtAm).toLocaleDateString("de-DE");
+    if(c) z[c.f]=(z[c.f] && !/erledigt von/.test(z[c.f])) ? z[c.f]+" · "+satz : satz;
   }
   save(); render(); renderPool(); zeichneSpur();
-  if(dlgJob.open && jobEditId===kindId) openJob(kindId);
+  if(dlgJob.open && jobEditId===id) openJob(id);
+}
+const mangelAuftragErledigen = eintragErledigen;
+
+function eintragWiederOeffnen(id){
+  const j=jobById(id); if(!j) return;
+  j.erledigt=false; j.erledigtVon=""; j.erledigtAm="";
+  const n=mangelNotizVon(j);
+  if(n){ n.erledigt=false; n.erledigtVon=""; n.erledigtAm=""; }
+  save(); render(); renderPool();
 }
 
 function mangelAbhaken(j,n){
@@ -7015,6 +7449,29 @@ function neuesBlatt(name){
    ========================================================= */
 const blattVonKunde = kid => state.blaetter.find(b=>b.kundeId===kid);
 
+/* Zwei Blätter gehören keinem Kunden: alles ohne festen Kunden und
+   die Aufgaben. Jede vergebene Nummer landet in einem der Blätter –
+   keine Ausnahme, auch nicht nach dem Erledigen. */
+const SPEZIALBLATT={divers:"Diverses", aufgaben:"Aufgaben"};
+function blattSpezial(art){
+  let b=state.blaetter.find(x=>x.spezial===art);
+  if(!b){
+    const name=SPEZIALBLATT[art]||"Sonstiges";
+    b=state.blaetter.find(x=>!x.kundeId && !x.spezial
+        && (x.name||"").trim().toLowerCase()===name.toLowerCase());
+    if(b) b.spezial=art;
+  }
+  if(!b){ b=neuesBlatt(SPEZIALBLATT[art]||"Sonstiges"); b.spezial=art; }
+  return b;
+}
+/* Welches Blatt gehört zu diesem Eintrag? */
+function blattFuer(job){
+  if(!job) return null;
+  if(job.customerId && kundeById(job.customerId)) return blattFuerKunde(job.customerId);
+  if(job.blattZiel && SPEZIALBLATT[job.blattZiel]) return blattSpezial(job.blattZiel);
+  return blattSpezial(istAufgabe(job) ? "aufgaben" : "divers");
+}
+
 function blattFuerKunde(kid){
   const k=kundeById(kid); if(!k) return null;
   let b=blattVonKunde(kid);
@@ -7055,8 +7512,7 @@ function zeileEinfuegen(b,z,job){
 function listeNachfuehren(job){
   if(!job) return;
   const alt=state.blaetter.map(b=>({b, z:b.zeilen.find(x=>x.jobId===job.id)})).find(x=>x.z);
-  if(!job.customerId){ return; }                 // ohne Kunde kein Blatt
-  const b=blattFuerKunde(job.customerId); if(!b) return;
+  const b=blattFuer(job); if(!b) return;
 
   let z=null;
   if(alt && alt.b===b) z=alt.z;
@@ -7077,9 +7533,13 @@ function listeNachfuehren(job){
   setz("datum", job.wishDate||todayISO());
   const wert=geldWert(String(job.value||""));
   if(wert!=="" && !isNaN(wert)) setz("preis", wert);
-  if(job.mangelZu){
+  if(neu){
     const c=spalteMit(b,"notiz");
-    if(c && neu) z[c.f]="Mangel zu "+nrText((jobById(job.mangelZu)||{}).nr);
+    if(c){
+      if(job.mangelZu) z[c.f]="Mangel zu "+nrText((jobById(job.mangelZu)||{}).nr);
+      else if(istMangelAuftrag(job)) z[c.f]="Externer Mangel";
+      else if(istAufgabe(job)) z[c.f]="Aufgabe";
+    }
   }
   return z;
 }
@@ -7102,9 +7562,10 @@ function blaetterAngleichen(){
   state.customers.forEach(k=>{ if(!blattVonKunde(k.id)){ blattFuerKunde(k.id); geaendert=true; } });
   /* Erst die Ausgangsaufträge, dann die Mängel – sonst findet der Mangel
      seine Zeile zum Einhängen nicht. */
-  const mitKunde=state.jobs.filter(j=>j.customerId);
-  mitKunde.filter(j=>!j.mangelZu).forEach(j=>{ if(!zeileZuAuftrag(j.id)){ listeNachfuehren(j); geaendert=true; } });
-  mitKunde.filter(j=>j.mangelZu).forEach(j=>{ if(!zeileZuAuftrag(j.id)){ listeNachfuehren(j); geaendert=true; } });
+  /* Jeder Eintrag gehört in ein Blatt – erst die Ausgangsaufträge,
+     dann die Mängel, damit die sich darunter einhängen können. */
+  state.jobs.filter(j=>!j.mangelZu).forEach(j=>{ if(!zeileZuAuftrag(j.id)){ listeNachfuehren(j); geaendert=true; } });
+  state.jobs.filter(j=>j.mangelZu).forEach(j=>{ if(!zeileZuAuftrag(j.id)){ listeNachfuehren(j); geaendert=true; } });
   if(geaendert) save();
 }
 
@@ -7114,7 +7575,7 @@ function zeichneReiter(){
   leiste.replaceChildren();
   state.blaetter.forEach(b=>{
     const t=document.createElement("button");
-    t.className="reiter"+(b.id===liBlattId?" an":"")+(b.kundeId?" kunde":"");
+    t.className="reiter"+(b.id===liBlattId?" an":"")+(b.kundeId?" kunde":"")+(b.spezial?" fest":"");
     t.textContent=b.name;
     t.title=(b.kundeId?"Blatt des Kunden · ":"")
       +`${b.zeilen.length} Zeile${b.zeilen.length===1?"":"n"}`
@@ -7122,6 +7583,7 @@ function zeichneReiter(){
     t.onclick=()=>{ liBlattId=b.id; zeichneListe(); };
     t.ondblclick=()=>{
       if(b.kundeId){ alert("Dieses Blatt gehört zum Kunden „"+b.name+"“.\n\nDer Name ändert sich mit dem Kunden – unter „Kunden“."); return; }
+      if(b.spezial){ alert("Das Blatt „"+b.name+"“ gehört fest zum Programm und behält seinen Namen."); return; }
       const n=prompt("Name des Blattes:",b.name);
       if(n&&n.trim()){ b.name=n.trim(); save(); zeichneListe(); }
     };
@@ -8502,14 +8964,28 @@ function leisteZweizeilig(){
   if(!hoch) return false;
   return h.clientHeight > hoch+polster+4;
 }
+/* Welche Knöpfe sind gewählt, passen aber gerade nicht in die Zeile?
+   Die stecken dann im Menü – und das soll man sehen. */
+let leisteAusgelagert=[];
+
 function leisteAnwenden(){
   const an=new Set(leisteWahl());
   LEISTE.forEach(it=>{ const b=document.getElementById(it.btn); if(b) b.hidden=!an.has(it.id); });
-  if(isPhone()) return;
-  /* Von hinten so lange wegnehmen, bis die Leiste wieder einzeilig ist */
-  for(let i=LEISTE.length-1; i>=0 && leisteZweizeilig(); i--){
-    const b=document.getElementById(LEISTE[i].btn);
-    if(b && !b.hidden) b.hidden=true;
+  leisteAusgelagert=[];
+  if(!isPhone()){
+    /* Von hinten so lange wegnehmen, bis die Leiste wieder einzeilig ist */
+    for(let i=LEISTE.length-1; i>=0 && leisteZweizeilig(); i--){
+      const b=document.getElementById(LEISTE[i].btn);
+      if(b && !b.hidden){ b.hidden=true; leisteAusgelagert.push(LEISTE[i].id); }
+    }
+  }
+  const menue=document.getElementById("btnMenu");
+  if(menue){
+    menue.classList.toggle("vollerMenue", leisteAusgelagert.length>0);
+    menue.title = leisteAusgelagert.length
+      ? leisteAusgelagert.map(id=>(LEISTE.find(x=>x.id===id)||{}).text).reverse().join(", ")
+        + " – passen gerade nicht in die Leiste und stehen hier im Menü"
+      : "Menü · hier lässt sich auch die Leiste einrichten";
   }
 }
 function leisteSichtbar(){
@@ -8532,14 +9008,22 @@ function leisteFenster(){
     const c=document.createElement("input"); c.type="checkbox"; c.checked=an.has(it.id);
     const t=document.createElement("span"); t.textContent=it.text;
     const w=document.createElement("span"); w.className="wo";
-    const zeig=()=>{ w.textContent = c.checked ? "in der Leiste" : "nur im Menü"; };
+    const zeig=()=>{
+      const b=document.getElementById(it.btn);
+      w.textContent = !c.checked ? "nur im Menü"
+        : (b && b.hidden) ? "kein Platz – im Menü" : "in der Leiste";
+      w.style.color = (c.checked && b && b.hidden) ? "#FFC978" : "";
+    };
     zeig();
     c.onchange=()=>{
       const rest=leisteWahl().filter(x=>x!==it.id);
       if(c.checked) rest.push(it.id);
       leisteMerken(LEISTE.map(x=>x.id).filter(id=>rest.includes(id)));
-      zeig(); leisteAnwenden(); leisteHinweis();
+      leisteAnwenden();
+      [...box.querySelectorAll("label")].forEach(l=>l.dispatchEvent(new Event("neuzeichnen")));
+      leisteHinweis();
     };
+    l.addEventListener("neuzeichnen",zeig);
     l.append(c,t,w); box.appendChild(l);
   });
   leisteHinweis();
@@ -8942,12 +9426,13 @@ async function planungStarten(){
 
   if(frisch && frisch.data){
     state=frisch.data; version=frisch.version; planGeladen=true;
+    basisSetzen(state);
     sicherungAblegen(state);                     // örtliche Kopie mitführen
     setSync("Verbunden "+zeitJetzt(),"ok");
   }else if(frisch && frisch.leer){
     /* Wirklich noch nichts da – hier darf eine Planung angelegt werden */
     state=zustandPruefen(state)||demoState();
-    version=0; planGeladen=true;
+    version=0; planGeladen=true; basisSetzen(state);
     setSync("Neue Planung angelegt","ok");
     await hochladen();
   }else{
@@ -8968,9 +9453,13 @@ async function planungStarten(){
   await refreshCounts();
   await nummernNachtragen();
   await eingereichteLaden();
+  /* Jeder Eintrag gehört in ein Blatt – einmal beim Start prüfen,
+     damit auch Älteres lückenlos in der Liste steht. */
+  if(planGeladen && darfPlanen()) blaetterAngleichen();
   render();
   liveVerbinden();
   liveEingereichte();
+  anwesendStarten();
   rollenRechte();
   /* Auf dem Telefon zuerst die Aufnahmeseite – wer sie weggeklickt
      hat, bekommt gleich die Vollversion. */
@@ -8992,6 +9481,7 @@ async function monteurWeltStarten(){
     : "Dir ist noch kein Team zugewiesen";
   document.getElementById("mHalter").appendChild(document.getElementById("chatRaum"));
   chatListeZeichnen();
+  anwesendStarten();          // damit der Chef sieht, wer unterwegs offen hat
   if(team) await chatOeffnen(team);
   else verlaufZeichnen();
 }
