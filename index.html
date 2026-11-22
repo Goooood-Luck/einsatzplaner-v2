@@ -1188,6 +1188,8 @@ dialog.hell .dlg-body{max-height:76vh}
   margin-left:auto;display:flex;gap:16px;font-size:12px;color:var(--l-dim);white-space:nowrap;
 }
 .listesumme b{color:var(--l-ink);font-size:13.5px;display:block;font-variant-numeric:tabular-nums}
+.listesumme .gut b{color:#1F7A44}
+.listesumme .rot b{color:#B3261E}
 
 .listewrap{
   overflow:auto;max-height:60vh;border:1px solid var(--l-line);border-radius:12px;background:var(--l-feld);
@@ -1874,7 +1876,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <div class="field"><label for="jbContact">Ansprechpartner vor Ort / Telefon</label><input type="text" id="jbContact" placeholder="z.B. Hausmeister, 0170 …"></div>
     <div class="two">
       <div class="field"><label for="jbWish">Gewünschter Beginn</label><input type="date" id="jbWish"></div>
-      <div class="field"><label for="jbValue">Auftragswert</label><input type="text" id="jbValue" placeholder="z.B. 2.400 €"></div>
+      <div class="field"><label for="jbValue">Preis</label><input type="text" id="jbValue" placeholder="z.B. 2.400 €"></div>
     </div>
     <div class="field">
       <label for="jbPool">Auftragsspalte</label>
@@ -1985,7 +1987,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
         <div class="field"><label for="scAdr">Objektadresse</label><input type="text" id="scAdr" placeholder="Straße Hausnummer, PLZ Ort"></div>
         <div class="two">
           <div class="field"><label for="scDate">Gewünschter Beginn</label><input type="date" id="scDate"></div>
-          <div class="field"><label for="scValue">Auftragswert</label><input type="text" id="scValue" placeholder="z.B. 2.400 €"></div>
+          <div class="field"><label for="scValue">Preis</label><input type="text" id="scValue" placeholder="z.B. 2.400 €"></div>
         </div>
         <div class="field"><label for="scWork">Auszuführende Arbeiten</label><textarea id="scWork" rows="3"></textarea></div>
         <div class="field" style="margin-bottom:0">
@@ -2300,7 +2302,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
 
       <div class="asn-seite" data-seite="wert" hidden>
         <p class="asn-frage">Was ist der Auftrag wert?</p>
-        <div class="field"><label for="asnWert">Auftragswert</label>
+        <div class="field"><label for="asnWert">Preis</label>
           <input type="text" id="asnWert" inputmode="decimal" autocomplete="off" placeholder="z.B. 4.800 €"></div>
         <p class="hint">Kann auch leer bleiben und später in der Kundenliste nachgetragen werden.</p>
       </div>
@@ -3086,7 +3088,7 @@ function sicherungsTabellen(){
 
   t.push({name:"Alle Einträge",
     kopf:["Nr.","Art","Bezeichnung","Adresse","Stadt","Kunde","Spalte","Zustand","Erledigt von",
-          "Erledigt am","Auftragswert","Gewünschter Beginn","Angelegt von","Angelegt am","Blatt","Fotos"],
+          "Erledigt am","Preis","Gewünschter Beginn","Angelegt von","Angelegt am","Blatt","Fotos"],
     zeilen:(state.jobs||[]).slice().sort((a,b)=>(a.nr||0)-(b.nr||0)).map(j=>{
       const k=j.customerId?kundeById(j.customerId):null;
       const bl=blattFuer(j);
@@ -5265,7 +5267,7 @@ async function jobKarteZeichnen(id,zielId,zusatz){
     : "");
   zeilen+=zeile("Etage", j.etage?esc(j.etage):"");
   zeilen+=zeile("Vor Ort", j.contact?esc(j.contact):"");
-  zeilen+=zeile("Auftragswert", j.value?esc(j.value):"", true);
+  zeilen+=zeile("Preis", j.value?esc(j.value):"", true);
   zeilen+=zeile("Gewünschter Beginn", j.wishDate?wunschText(j.wishDate):"");
   if(eltern) zeilen+=zeile("Gehört zu", `${esc(nrText(eltern.nr))} · ${esc(eltern.name)}`);
   zeilen+=zeile("Angelegt", (j.erstelltVon||j.erstelltAm)
@@ -6143,7 +6145,7 @@ function asnUebersichtZeichnen(){
     + z("Kunde", k)
     + z("Adresse", asnAdresse())
     + z("Etage", entwurf.etage)
-    + z("Auftragswert", entwurf.wert)
+    + z("Preis", entwurf.wert)
     + z("Gewünschter Beginn", entwurf.start?wunschText(entwurf.start):"")
     + z("Nummer", nrText((state.settings.auftragNr||0)+1));
 }
@@ -6618,7 +6620,7 @@ async function formularLesen(){
       "2 Ansprechpartner und Telefon (oben rechts)\n"+
       "3 Objektadresse – wo wird gearbeitet (ganze Breite)\n"+
       "4 Gewünschter Beginn (links, Format TT.MM.JJJJ)\n"+
-      "5 Auftragswert / Budget (rechts, in Euro)\n"+
+      "5 Preis (rechts, in Euro)\n"+
       "6 Auszuführende Arbeiten (mehrzeiliger Kasten unten)\n"+
       "Ort/Datum und Unterschrift darunter werden NICHT ausgelesen. "+
       "Die hellgrauen Beispieltexte in leeren Kästen („Straße und Hausnummer, PLZ, Ort“, „TT . MM . JJJJ“, "+
@@ -7748,7 +7750,7 @@ function blaseZu(){
    ========================================================= */
 const SPALTENARTEN=[["text","Text"],["zahl","Zahl"],["geld","Betrag"],["datum","Datum"],["haken","Haken"]];
 const ROLLEN=[["","–"],["nr","Auftragsnummer"],["objekt","Objekt"],["kunde","Kunde"],["stadt","Stadt"],
-  ["preis","Preis"],["betrag","Auftragswert"],["rechnung","Rechnung Nr."],["bezahlt","Bezahlt"],
+  ["preis","Preis"],["rechnung","Rechnung Nr."],["bezahlt","Bezahlt"],
   ["datum","Termin"],["notiz","Notizen"]];
 const LISTE_TAT=150;
 
@@ -7783,8 +7785,7 @@ function neuesBlatt(name){
       {f:"s1",t:"Eingang",typ:"datum",b:110,rolle:"datum"},
       {f:"s2",t:"Objekt / Adresse",typ:"text",b:300,rolle:"objekt"},
       {f:"s3",t:"Stadt",typ:"text",b:92,rolle:"stadt"},
-      {f:"s9",t:"Preis",typ:"geld",b:96,rolle:"preis"},
-      {f:"s4",t:"Auftragswert",typ:"geld",b:112,rolle:"betrag"},
+      {f:"s9",t:"Preis",typ:"geld",b:110,rolle:"preis"},
       {f:"s5",t:"Rechnung Nr.",typ:"text",b:110,rolle:"rechnung"},
       {f:"s6",t:"Bezahlt",typ:"haken",b:70,rolle:"bezahlt"},
       {f:"s8",t:"Notizen",typ:"text",b:240,rolle:"notiz"},
@@ -7909,8 +7910,58 @@ async function openListe(kundeId){
 /* Jeder Kunde ein Blatt, und jeder Auftrag mit Kunde eine Zeile darauf.
    So holt die Liste auch alles nach, was vor dieser Fassung entstanden ist. */
 const zeileZuAuftrag = id => state.blaetter.flatMap(b=>b.zeilen).find(z=>z.jobId===id) || null;
+/* Die Spalte „Auftragswert“ fällt weg – es gibt nur noch den Preis.
+   Vorhandene Werte wandern hinüber, aber nur in leere Preisfelder.
+   Steht in beiden etwas Verschiedenes, bleibt der Preis stehen und
+   die Zeile wird gemeldet; der alte Wert liegt in der Sicherung. */
+function preisZusammenlegen(){
+  let bewegt=0; const strittig=[];
+  let etwas=false;
+  (state.blaetter||[]).forEach(b=>{
+    const alt=(b.spalten||[]).find(c=>c.rolle==="betrag");
+    if(!alt) return;
+    etwas=true;
+    let preis=(b.spalten||[]).find(c=>c.rolle==="preis");
+    if(!preis){                                   // kein Preisfeld? Dann wird das alte eines
+      alt.rolle="preis"; alt.t="Preis";
+      return;
+    }
+    (b.zeilen||[]).forEach(z=>{
+      const a=z[alt.f], p=z[preis.f];
+      const hatA = a!==""&&a!=null&&!isNaN(Number(a));
+      const hatP = p!==""&&p!=null&&!isNaN(Number(p));
+      if(!hatA) return;
+      if(!hatP){ z[preis.f]=Number(a); bewegt++; return; }
+      if(Number(a)!==Number(p)){
+        const o=(b.spalten||[]).find(c=>c.rolle==="objekt");
+        strittig.push(`${b.name} · ${(o&&z[o.f])||"ohne Objekt"}: Preis ${geldText(p)} €, Auftragswert ${geldText(a)} €`);
+      }
+    });
+    b.spalten=b.spalten.filter(c=>c!==alt);
+  });
+  if(!etwas) return false;
+  if(strittig.length){
+    setTimeout(()=>alert(
+      "Die Spalte „Auftragswert“ ist weggefallen – gezählt wird jetzt nur noch der Preis.\n\n"
+      +`Bei ${strittig.length} ${strittig.length===1?"Zeile":"Zeilen"} standen zwei verschiedene Beträge. `
+      +"Dort gilt jetzt der Preis:\n\n· "+strittig.slice(0,8).join("\n· ")
+      +(strittig.length>8?`\n· … und ${strittig.length-8} weitere`:"")
+      +"\n\nDer alte Stand liegt unter Menü ☰ → Frühere Stände."),400);
+  }else if(bewegt){
+    setTimeout(()=>alert(
+      "Die Spalte „Auftragswert“ ist weggefallen – gezählt wird jetzt nur noch der Preis.\n\n"
+      +`Bei ${bewegt} ${bewegt===1?"Zeile":"Zeilen"} ohne Preis wurde der Auftragswert übernommen.`),400);
+  }
+  return true;
+}
+
 function blaetterAngleichen(){
   let geaendert=false;
+  /* Einmalig: Auftragswert und Preis werden zu einer Spalte */
+  if((state.blaetter||[]).some(b=>(b.spalten||[]).some(c=>c.rolle==="betrag"))){
+    sicherungAblegen(state,true);               // vorher eine Rettungsleine
+    if(preisZusammenlegen()) geaendert=true;
+  }
   state.customers.forEach(k=>{ if(!blattVonKunde(k.id)){ blattFuerKunde(k.id); geaendert=true; } });
   /* Erst die Ausgangsaufträge, dann die Mängel – sonst findet der Mangel
      seine Zeile zum Einhängen nicht. */
@@ -8072,19 +8123,31 @@ function summenZeigen(){
   const b=blattAktiv(); if(!b) return;
   const zeilen=zeilenGefiltert(b);
   const geld=b.spalten.filter(c=>c.typ==="geld");
-  const bez =b.spalten.find(c=>c.typ==="haken" && /bezahlt/i.test(c.t||""));
-  const haupt = b.spalten.find(c=>c.rolle==="betrag") || geld[0];
-  let ges=0, be=0;
+  const bez =b.spalten.find(c=>c.rolle==="bezahlt")
+          || b.spalten.find(c=>c.typ==="haken" && /bezahlt/i.test(c.t||""));
+  const haupt = b.spalten.find(c=>c.rolle==="preis")
+             || b.spalten.find(c=>c.rolle==="betrag") || geld[0];
+  /* Gezählt wird der Preis: was steht drin, was davon ist bezahlt,
+     was noch offen – und wie viele Zeilen noch gar keinen Preis haben. */
+  let ges=0, be=0, ohne=0;
   if(haupt) zeilen.forEach(z=>{
-    const w=Number(z[haupt.f])||0; ges+=w;
+    const roh=z[haupt.f];
+    const leer = roh===""||roh===null||roh===undefined||isNaN(Number(roh));
+    if(leer){ ohne++; return; }
+    const w=Number(roh); ges+=w;
     if(bez && z[bez.f]) be+=w;
   });
   const k=document.getElementById("liSummen");
   k.replaceChildren();
-  const teil=(t,v)=>{const e=document.createElement("span");e.innerHTML=`${t}<b>${v}</b>`;k.appendChild(e);};
+  const teil=(t,v,kl)=>{const e=document.createElement("span");
+    if(kl) e.className=kl; e.innerHTML=`${t}<b>${v}</b>`;k.appendChild(e);};
   if(haupt){
     teil("Summe", geldText(ges)+" €");
-    if(bez){ teil("bezahlt", geldText(be)+" €"); teil("offen", geldText(Math.max(0,ges-be))+" €"); }
+    if(bez){
+      teil("bezahlt", geldText(be)+" €", "gut");
+      teil("offen", geldText(Math.max(0,ges-be))+" €", (ges-be)>0?"rot":"");
+    }
+    if(ohne) teil("ohne Preis", ohne+(ohne===1?" Zeile":" Zeilen"), "rot");
   }
   document.getElementById("liFuss").textContent =
     `${b.name}: ${zeilen.length} von ${b.zeilen.length} Zeilen, ${b.spalten.length} Spalten. `
@@ -8120,7 +8183,8 @@ function auftragAusZeile(b,z){
   if(!name){ alert("Diese Zeile hat kein Objekt.\n\nÜber „Spalten …“ festlegen, welche Spalte das Objekt ist."); return; }
   const kname=String(hol("kunde")||b.name||"").trim();
   const k=state.customers.find(c=>(c.company||"").toLowerCase().trim()===kname.toLowerCase());
-  const betrag=hol("betrag"), termin=hol("datum");
+  const betrag=hol("preis")!==""&&hol("preis")!=null ? hol("preis") : hol("betrag");
+  const termin=hol("datum");
   const job=neuerAuftrag({
     name:short(name,60),
     address:[name,String(hol("stadt")||"")].filter(Boolean).join(", ").slice(0,160),
