@@ -2237,6 +2237,7 @@ dialog.chatfenster{width:min(1120px,96vw)}
     <div class="sicherliste" id="sicherListe"></div>
   </div>
   <div class="dlg-foot">
+    <button class="btn primary" id="sicherExcel" style="margin-right:auto">Tabellen als Excel</button>
     <button class="btn" id="sicherDatei">Als Datei sichern</button>
     <button class="btn" data-close>Schließen</button>
   </div>
@@ -2882,18 +2883,39 @@ function sicherungen(){
   try{ const l=JSON.parse(localStorage.getItem(SICHER_KEY)||"[]"); return Array.isArray(l)?l:[]; }
   catch(e){ return []; }
 }
-function sicherungAblegen(st){
+/* Eine kurze Kennung des gesamten Standes. Sie muss auch anschlagen,
+   wenn sich nur eine Zelle in der Auftragsliste geändert hat – genau
+   dort stecken Rechnungsnummern und Beträge, die niemand neu tippen
+   kann. Die Prüfsumme läuft in Schritten über den Text, das ist auch
+   bei einem großen Plan in Sekundenbruchteilen fertig. */
+function standKennung(inhalt,st){
+  let h=0;
+  for(let i=0;i<inhalt.length;i+=5) h=(Math.imul(h,31)+inhalt.charCodeAt(i))|0;
+  return {jobs:(st.jobs||[]).length,
+          einsaetze:(st.assignments||[]).length,
+          kunden:(st.customers||[]).length,
+          blaetter:(st.blaetter||[]).length,
+          zeilen:(st.blaetter||[]).reduce((s,b)=>s+((b.zeilen||[]).length),0),
+          groesse:inhalt.length, pruef:h};
+}
+function sicherungAblegen(st,erzwingen){
   try{
     if(!st || !Array.isArray(st.jobs)) return;
     const l=sicherungen();
     const letzte=l[0];
-    const zahl=st.jobs.length, eins=(st.assignments||[]).length;
-    /* Nur ablegen, wenn sich etwas Zählbares geändert hat – sonst
-       würde die Liste von lauter gleichen Ständen volllaufen. */
-    if(letzte && letzte.jobs===zahl && letzte.einsaetze===eins
-       && (Date.now()-letzte.wann)<1000*60*20) return;
-    l.unshift({wann:Date.now(), jobs:zahl, einsaetze:eins,
-               kunden:(st.customers||[]).length, inhalt:JSON.stringify(st)});
+    const inhalt=JSON.stringify(st);
+    const k=standKennung(inhalt,st);
+    /* Hat sich überhaupt nichts geändert, ist eine zweite Kopie sinnlos. */
+    if(letzte && letzte.pruef===k.pruef && letzte.groesse===k.groesse && !erzwingen) return;
+    /* Zählbares geändert (Auftrag, Einsatz, Kunde, Blatt, Zeile) – immer
+       ablegen. Nur Inhalte geändert – höchstens alle drei Minuten, sonst
+       drängen fünfzig Tastendrücke die älteren Stände hinaus. */
+    const zaehlbar = !letzte
+      || letzte.jobs!==k.jobs || letzte.einsaetze!==k.einsaetze
+      || letzte.kunden!==k.kunden || letzte.blaetter!==k.blaetter
+      || letzte.zeilen!==k.zeilen;
+    if(!erzwingen && !zaehlbar && letzte && (Date.now()-letzte.wann)<1000*60*3) return;
+    l.unshift(Object.assign({wann:Date.now(), inhalt}, k));
     while(l.length>SICHER_ANZAHL) l.pop();
     localStorage.setItem(SICHER_KEY, JSON.stringify(l));
   }catch(e){
@@ -2920,14 +2942,16 @@ function sicherungenZeigen(){
   box.replaceChildren();
   const l=sicherungen();
   const jetzt={wann:Date.now(), jetzt:true, jobs:(state.jobs||[]).length,
-               einsaetze:(state.assignments||[]).length, kunden:(state.customers||[]).length};
+               einsaetze:(state.assignments||[]).length, kunden:(state.customers||[]).length,
+               zeilen:(state.blaetter||[]).reduce((s,b)=>s+((b.zeilen||[]).length),0)};
   [jetzt,...l].forEach((e,i)=>{
     const z=document.createElement("div");
     z.className="sicherzeile"+(e.jetzt?" jetzt":"");
     const w=document.createElement("div"); w.className="wann";
     const d=new Date(e.wann);
     w.innerHTML=`<b>${e.jetzt?"Jetzt geladen":d.toLocaleDateString("de-DE")+" um "+d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}</b>`
-      +`<small>${e.jobs} Aufträge · ${e.einsaetze} Einsätze · ${e.kunden||0} Kunden</small>`;
+      +`<small>${e.jobs} Aufträge · ${e.einsaetze} Einsätze · ${e.kunden||0} Kunden`
+      +`${e.zeilen!=null?" · "+e.zeilen+" Listenzeilen":""}</small>`;
     z.appendChild(w);
     if(!e.jetzt){
       const b=document.createElement("button"); b.className="btn"; b.textContent="Zurückholen";
@@ -2961,9 +2985,148 @@ async function sicherungZurueck(i){
   state=d;
   await refreshCounts();
   save(); render(); renderPool(); zeichneSpur();
+  offeneAnsichtenAuffrischen();
   dlgSicher.close();
   setSync("Stand zurückgeholt "+zeitJetzt(),"ok");
 }
+
+/* =========================================================
+   Sicherung als Excel-Mappe (.xlsx)
+   Numbers öffnet .xlsx ohne Umweg, Excel und Zahlen ebenso.
+   Geschrieben wird die Mappe hier von Hand: ein ZIP ohne
+   Verdichtung und ein paar XML-Teile. So bleibt das Programm
+   eine einzige Datei ohne fremde Bibliothek, die eines Tages
+   nicht mehr erreichbar wäre.
+   ========================================================= */
+/* Gepackt wird mit dem ZIP-Packer weiter unten im Programm –
+   zweimal dasselbe zu schreiben wäre nur eine Fehlerquelle. */
+const xmlEsc = t => String(t==null?"":t)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"");
+function spaltenBuchstabe(n){ let s=""; n++; while(n>0){ const r=(n-1)%26; s=String.fromCharCode(65+r)+s; n=(n-1-r)/26; } return s; }
+/* Eine Tabelle: Kopfzeile und Zeilen, jede Zelle entweder Zahl oder Text */
+function blattXml(kopf,zeilen){
+  const zelle=(w,sp,zi)=>{
+    const r=spaltenBuchstabe(sp)+(zi+1);
+    if(typeof w==="number" && isFinite(w)) return `<c r="${r}"><v>${w}</v></c>`;
+    const t=xmlEsc(w);
+    return t==="" ? "" : `<c r="${r}" t="inlineStr"><is><t xml:space="preserve">${t}</t></is></c>`;
+  };
+  const alle=[kopf,...zeilen];
+  const rows=alle.map((z,zi)=>`<row r="${zi+1}">${z.map((w,sp)=>zelle(w,sp,zi)).join("")}</row>`).join("");
+  const breiten=kopf.map((_,i)=>`<col min="${i+1}" max="${i+1}" width="${
+      Math.min(46,Math.max(10, ...alle.map(z=>String(z[i]==null?"":z[i]).length+3)))}" customWidth="1"/>`).join("");
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+    +`<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
+    +`<cols>${breiten}</cols><sheetData>${rows}</sheetData></worksheet>`;
+}
+function mappeBauen(tabellen){          // [{name, kopf, zeilen}]
+  const namen=[];
+  tabellen.forEach(t=>{                 // Excel: höchstens 31 Zeichen, keine : \ / ? * [ ]
+    let n=(t.name||"Blatt").replace(/[:\\\/?*\[\]]/g,"-").slice(0,31).trim()||"Blatt";
+    let k=n, i=2; while(namen.includes(k)){ k=n.slice(0,28)+"_"+i; i++; }
+    namen.push(k);
+  });
+  const dateien=[
+    {name:"[Content_Types].xml", text:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      +`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`
+      +`<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`
+      +`<Default Extension="xml" ContentType="application/xml"/>`
+      +`<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>`
+      + tabellen.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")
+      +`</Types>`},
+    {name:"_rels/.rels", text:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      +`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`
+      +`<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>`
+      +`</Relationships>`},
+    {name:"xl/workbook.xml", text:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      +`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" `
+      +`xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>`
+      + namen.map((n,i)=>`<sheet name="${xmlEsc(n)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")
+      +`</sheets></workbook>`},
+    {name:"xl/_rels/workbook.xml.rels", text:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      +`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`
+      + tabellen.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")
+      +`</Relationships>`},
+  ];
+  tabellen.forEach((t,i)=>dateien.push({name:`xl/worksheets/sheet${i+1}.xml`, text:blattXml(t.kopf,t.zeilen)}));
+  const enc=new TextEncoder();
+  const roh=zipBauen(dateien.map(d=>({name:d.name, data:enc.encode(d.text)})));
+  return new Blob([roh],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+
+/* Alles, was in der Auftragsliste steht, plus eine Übersicht und eine
+   Seite mit allen Einträgen – damit später nachvollziehbar bleibt, was
+   angenommen, erledigt und abgerechnet wurde. */
+function sicherungsTabellen(){
+  const t=[];
+  const heute=new Date().toLocaleString("de-DE");
+  t.push({name:"Übersicht", kopf:["Angelegt am","Firma","Aufträge","Einsätze","Kunden","Blätter","Zeilen gesamt"],
+    zeilen:[[heute, state.settings.company||"", (state.jobs||[]).length, (state.assignments||[]).length,
+             (state.customers||[]).length, (state.blaetter||[]).length,
+             (state.blaetter||[]).reduce((s,b)=>s+((b.zeilen||[]).length),0)]]});
+
+  (state.blaetter||[]).forEach(b=>{
+    const sp=b.spalten||[];
+    t.push({name:b.name||"Blatt",
+      kopf:[...sp.map(c=>c.t||""),"Zustand","Erledigt von"],
+      zeilen:(b.zeilen||[]).map(z=>{
+        const j=z.jobId?jobById(z.jobId):null;
+        const werte=sp.map(c=>{
+          const w=z[c.f];
+          if(c.typ==="haken") return w?"Ja":"Nein";
+          if(c.typ==="geld"||c.typ==="zahl"){ const n=Number(w); return (w===""||w==null||isNaN(n))?"":n; }
+          return w==null?"":String(w);
+        });
+        return [...werte,
+          j ? (j.erledigt?"erledigt":"offen") : (z.jobId?"Auftrag gelöscht":"nur Zeile"),
+          j&&j.erledigtVon?j.erledigtVon:""];
+      })});
+  });
+
+  t.push({name:"Alle Einträge",
+    kopf:["Nr.","Art","Bezeichnung","Adresse","Stadt","Kunde","Spalte","Zustand","Erledigt von",
+          "Erledigt am","Auftragswert","Gewünschter Beginn","Angelegt von","Angelegt am","Blatt","Fotos"],
+    zeilen:(state.jobs||[]).slice().sort((a,b)=>(a.nr||0)-(b.nr||0)).map(j=>{
+      const k=j.customerId?kundeById(j.customerId):null;
+      const bl=blattFuer(j);
+      const wert=geldWert(String(j.value||""));
+      return [ j.nr?nrText(j.nr):"",
+        istAufgabe(j)?"Aufgabe":(istMangelAuftrag(j)?"Mangel":"Auftrag"),
+        j.name||"", j.address||"", stadtAus(j.address)||"", k?k.company:"",
+        poolName(poolVon(j)), j.erledigt?"erledigt":"offen",
+        j.erledigtVon||"", j.erledigtAm?new Date(j.erledigtAm).toLocaleDateString("de-DE"):"",
+        (wert===""||isNaN(wert))?"":Number(wert),
+        j.wishDate||"", j.erstelltVon||"",
+        j.erstelltAm?new Date(j.erstelltAm).toLocaleDateString("de-DE"):"",
+        bl?bl.name:"", fileCounts[j.id]||0 ];
+    })});
+
+  t.push({name:"Einsätze",
+    kopf:["Datum","Halbtag","Team","Besetzung","Nr.","Auftrag","Adresse"],
+    zeilen:(state.assignments||[]).slice()
+      .sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.slot).localeCompare(String(b.slot)))
+      .map(a=>{ const te=teamById(a.teamId), j=jobById(a.jobId);
+        return [a.date||"", a.slot==="AM"?"vormittags":"nachmittags", te?te.name:"",
+                te?(te.members||[]).join(", "):"", j&&j.nr?nrText(j.nr):"", j?j.name:"(gelöscht)", j?j.address||"":""]; })});
+
+  t.push({name:"Kunden",
+    kopf:["Firma","Ansprechpartner","Telefon","E-Mail","Adresse","Steuernummer","Notizen"],
+    zeilen:(state.customers||[]).map(k=>[k.company||"",k.contact||"",k.phone||"",k.email||"",
+            k.address||"",k.tax||"",k.note||""])});
+  return t;
+}
+
+document.getElementById("sicherExcel").onclick=()=>{
+  try{
+    const blob=mappeBauen(sicherungsTabellen());
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="kubik-tabellen-"+todayISO()+".xlsx";
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  }catch(e){ alert("Die Excel-Datei ließ sich nicht erzeugen: "+e.message); }
+};
 
 document.getElementById("sicherDatei").onclick=()=>{
   const inhalt=JSON.stringify({stand:state, sicherungen:sicherungen()},null,1);
@@ -3107,8 +3270,58 @@ function save(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){ storageOK=false; }
   sicherungAblegen(state);
   if(istKunde()) return;                       // Kunden schreiben nie in die Planung
+  if(!planGeladen) nurLesenWarnen();
   clearTimeout(saveTimer);
-  saveTimer=setTimeout(hochladen,350);
+  /* Den Zeiger wieder leeren, sonst gilt „es läuft ein Speichervorgang“
+     für den Rest der Sitzung und fremde Stände kommen nie mehr an. */
+  saveTimer=setTimeout(()=>{ saveTimer=null; hochladen(); },350);
+}
+
+/* Fenster zu, Programm in den Hintergrund, Telefon gesperrt: alles
+   Momente, in denen ein angefangenes Speichern verloren ginge. Also
+   das Getippte festschreiben und sofort hochladen statt in 350 ms. */
+function jetztSichern(){
+  eingabenFestschreiben();
+  if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; hochladen(); }
+}
+window.addEventListener("pagehide", jetztSichern);
+document.addEventListener("visibilitychange", ()=>{ if(document.hidden) jetztSichern(); });
+window.addEventListener("beforeunload", e=>{
+  if(speicherLaeuft || saveTimer){ e.preventDefault(); e.returnValue=""; }
+});
+
+/* Offline tippen heißt: es ist nur auf diesem Gerät. Einmal deutlich sagen. */
+let nurLesenGesagt=false;
+function nurLesenWarnen(){
+  if(nurLesenGesagt) return;
+  nurLesenGesagt=true;
+  setTimeout(()=>alert(
+     "Achtung – keine Verbindung zum Server.\n\n"
+    +"Diese Änderung liegt nur auf diesem Gerät und wird NICHT für die anderen "
+    +"gespeichert. Sobald oben rechts wieder „Verbunden“ steht, bitte die Seite "
+    +"neu laden und die Änderung noch einmal eintragen."),60);
+}
+
+/* Steht der Mauszeiger in einem Feld, ist das Getippte noch nicht im
+   Zustand – erst das Verlassen schreibt es fest. Vor jedem Austausch
+   des Zustands also einmal festschreiben. */
+function eingabenFestschreiben(){
+  const a=document.activeElement;
+  if(a && (a.tagName==="INPUT"||a.tagName==="TEXTAREA"||a.tagName==="SELECT")){
+    try{ a.blur(); }catch(_){}
+  }
+}
+
+/* Nach einem Austausch des Zustands zeigen offene Fenster auf Objekte,
+   die es nicht mehr gibt. Wer dort weitertippt, tippt ins Leere – also
+   neu zeichnen. */
+function offeneAnsichtenAuffrischen(){
+  try{
+    const dl=document.getElementById("dlgListe");
+    if(dl && dl.open) zeichneListe();
+    const dj=document.getElementById("dlgJob");
+    if(dj && dj.open && jobAnsicht && jobEditId) jobKarteZeichnen(jobEditId);
+  }catch(_){}
 }
 
 async function hochladen(){
@@ -3151,6 +3364,7 @@ async function hochladen(){
    fehlt – dann ist ein Mischen nicht möglich. */
 let mischVersuche=0;
 async function konfliktLoesen(){
+  eingabenFestschreiben();
   const frisch=await serverStandHolen();
   if(!frisch || !frisch.data){ setSync("Verbindung gestört","warn"); return; }
 
@@ -3164,7 +3378,7 @@ async function konfliktLoesen(){
     /* Ohne Basis lässt sich nicht sagen, wer was geändert hat.
        Dann gilt der Schutz: der Server behält recht. */
     state=frisch.data; version=frisch.version; basisSetzen(state);
-    await refreshCounts(); render(); renderPool();
+    await refreshCounts(); render(); renderPool(); offeneAnsichtenAuffrischen();
     alert("Deine letzte Änderung wurde nicht gespeichert.\n\n"
       +"Diesem Fenster fehlte der Ausgangsstand, darum ließ sich nicht zusammenführen. "
       +"Der aktuelle Stand ist jetzt geladen – bitte die Änderung noch einmal eintragen.\n\n"
@@ -3176,7 +3390,7 @@ async function konfliktLoesen(){
   /* Veralteter, viel kleinerer Stand: nicht mischen, sondern schützen */
   if(fremdZahl - meineZahl >= 3 || (fremdZahl>0 && meineZahl*2 < fremdZahl)){
     state=frisch.data; version=frisch.version; basisSetzen(state);
-    await refreshCounts(); render(); renderPool();
+    await refreshCounts(); render(); renderPool(); offeneAnsichtenAuffrischen();
     alert("Deine Änderung wurde nicht gespeichert.\n\n"
       +`Auf dem Server stehen ${fremdZahl} Aufträge, auf diesem Gerät waren es nur ${meineZahl}. `
       +"Das sieht nach einem veralteten Stand aus, darum wurde der Server nicht überschrieben.\n\n"
@@ -3190,6 +3404,7 @@ async function konfliktLoesen(){
   state=gemischt;
   version=frisch.version;
   await refreshCounts(); render(); renderPool(); zeichneSpur();
+  offeneAnsichtenAuffrischen();
 
   if(mischVersuche++ > 4){
     mischVersuche=0;
@@ -3366,6 +3581,9 @@ function liveVerbinden(){
     .on("postgres_changes",{event:"UPDATE",schema:"public",table:"schedule_data"},async payload=>{
       const neu=payload.new||{};
       if((neu.version||0)<=version) return;        // das war der eigene Schreibvorgang
+      /* Zuerst das gerade Getippte festschreiben – sonst geht es beim
+         Austausch des Zustands verloren, ohne dass es jemand merkt. */
+      eingabenFestschreiben();
       if(speicherLaeuft || saveTimer){ return; }   // eigene Änderung ist unterwegs
       const d=zustandPruefen(JSON.parse(neu.content||"{}"));
       if(!d) return;
@@ -3376,19 +3594,23 @@ function liveVerbinden(){
          geändert, wird gemischt statt ersetzt – sonst wäre meine
          Arbeit weg, bevor sie überhaupt gespeichert war. */
       if(basis && !gleich(basis,state)){
-        const vorher=(state.jobs||[]).length;
         state=zusammenfuehren(basis,state,d);
         version=neu.version||0;
         basisSetzen(d);
         sicherungAblegen(state);
         await refreshCounts(); render(); renderPool(); zeichneSpur();
+        offeneAnsichtenAuffrischen();
         setSync("Zusammengeführt mit "+(neu.updated_by||"jemand anderem")+" "+zeitJetzt(),"ok");
-        if((state.jobs||[]).length!==vorher || mischKonflikte.length) save();
+        /* Das Ergebnis des Mischens steht bisher nur hier. Wenn es sich
+           vom Serverstand unterscheidet, muss es hoch – sonst wäre die
+           eigene Arbeit beim nächsten Laden weg. */
+        if(!gleich(state,d)) save();
         return;
       }
       state=d; version=neu.version||0; basisSetzen(state);
       sicherungAblegen(state);
       await refreshCounts(); render(); renderPool(); zeichneSpur();
+      offeneAnsichtenAuffrischen();
       setSync("Aktualisiert von "+(neu.updated_by||"jemand anderem")+" "+zeitJetzt(),"ok");
     })
     .subscribe();
@@ -5469,6 +5691,7 @@ document.getElementById("jbDelete").onclick=async()=>{
   if(n) frage.push(`${n}× im Kalender eingetragen`);
   if(anz) frage.push(`${anz} Foto(s) bzw. Datei(en)`);
   if(frage.length && !confirm("Der Auftrag hat "+frage.join(" und ")+". Alles mit löschen?")) return;
+  sicherungAblegen(state,true);
   state.assignments=state.assignments.filter(a=>a.jobId!==jobEditId);
   state.jobs=state.jobs.filter(j=>j.id!==jobEditId);
   await Files.removeJob(jobEditId); await refreshCounts();
@@ -7810,6 +8033,7 @@ function zeichneListe(){
     bw.onclick=()=>{
       const o=b.spalten.find(c=>c.rolle==="objekt");
       if(!confirm("Diese Zeile löschen?\n\n"+((o&&z[o.f])||"ohne Objekt"))) return;
+      sicherungAblegen(state,true);
       b.zeilen=b.zeilen.filter(x=>x!==z); save(); zeichneListe();
     };
     kn.append(bp,bw); tt.appendChild(kn); tr.appendChild(tt);
@@ -7949,12 +8173,27 @@ document.getElementById("spNeu").onclick=()=>{
 };
 document.getElementById("spSpeichern").onclick=()=>{
   const b=blattAktiv(); if(!b) return;
+  /* Eine Spalte wegzunehmen nimmt alles mit, was darin steht.
+     Also erst nachzählen und nachfragen. */
+  const bleibt=new Set(spEntwurf.map(c=>c.f));
+  const weg=b.spalten.filter(c=>!bleibt.has(c.f)).map(c=>{
+    const voll=b.zeilen.filter(z=>z[c.f]!==undefined && z[c.f]!=="" && z[c.f]!==false).length;
+    return {t:c.t||"ohne Namen", voll};
+  }).filter(x=>x.voll>0);
+  if(weg.length && !confirm(
+      "Diese Spalten werden entfernt und nehmen ihren Inhalt mit:\n\n· "
+      +weg.map(x=>`${x.t} (${x.voll} ausgefüllte Felder)`).join("\n· ")
+      +"\n\nVorher wird eine Sicherung abgelegt. Trotzdem entfernen?")) return;
+  if(weg.length) sicherungAblegen(state,true);
   b.spalten=spEntwurf.map(c=>({f:c.f,t:(c.t||"").trim(),typ:c.typ||"text",b:c.b||140,rolle:c.rolle||""}));
   save(); dlgSpalten.close(); zeichneListe();
 };
 document.getElementById("spBlattWeg").onclick=()=>{
   const b=blattAktiv(); if(!b) return;
-  if(!confirm(`Das Blatt „${b.name}“ mit ${b.zeilen.length} Zeilen löschen?\n\nDas lässt sich nicht rückgängig machen.`)) return;
+  if(!confirm(`Das Blatt „${b.name}“ mit ${b.zeilen.length} Zeilen löschen?\n\n`
+    +`Vorher wird dieser Stand als Sicherung abgelegt (Menü ☰ → Frühere Stände), `
+    +`danach ist das Blatt für alle weg.`)) return;
+  sicherungAblegen(state,true);                       // Rettungsleine vor dem Löschen
   state.blaetter=state.blaetter.filter(x=>x!==b);
   liBlattId=null; save(); dlgSpalten.close();
   if(!state.blaetter.length) neuesBlatt("Blatt 1");
@@ -7996,7 +8235,8 @@ function mappeUebernehmen(d){
     ersetzen=confirm(
       `Blätter mit diesen Namen gibt es schon:\n\n${[...new Set(doppelt)].join(", ")}\n\n`+
       `OK = die vorhandenen ersetzen\nAbbrechen = zusätzlich anlegen`);
-    if(ersetzen) state.blaetter=state.blaetter.filter(b=>!doppelt.includes(b.name));
+    if(ersetzen){ sicherungAblegen(state,true);
+      state.blaetter=state.blaetter.filter(b=>!doppelt.includes(b.name)); }
   }
   let erstes=null;
   blaetter.forEach(bl=>{
