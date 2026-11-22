@@ -1188,6 +1188,24 @@ dialog.hell .dlg-body{max-height:76vh}
   margin-left:auto;display:flex;gap:16px;font-size:12px;color:var(--l-dim);white-space:nowrap;
 }
 .listesumme b{color:var(--l-ink);font-size:13.5px;display:block;font-variant-numeric:tabular-nums}
+/* Dauer eines Einsatzes in einer Zeile ändern: kürzer links, länger rechts */
+.zeitschritt{
+  display:flex;align-items:center;gap:10px;margin-top:9px;
+  background:var(--panel-2);border:1px solid var(--line-soft);border-radius:12px;padding:7px 8px;
+}
+.zeitschritt .zs{
+  flex:0 0 auto;min-width:78px;padding:8px 10px;border-radius:9px;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line);color:var(--ink);
+  font-size:12.5px;font-weight:600;white-space:nowrap;
+}
+.zeitschritt .zs:hover:not(:disabled){border-color:var(--focus);color:var(--focus)}
+.zeitschritt .zs:disabled{opacity:.3;cursor:not-allowed}
+.zeitschritt .zswert{
+  flex:1 1 auto;text-align:center;font-size:13px;font-weight:600;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.zeitschritt .zswert small{display:block;font-weight:400;font-size:11px;color:var(--ink-dim);margin-top:1px}
+
 .listesumme .gut b{color:#1F7A44}
 .listesumme .rot b{color:#B3261E}
 
@@ -4247,6 +4265,22 @@ function placeTeam(id,targetIdx){
   state.teams.splice(targetIdx,0,t); save(); render();
 }
 
+/* „Raum Pro 369 GmbH“ wird im schmalen Kalenderfeld zu „Raum Pro 369“.
+   Die Rechtsform sagt dort nichts und frisst die halbe Breite. */
+function firmaKurz(name){
+  let n=String(name||"").trim();
+  if(!n) return "";
+  /* Nur am Ende abschneiden, sonst verliert „AG Immobilien AG“ den Namen.
+     Mehrmals, damit auch „GmbH & Co. KG“ ganz wegfällt. */
+  const endung=/[\s,]*(\(haftungsbeschränkt\)|&\s*Co\.?|GmbH|UG|AG|OHG|KGaA|KG|GbR|mbH|e\.?\s?K\.?|e\.?\s?V\.?|Ltd\.?|S\.?A\.?R\.?L\.?)\s*$/i;
+  for(let i=0;i<4;i++){
+    const neu=n.replace(endung,"").trim();
+    if(neu===n || !neu) break;
+    n=neu;
+  }
+  return n || String(name).trim();
+}
+
 /* Ein zusammenhängendes Einsatzfeld */
 function makeBar(team,jobId,firstU,lastU,span,isMonth){
   const job=jobById(jobId)||{name:"?",address:""};
@@ -4266,10 +4300,22 @@ function makeBar(team,jobId,firstU,lastU,span,isMonth){
   const schloss = (fix && !cl) ? `<span class="lock" aria-hidden="true">🔒</span>` : "";
   const maengel = offeneMaengel(jobId);
   const nummer = (job.nr && !cl) ? `<span class="bnr">${nrText(job.nr)}</span>` : "";
+  /* Oben der Kunde – danach die Arbeit und, wenn die Breite reicht,
+     die Straße. Wer auf den Kalender schaut, will zuerst wissen,
+     bei wem das Team steht. */
+  const kunde  = job.customerId ? ((kundeById(job.customerId)||{}).company||"") : "";
+  const kurz   = firmaKurz(kunde);
+  const strasse= (job.address||"").split(",")[0].trim();
+  const oben   = kurz || job.name || "";
+  /* Ein halber Tag ist ein Kästchen von vier Zentimetern – dort passt
+     eine Zeile, mehr wäre nur abgeschnittenes Gestammel. */
+  const unten  = span<2 ? ""
+    : (kurz ? [job.name, strasse].filter(Boolean).join(" · ") : strasse);
   b.innerHTML = isMonth
-    ? `${nummer}${schloss}<span class="nm">${esc(short(job.name, span<=1?6:span*7))}</span>`
-    : `${nummer}${schloss}<span class="nm">${esc(job.name)}</span>`+(span>=2?`<span class="adr">${esc(job.address)}</span>`:"");
-  b.title=`${nrText(job.nr)} ${job.name}\n${job.address}\n${team.name}${halb}\n${span/2 % 1 ? (span/2).toFixed(1) : span/2} Tage`
+    ? `${nummer}${schloss}<span class="nm">${esc(short(oben, span<=1?6:span*7))}</span>`
+    : `${nummer}${schloss}<span class="nm">${esc(oben)}</span>`
+      +(unten?`<span class="adr">${esc(unten)}</span>`:"");
+  b.title=`${kunde?kunde+"\n":""}${nrText(job.nr)} ${job.name}\n${job.address}\n${team.name}${halb}\n${span/2 % 1 ? (span/2).toFixed(1) : span/2} Tage`
     +(abger?"\n\nAbgerechnet.":"")
     +(maengel?`\n\n${maengel} offene${maengel===1?"r":""} Mangel – anklicken und unter „Notizen“ abhaken.`:"")
     +(fix?`\n\nFestgehalten: ${fileCounts[jobId]} Anhang/Anhänge vorhanden.`:"");
@@ -4802,8 +4848,12 @@ function fillAssignDialog(teamId,jobId,from,fromSlot,to,toSlot,titleTxt,hintTxt,
   state.teams.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=`${t.name} – ${t.members.join(", ")||"–"}`;ts.appendChild(o);});
   ts.value=teamId;
   const dl=document.getElementById("jobNames"); dl.replaceChildren();
-  state.jobs.forEach(j=>{const o=document.createElement("option");o.value=j.name;o.label=j.address||"";dl.appendChild(o);});
+  state.jobs.forEach(j=>{const o=document.createElement("option");o.value=j.name;
+    o.label=[j.nr?nrText(j.nr):"",j.address||""].filter(Boolean).join(" · ");dl.appendChild(o);});
   const cur=jobId?jobById(jobId):null;
+  /* Der geöffnete Auftrag wird über seine Kennung festgehalten. Über den
+     Namen zu gehen reicht nicht: zwei Aufträge dürfen „E-Check“ heißen. */
+  asJobGewaehlt = cur?cur.id:"";
   document.getElementById("asJobName").value=cur?cur.name:"";
   document.getElementById("asJobAdr").value=cur?(cur.address||""):"";
   document.getElementById("asJobHint").className="hint";
@@ -5060,8 +5110,15 @@ async function geocodeQuiet(job){
 }
 
 /* Adresse automatisch füllen, wenn ein bekannter Auftrag gewählt wird */
+let asJobGewaehlt="";            // Kennung des Auftrags im Einsatzfenster
 document.getElementById("asJobName").addEventListener("input",e=>{
-  const hit=state.jobs.find(j=>j.name.toLowerCase()===e.target.value.trim().toLowerCase());
+  const txt=e.target.value.trim().toLowerCase();
+  const alt=jobById(asJobGewaehlt);
+  /* Steht der geöffnete Auftrag unverändert im Feld, bleibt er es auch –
+     sonst wäre bei gleichen Namen der erstbeste gewonnen. */
+  const hit = (alt && (alt.name||"").toLowerCase()===txt)
+            ? alt : state.jobs.find(j=>j.name.toLowerCase()===txt);
+  asJobGewaehlt = hit?hit.id:"";
   const adr=document.getElementById("asJobAdr");
   if(hit && hit.address && !adr.value.trim()) adr.value=hit.address;
   zeigeKundeImEinsatz(hit?hit.id:null);
@@ -5072,7 +5129,8 @@ document.getElementById("asJobName").addEventListener("input",e=>{
 function assignNavi(){
   const name=document.getElementById("asJobName").value.trim();
   const j = (editing && editing.jobId) ? jobById(editing.jobId)
-           : state.jobs.find(x=>x.name.toLowerCase()===name.toLowerCase());
+           : jobById(asJobGewaehlt)
+           || state.jobs.find(x=>x.name.toLowerCase()===name.toLowerCase());
   const adr = j ? j.address : document.getElementById("asJobAdr").value.trim();
   naviOeffnen(adr, j?j.lat:null, j?j.lng:null);
 }
@@ -5082,7 +5140,8 @@ document.getElementById("asNaviFeld").onclick=assignNavi;
 document.getElementById("asNotizen").onclick=()=>{
   const name=document.getElementById("asJobName").value.trim();
   const j = (editing && editing.jobId) ? jobById(editing.jobId)
-           : state.jobs.find(x=>x.name.toLowerCase()===name.toLowerCase());
+           : jobById(asJobGewaehlt)
+           || state.jobs.find(x=>x.name.toLowerCase()===name.toLowerCase());
   if(!j){ alert("Erst einen Auftrag auswählen, dann lassen sich Notizen führen."); return; }
   dlgAssign.close();
   setTimeout(()=>openJobNotizen(j.id),80);
@@ -5092,7 +5151,12 @@ document.getElementById("asSave").onclick=()=>{
   const teamId=document.getElementById("asTeam").value;
   /* Hier entstehen keine neuen Aufträge mehr – nur bekannte dürfen hinein. */
   const gesucht=document.getElementById("asJobName").value.trim();
-  const job=gesucht ? state.jobs.find(j=>j.name.toLowerCase()===gesucht.toLowerCase()) : null;
+  /* Zuerst die festgehaltene Kennung – der Name ist nur die Rückfallebene
+     für den Fall, dass jemand von Hand etwas anderes eintippt. */
+  const gemerkt=jobById(asJobGewaehlt);
+  const job = (gemerkt && (gemerkt.name||"").toLowerCase()===gesucht.toLowerCase())
+            ? gemerkt
+            : (gesucht ? state.jobs.find(j=>j.name.toLowerCase()===gesucht.toLowerCase()) : null);
   if(!job){
     const h=document.getElementById("asJobHint");
     h.className="hint geo-no";
@@ -5373,16 +5437,59 @@ function assignModus(ansicht){
   if(b) b.scrollTop=0;
 }
 
+/* Prüft, ob sich der Einsatz um einen Tag verlängern oder kürzen lässt,
+   und liefert gleich die neuen Halbtage zurück. Null heißt: geht nicht. */
+function laengeProbe(richtung){
+  const e=editing;
+  if(!e || e.mode!=="run" || !e.last || !e.first) return null;
+  const ende=iso(addDays(parse(e.last[0]), richtung));
+  if(ende<e.first[0]) return null;
+  if(ende===e.first[0] && e.first[1]==="PM" && e.last[1]==="AM") return null;
+  const span=slotSpan(e.first[0],e.first[1],ende,e.last[1]);
+  return span.length ? {ende, span} : null;
+}
+function einsatzLaenge(richtung){
+  const e=editing;
+  const p=laengeProbe(richtung); if(!p) return;
+  if(istFixiert(e.jobId) && !entsperrt){ alert(fixHinweis(e.jobId)); return; }
+  /* Steht dort schon jemand anderes, erst fragen. */
+  const fremd=p.span.map(u=>assignAt(e.teamId,u.date,u.slot))
+                    .filter(a=>a && a.jobId!==e.jobId);
+  if(fremd.length){
+    const anderer=jobById(fremd[0].jobId);
+    if(!confirm(`Dort steht schon „${anderer?anderer.name:"ein anderer Einsatz"}“.\n\nÜberschreiben?`)) return;
+  }
+  clearRun(e);
+  p.span.forEach(({date,slot})=>{
+    const ex=assignAt(e.teamId,date,slot);
+    if(ex) state.assignments=state.assignments.filter(a=>a.id!==ex.id);
+    state.assignments.push({id:uid(),teamId:e.teamId,jobId:e.jobId,date,slot});
+  });
+  editing.last=[p.ende,e.last[1]];
+  document.getElementById("asTo").value=p.ende;
+  save(); render(); assignKarteZeichnen();
+}
+
 function assignKarteZeichnen(){
   const j = (editing && editing.jobId) ? jobById(editing.jobId) : null;
   if(!j){ assignModus(false); return false; }
   const t = teamById(editing.teamId);
   const bl = einsaetzeZu(j.id).find(b=>b.teamId===editing.teamId) || einsaetzeZu(j.id)[0];
+  const tage = bl ? (bl.halbtage/2===Math.round(bl.halbtage/2)?bl.halbtage/2:(bl.halbtage/2).toFixed(1)) : 0;
+  const kuerzer = !!laengeProbe(-1), laenger = !!laengeProbe(1);
   const einsatz = `<div class="kblock"><h5>Dieser Einsatz</h5>`
     + `<div class="keinsatz"><b>${esc(t?t.name:"Team")}</b>`
-    + (bl?` · ${esc(zeitraumText(bl))} · ${bl.halbtage/2===Math.round(bl.halbtage/2)?bl.halbtage/2:(bl.halbtage/2).toFixed(1)} Tag${bl.halbtage===2?"":"e"}`:"")
+    + (t && t.members && t.members.length ? ` · ${esc(t.members.join(", "))}` : "")
     + `</div>`
-    + (t && t.members && t.members.length ? `<div class="keinsatz">${esc(t.members.join(" · "))}</div>` : "")
+    /* Dauer direkt hier ändern: kürzer links, länger rechts. */
+    + `<div class="zeitschritt">`
+    +   `<button type="button" class="zs" onclick="einsatzLaenge(-1)"${kuerzer?"":" disabled"} `
+    +     `title="Einen Tag früher beenden">−&nbsp;1&nbsp;Tag</button>`
+    +   `<span class="zswert">${bl?esc(zeitraumText(bl)):"—"}`
+    +     `<small>${bl?`${tage} Tag${bl.halbtage===2?"":"e"}`:""}</small></span>`
+    +   `<button type="button" class="zs" onclick="einsatzLaenge(1)"${laenger?"":" disabled"} `
+    +     `title="Einen Tag länger">+&nbsp;1&nbsp;Tag</button>`
+    + `</div>`
     + (istFixiert(j.id)?`<div class="keinsatz" style="color:#FFC978">Termin ist fixiert</div>`:"")
     + `</div>`;
   jobKarteZeichnen(j.id,"asKarte",einsatz);
