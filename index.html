@@ -1029,7 +1029,16 @@ table.liste tr.mangelzeile td:first-child{position:relative}
 }
 .keinsatz{font-size:13px;color:var(--ink-dim);padding:5px 0}
 .keinsatz b{color:var(--ink);font-weight:600}
-.kfotos{display:flex;gap:7px;flex-wrap:wrap}
+/* Fotos gleich sichtbar: ein einzelnes Bild wird breit,
+   mehrere teilen sich die Reihe. So erkennt man den Inhalt,
+   ohne etwas antippen zu müssen. */
+.kfotos{
+  display:grid;gap:8px;max-width:470px;
+  grid-template-columns:repeat(auto-fit,minmax(148px,1fr));
+}
+.kfotos .att{aspect-ratio:4/3}
+.kfotos .att img{cursor:zoom-in}
+.kblock h5 .zahl{color:var(--ink-faint);font-weight:400;margin-left:6px}
 .kleer{color:var(--ink-faint);font-size:13px;padding:16px 0}
 .sicherliste{display:flex;flex-direction:column;gap:7px}
 .sicherzeile{
@@ -5007,6 +5016,8 @@ async function jobKarteZeichnen(id,zielId,zusatz){
   const marken=[];
   if(istAufgabe(j))            marken.push(`<span class="kmarke">Aufgabe</span>`);
   else if(istMangelAuftrag(j)) marken.push(`<span class="kmarke rot">${eltern?"Mangel zu "+esc(nrText(eltern.nr)):"Externer Mangel"}</span>`);
+  const anzDat=fileCounts[j.id]||0;      // gleich oben sehen: hier hängen Fotos dran
+  if(anzDat) marken.push(`<span class="kmarke">📷 ${anzDat} Foto${anzDat===1?"":"s"} / Datei${anzDat===1?"":"en"}</span>`);
   if(j.erledigt)  marken.push(`<span class="kmarke gruen">Erledigt${j.erledigtVon?" · "+esc(j.erledigtVon):""}</span>`);
   if(j.billed)    marken.push(`<span class="kmarke">Abgerechnet</span>`);
   /* Offene Mängel: eigene Mangelaufträge und Mangelnotizen zusammen */
@@ -5076,16 +5087,32 @@ async function jobKarteZeichnen(id,zielId,zusatz){
     + `<div class="kmarken">${marken.join("")}</div>`
     + (zusatz||"")
     + (zeilen?`<div class="kzeilen">${zeilen}</div>`:`<p class="kleer">Zu diesem Eintrag sind noch keine Angaben hinterlegt.</p>`)
-    + freitext + notizen + (zusatz?"":plan)
-    + `<div class="kblock" id="${fotoId}Block" hidden><h5>Fotos und Dateien</h5><div class="kfotos" id="${fotoId}"></div></div>`;
+    + freitext
+    /* Die Fotos stehen bewusst weit oben – gleich nach den Angaben. */
+    + `<div class="kblock" id="${fotoId}Block" hidden><h5 id="${fotoId}Titel">Fotos</h5><div class="kfotos" id="${fotoId}"></div></div>`
+    + notizen + (zusatz?"":plan);
 
-  /* Fotos nachladen – die liegen in der Dateiablage */
+  /* Fotos nachladen – die liegen in der Dateiablage.
+     Bilder zuerst, damit man gleich etwas sieht. */
   try{
     const list=await Files.forJob(id);
     if(list.length){
       const ziel=document.getElementById(fotoId);
       if(ziel){
-        list.forEach(f=>ziel.appendChild(kachel(f,false)));
+        const bilder=list.filter(f=>istBild(f.type));
+        const rest  =list.filter(f=>!istBild(f.type));
+        [...bilder,...rest].forEach(f=>{
+          const t=kachel(f,false);
+          const x=t.querySelector(".del"); if(x) x.remove();   // Ansehen heißt ansehen
+          ziel.appendChild(t);
+        });
+        const t=document.getElementById(fotoId+"Titel");
+        if(t){
+          const wort = bilder.length && rest.length ? "Fotos und Dateien"
+                     : bilder.length ? (bilder.length===1?"Foto":"Fotos")
+                     : (rest.length===1?"Datei":"Dateien");
+          t.innerHTML = wort + (list.length>1?`<span class="zahl">${list.length}</span>`:"");
+        }
         document.getElementById(fotoId+"Block").hidden=false;
       }
     }
